@@ -1,6 +1,18 @@
 # Deploying a Static SPA on AWS
 
+> Applies to: React/Vite SPAs on AWS (Amplify + CDK) | Updated: February 2026
+
 A concise guide for deploying a static single-page app (React/Vite) on AWS with an optional API backend using CDK.
+
+## Contents
+
+1. [Architecture](#architecture)
+2. [Amplify Hosting](#amplify-hosting)
+3. [CDK Backend](#cdk-backend)
+4. [SES Email](#ses-email-if-needed)
+5. [Frontend API Call](#frontend-api-call)
+6. [Deployment Workflow](#deployment-workflow)
+7. [First-Time Checklist](#first-time-checklist)
 
 ## Architecture
 

@@ -1,6 +1,8 @@
 # SEO & LLMO Implementation Guide
 
-A practical guide for implementing Search Engine Optimization (SEO) and Large Language Model Optimization (LLMO) on static sites. Based on latest practices as of early 2026.
+> Applies to: Static sites and SPAs (any framework) | Updated: February 2026
+
+A practical guide for implementing Search Engine Optimization (SEO) and Large Language Model Optimization (LLMO) — making your site discoverable by both search engines and AI models.
 
 ## Table of Contents
 

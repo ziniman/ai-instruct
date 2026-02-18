@@ -50,7 +50,7 @@ Some assistants support a global (user-level) instructions file that applies to 
 
 ## Contributing
 
-Pull requests are welcome! You can:
+Pull requests are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guide format and writing guidelines. You can:
 
 - **Add a new guide** — create a focused `.md` file on a specific topic (deployment, accessibility, performance, auth, etc.)
 - **Update an existing guide** — fix outdated information, add missing patterns, or improve clarity
