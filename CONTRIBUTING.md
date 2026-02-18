@@ -97,7 +97,7 @@ AWS_SPA_GUIDE.md            ✗  (wrong case)
 
 ## Submitting a pull request
 
-1. **New guide** — create a new `.md` file following this format and add a row to the table in `README.md`
+1. **New guide** — create a new `.md` file following this format and add a row to the table in `README.md` with the guide name, filename, and description
 2. **Update existing guide** — update the `Updated:` date in the metadata block
 3. **Fix** — no extra steps needed beyond the fix itself
 
