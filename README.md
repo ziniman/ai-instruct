@@ -2,9 +2,7 @@
 
 # AI Instruct
 
-**Practical markdown guides for developers building websites with AI coding assistants.**
-
-**Each guide asks plain-English questions first  -  so your AI generates code for your project, not generic boilerplate.**
+**Drop-in guides for your AI assistant covering the domains most developers Google when building: deployment, analytics, SEO, accessibility, and more.**
 
 [![npm version](https://img.shields.io/npm/v/ai-instruct?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/ai-instruct)
 [![npm downloads](https://img.shields.io/npm/dm/ai-instruct?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/ai-instruct)
@@ -56,6 +54,8 @@ Most AI coding assistants read a persistent instructions file from your project 
 | **GitHub Copilot** | `.github/copilot-instructions.md` | Paste guide contents or add `See seo-llmo-guide.md for SEO context.` |
 | **Windsurf** | `.windsurfrules` | Paste guide contents or reference the file path |
 | **Aider** | Pass with `--read` flag | `aider --read seo-llmo-guide.md` |
+| **Base44** | Paste into chat | Copy the relevant guide and paste it into your Base44 chat before describing your task |
+| **Lovable** | Paste into chat | Copy the relevant guide and paste it into your Lovable chat before describing your task |
 
 **Best practices for instruction files:**
 
