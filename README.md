@@ -2,7 +2,7 @@
 
 Practical markdown guides for developers building websites with AI coding assistants (Cursor, Claude Code, Copilot, etc.). Useful whether you have a coding background or not.
 
-Each guide is a focused, copy-paste-friendly reference you can drop directly into your AI chat context to get better, more accurate help on a specific topic.
+Each guide opens with a short set of plain-English questions so your AI assistant can tailor the output to your specific project — rather than generating generic boilerplate. You don't need to be an expert to answer them; each question includes a sensible default.
 
 ## Guides
 
@@ -61,6 +61,7 @@ Pull requests are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guide
 ### Guidelines for new guides
 
 - Keep guides focused on a single topic
+- Start with a "Before You Start" section — plain-English questions that let an AI assistant tailor its output (see [CONTRIBUTING.md](./CONTRIBUTING.md))
 - Write for an audience that may not have deep coding experience
 - Include working code snippets and real commands
 - Note the date/context for time-sensitive information (e.g. "as of 2026")

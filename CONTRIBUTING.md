@@ -18,6 +18,37 @@ One sentence describing what this guide covers.
 
 The metadata line tells readers (and AI models) the scope and freshness of the guide at a glance.
 
+### Section 0: Before You Start
+
+Every guide must include a "Section 0: Before You Start" immediately after the header block (before the table of contents). This is the core of the tailored approach — it replaces generic boilerplate with targeted questions that let an AI assistant skip irrelevant sections and fill in the right details.
+
+**Format:**
+
+```markdown
+## Section 0: Before You Start
+
+Answer these questions before generating any code. Each has a default — confirm or change it.
+
+**Q: [Plain-English question a non-expert can answer]**
+Default: [sensible default based on what the model can detect from the project, or best practice]
+
+**Q: ...**
+Default: ...
+
+> **AI assistant:** [One instruction telling the model what to do with these answers — e.g. which sections to skip, what to auto-detect from the project.]
+```
+
+**Rules for questions:**
+- Write in plain English — assume the reader has no domain expertise
+- Keep each question to one sentence
+- Always include a default. The default should be either:
+  - Something the AI can detect from the project (e.g. "check `package.json` for a SPA framework")
+  - A best-practice baseline (e.g. "WCAG 2.2 AA")
+- 4–6 questions per guide is the right range — fewer if the topic is narrow, no more than 6
+
+**AI assistant instruction line:**
+End the section with a `> **AI assistant:**` blockquote. This tells the model concretely what to do with the answers — which sections to skip, what to generate only if confirmed, what to auto-detect. Keep it to 2–3 sentences.
+
 ### Table of contents
 
 Include a table of contents for any guide longer than ~150 lines. Use anchor links:
