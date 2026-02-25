@@ -1,160 +1,57 @@
 # SEO & LLMO Implementation Guide
 
-> Applies to: Static sites and SPAs (any framework) | Updated: February 2026
+> Applies to: Any website or web app | Updated: February 2026
 
-A practical guide for implementing Search Engine Optimization (SEO) and Large Language Model Optimization (LLMO) — making your site discoverable by both search engines and AI models.
-
-## Table of Contents
-
-1. [SEO Essentials](#seo-essentials)
-2. [LLMO Essentials](#llmo-essentials)
-3. [Structured Data (JSON-LD)](#structured-data-json-ld)
-4. [Static Files](#static-files)
-5. [SPA Considerations](#spa-considerations)
-6. [Amplify / Static Hosting Notes](#amplify--static-hosting-notes)
-7. [Validation & Testing](#validation--testing)
+A practical guide for implementing Search Engine Optimization (SEO) and Large Language Model Optimization (LLMO) — making your site discoverable by both search engines and AI tools.
 
 ---
 
-## SEO Essentials
+## Section 0: Before You Start
 
-### Meta Tags (in `<head>`)
+Answer these questions before generating any code. Each has a default — use it if the user hasn't said otherwise.
 
-Every page should include:
+**Q: What kind of site is this?**
+(blog, online shop, company/marketing site, web app, documentation)
+Default: company/marketing site — drives which schema types to prioritize.
 
-```html
-<title>Page Title - Brand Name</title>
-<meta name="description" content="Concise 150-160 char description with key terms." />
-<meta name="author" content="Author Name" />
-<link rel="canonical" href="https://yourdomain.com/page" />
-```
+**Q: How is the site built?**
+(plain HTML, React/Vue/Angular SPA, Next.js/Astro/Nuxt with server rendering, WordPress/CMS)
+Default: if a framework config file (e.g. `vite.config.*`, `next.config.*`, `astro.config.*`) is visible in the project, detect from that; otherwise assume plain HTML.
 
-### Open Graph (social sharing)
+**Q: Where are your visitors?**
+(one country, multiple countries/languages, worldwide)
+Default: worldwide, single language — skip hreflang unless multiple languages are confirmed.
 
-```html
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://yourdomain.com/" />
-<meta property="og:site_name" content="Brand Name" />
-<meta property="og:title" content="Page Title - Brand Name" />
-<meta property="og:description" content="Description for social shares." />
-<meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-```
+**Q: What's your main goal with SEO?**
+(show up in Google search, get cited by AI tools like ChatGPT/Perplexity, both, social sharing)
+Default: both Google and AI tools.
 
-OG image should be 1200x630px for best display across platforms.
+**Q: Do you already have a robots.txt, sitemap, or structured data set up?**
+Default: no — but check for existing files before creating new ones, and merge rather than overwrite.
 
-### Twitter/X Card
-
-```html
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:site" content="@YourHandle" />
-<meta name="twitter:title" content="Page Title" />
-<meta name="twitter:description" content="Description for Twitter." />
-<meta name="twitter:image" content="https://yourdomain.com/og-image.jpg" />
-```
-
-### Semantic HTML
-
-- Use one `<h1>` per page
-- Use heading hierarchy (`h1` > `h2` > `h3`) logically
-- Use `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>` elements
-- Use `alt` attributes on all images
-- Use `lang` attribute on `<html>`
+> **AI assistant:** Read the user's answers (or use the defaults above) before generating any code. Skip sections that don't apply to their setup.
 
 ---
 
-## LLMO Essentials
+## Contents
 
-LLMO focuses on making your site discoverable and accurately represented by AI models (ChatGPT, Claude, Perplexity, etc.).
-
-### Key Principles
-
-1. **Content in initial HTML**: AI crawlers don't execute JavaScript. Any content rendered only via client-side JS is invisible to them. Put critical information in static HTML, structured data, or llms.txt.
-
-2. **Clear, extractable sections**: Write content in standalone sections that can be quoted independently. Use clear headings and direct language.
-
-3. **Entity consistency**: Ensure your brand name, descriptions, and key terms are consistent across your site, social profiles, and external directories.
-
-4. **Original insights**: Content with unique data, quotes, and specific claims gets cited 30-40% more by LLMs.
-
-5. **Freshness**: Content older than 3 months sees a drop in AI citations. Keep key pages updated.
-
-### llms.txt
-
-A Markdown file at your site root that gives LLMs a structured overview. Format:
-
-```markdown
-# Site Name
-
-> Short summary of the site with key context.
-
-Additional prose with important details.
-
-## Section Name
-
-- [Page Title](https://example.com/page): Brief description
-- [Another Page](https://example.com/other): What this covers
-
-## Optional
-
-- [Less Critical Page](https://example.com/extra): Can be skipped
-```
-
-Rules:
-- H1 heading (site name) is required
-- Blockquote summary is recommended
-- H2 sections organize links by category
-- `## Optional` marks resources that can be skipped for shorter context
-- Links follow: `[Name](URL): Description`
-
-Place at `public/llms.txt` so it's served at `yourdomain.com/llms.txt`.
-
-### robots.txt for AI Crawlers
-
-Explicitly allow AI bots:
-
-```
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: Applebot-Extended
-Allow: /
-```
-
-To block AI crawlers from specific content, use `Disallow` rules per user-agent.
-
-Known AI crawler user-agents (as of 2026):
-- `GPTBot` - OpenAI (training + search)
-- `ChatGPT-User` - ChatGPT browsing
-- `ClaudeBot` - Anthropic
-- `PerplexityBot` - Perplexity AI
-- `Google-Extended` - Google AI/Gemini
-- `Applebot-Extended` - Apple Intelligence
-- `CCBot` - Common Crawl (used by many AI trainers)
-- `Bytespider` - ByteDance/TikTok
+1. [Structured Data (JSON-LD)](#structured-data-json-ld)
+2. [llms.txt and llms-full.txt](#llmstxt-and-llms-fulltxt)
+3. [robots.txt for AI and Search Crawlers](#robotstxt-for-ai-and-search-crawlers)
+4. [Sitemap](#sitemap)
+5. [Meta Tags and Social Sharing](#meta-tags-and-social-sharing)
+6. [Core Web Vitals](#core-web-vitals)
+7. [SPA Considerations](#spa-considerations)
+8. [Static Hosting Notes](#static-hosting-notes)
+9. [Validation](#validation)
 
 ---
 
 ## Structured Data (JSON-LD)
 
-JSON-LD is the most impactful addition for both SEO and LLMO. Sites with structured data get 2-3x more AI citations.
+Applies when: any site where you want Google rich results or AI citation.
 
-### Placement
-
-Add in `<head>` as:
+JSON-LD (JavaScript Object Notation for Linked Data) is the highest-impact addition for both SEO and LLMO. Add it in `<head>`:
 
 ```html
 <script type="application/ld+json">
@@ -165,70 +62,11 @@ Add in `<head>` as:
 </script>
 ```
 
-### Common Schema Types
+**CSP interaction:** If your site uses a strict `Content-Security-Policy` with `script-src`, inline `<script type="application/ld+json">` blocks are treated as inline scripts and will be blocked unless you add `'unsafe-inline'` or a per-request nonce. Add the nonce to the JSON-LD script tag the same way you would for any other inline script.
 
-**Organization / Business:**
-```json
-{
-  "@type": "ProfessionalService",
-  "name": "Business Name",
-  "url": "https://yourdomain.com",
-  "logo": "https://yourdomain.com/logo.svg",
-  "description": "What you do.",
-  "email": "contact@yourdomain.com",
-  "founder": {
-    "@type": "Person",
-    "name": "Founder Name",
-    "jobTitle": "Title"
-  },
-  "sameAs": [
-    "https://x.com/handle",
-    "https://linkedin.com/company/name"
-  ]
-}
-```
+### @graph with @id cross-referencing
 
-**WebSite:**
-```json
-{
-  "@type": "WebSite",
-  "url": "https://yourdomain.com",
-  "name": "Site Name",
-  "description": "Brief description"
-}
-```
-
-**Service (for service offerings):**
-```json
-{
-  "@type": "Service",
-  "name": "Service Name",
-  "description": "What this service provides."
-}
-```
-
-**FAQPage (highly favored by both search and AI):**
-```json
-{
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Your question here?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The answer."
-      }
-    }
-  ]
-}
-```
-
-**Other useful types:** `Review`, `AggregateRating`, `Event`, `Article`, `HowTo`
-
-### Using @graph
-
-Use `@graph` to include multiple schema objects in a single JSON-LD block. Reference between objects using `@id`:
+Use `@graph` to put multiple schema objects in one block and wire them together with `@id` references. This lets Google and AI parsers understand the relationships between entities on your site:
 
 ```json
 {
@@ -237,125 +75,409 @@ Use `@graph` to include multiple schema objects in a single JSON-LD block. Refer
     {
       "@type": "Organization",
       "@id": "https://yourdomain.com/#org",
-      "name": "Your Org"
+      "name": "Your Company Name",
+      "url": "https://yourdomain.com",
+      "logo": "https://yourdomain.com/logo.svg",
+      "description": "What you do, in one sentence.",
+      "email": "contact@yourdomain.com",
+      "sameAs": [
+        "https://linkedin.com/company/your-company",
+        "https://x.com/yourhandle"
+      ]
     },
     {
       "@type": "WebSite",
+      "@id": "https://yourdomain.com/#website",
+      "url": "https://yourdomain.com",
+      "name": "Your Site Name",
       "publisher": { "@id": "https://yourdomain.com/#org" }
     }
   ]
 }
 ```
 
+The `"publisher": { "@id": "..." }` pattern replaces duplicating the full Organization object everywhere. Use the same `#id` fragment consistently across all pages.
+
+### FAQPage schema
+
+Use on any page with a Q&A section. FAQPage triggers Google rich results (expandable Q&A in search) and is a reliable citation target for AI tools that answer direct questions:
+
+```json
+{
+  "@type": "FAQPage",
+  "@id": "https://yourdomain.com/faq#faqpage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What does your product do?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A specific, self-contained answer that makes sense without surrounding context."
+      }
+    }
+  ]
+}
+```
+
+Write answers that make sense in isolation — AI tools extract and quote them without the surrounding page.
+
+### Service and Article schema
+
+**For service pages:**
+```json
+{
+  "@type": "Service",
+  "@id": "https://yourdomain.com/services/your-service#service",
+  "name": "Service Name",
+  "description": "What this service provides.",
+  "provider": { "@id": "https://yourdomain.com/#org" }
+}
+```
+
+**For blog posts or articles:**
+```json
+{
+  "@type": "Article",
+  "@id": "https://yourdomain.com/blog/post-slug#article",
+  "headline": "Article Title",
+  "datePublished": "2026-01-15",
+  "dateModified": "2026-02-01",
+  "author": { "@id": "https://yourdomain.com/#org" },
+  "publisher": { "@id": "https://yourdomain.com/#org" }
+}
+```
+
+**Other useful types:** `Review`, `AggregateRating`, `Event`, `HowTo`, `BreadcrumbList`
+
+Verify: [Google Rich Results Test](https://search.google.com/test/rich-results) and [Schema.org Validator](https://validator.schema.org/)
+
 ---
 
-## Static Files
+## llms.txt and llms-full.txt
 
-Files to include in your `public/` directory:
+Applies when: goal includes AI tool visibility.
 
-| File | Purpose |
-|------|---------|
-| `robots.txt` | Crawler directives, sitemap reference |
-| `sitemap.xml` | Page listing for search engines |
-| `llms.txt` | AI-readable site summary |
-| `favicon.svg` / `favicon.ico` | Browser tab icon |
-| `og-image.jpg` | Social sharing image (1200x630px) |
+`llms.txt` is an emerging convention (not a ratified standard as of 2026) for giving AI tools a structured, Markdown-formatted overview of your site. Place it at your site root so it's served at `https://yourdomain.com/llms.txt`.
 
-### sitemap.xml Template
+### llms.txt format
+
+```markdown
+# Site Name
+
+> One-paragraph summary of what the site is and who it's for. Be specific — this is the context an AI tool will use when answering questions about your brand.
+
+## Main Content
+
+- [Page Title](https://yourdomain.com/page): What this page covers and why it matters.
+- [Another Page](https://yourdomain.com/other): One-line description.
+
+## Products / Services
+
+- [Product Name](https://yourdomain.com/product): What it does.
+
+## Optional
+
+- [Legal](https://yourdomain.com/privacy): Can be skipped for shorter context windows.
+```
+
+Rules:
+- H1 (site name) is required
+- Blockquote summary immediately after H1 is recommended — it's the first thing read
+- H2 sections organize links by category
+- `## Optional` marks resources that can be omitted when context window is limited
+- Links follow the pattern: `[Name](URL): Description`
+
+### llms-full.txt
+
+For sites with substantial content, add `llms-full.txt` alongside `llms.txt`. This companion file contains the full text of your key pages (not just links) for AI tools using larger context windows. Include the actual prose content, not just summaries. Link to it from `llms.txt`:
+
+```markdown
+## Full content
+
+- [Full text version](https://yourdomain.com/llms-full.txt): Complete content for larger context windows.
+```
+
+Verify: `curl -s https://yourdomain.com/llms.txt` — confirm the file is accessible and the H1 and blockquote render correctly.
+
+---
+
+## robots.txt for AI and Search Crawlers
+
+Applies when: any public-facing site.
+
+A complete robots.txt that explicitly handles both search and AI crawlers. Add this to your `public/` directory (or site root):
+
+```
+User-agent: *
+Allow: /
+
+# Search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# AI retrieval crawlers (these fetch content on demand for AI search products)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+# AI training crawlers (these feed static training datasets — blocking does not affect live AI search)
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Bytespider
+Disallow: /
+
+Sitemap: https://yourdomain.com/sitemap.xml
+```
+
+### Training crawlers vs. retrieval crawlers
+
+These are different things with different implications for blocking:
+
+- **Retrieval crawlers** (`GPTBot` when used by ChatGPT Search, `PerplexityBot`, `ChatGPT-User`) fetch your content at query time for AI search products. Blocking these removes your site from those products' answers — freshness matters here.
+- **Training crawlers** (`CCBot`, `Bytespider`) collect data for static training datasets with a fixed cutoff date. Blocking them does not affect whether AI tools cite you in live searches.
+
+`Google-Extended` covers Google's AI features (Gemini, AI Overviews) and is separate from `Googlebot`. Block one without affecting the other.
+
+Known AI crawler user-agents (as of 2026):
+- `GPTBot` — OpenAI training + ChatGPT Search retrieval
+- `ChatGPT-User` — ChatGPT browsing/retrieval
+- `ClaudeBot` — Anthropic
+- `PerplexityBot` — Perplexity AI (retrieval)
+- `Google-Extended` — Google AI features / Gemini
+- `Applebot-Extended` — Apple Intelligence
+- `Meta-ExternalAgent` — Meta AI
+- `Amazonbot` — Amazon Alexa/AI
+- `CCBot` — Common Crawl (used by many training pipelines)
+- `Bytespider` — ByteDance/TikTok
+
+Verify: `curl -s https://yourdomain.com/robots.txt` — confirm the `Sitemap:` line and your intended Allow/Disallow rules are present.
+
+---
+
+## Sitemap
+
+Applies when: site has more than one page and you want search engine indexing.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://yourdomain.com/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-02-01</lastmod>
   </url>
   <url>
     <loc>https://yourdomain.com/about</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-01-15</lastmod>
+  </url>
+  <url>
+    <loc>https://yourdomain.com/services</loc>
+    <lastmod>2026-01-10</lastmod>
   </url>
 </urlset>
 ```
 
-Priority values: 1.0 (homepage) > 0.8 (key pages) > 0.5 (secondary) > 0.3 (legal/utility)
+`<changefreq>` and `<priority>` are largely ignored by Google — omit them to keep the sitemap clean. `<lastmod>` is used and should reflect when the page content actually changed.
+
+After deploying, submit the sitemap URL in Google Search Console (Index > Sitemaps). For Bing and Yandex, use the **IndexNow** protocol for instant URL submission rather than waiting for crawl discovery:
+
+```
+POST https://api.indexnow.org/indexnow
+Content-Type: application/json
+
+{
+  "host": "yourdomain.com",
+  "key": "your-indexnow-key",
+  "urlList": [
+    "https://yourdomain.com/new-page",
+    "https://yourdomain.com/updated-page"
+  ]
+}
+```
+
+Generate your IndexNow key at [indexnow.org](https://www.indexnow.org/). Host the key as a text file at `https://yourdomain.com/{key}.txt`.
+
+Verify: Submit sitemap in Google Search Console and check for errors under Index > Sitemaps.
+
+---
+
+## Meta Tags and Social Sharing
+
+Applies when: goal includes social sharing or Google click-through rates.
+
+Every page needs these — they're table stakes, not differentiators:
+
+```html
+<title>Page Title - Brand Name</title>
+<meta name="description" content="150-160 character description with primary keywords near the start." />
+<link rel="canonical" href="https://yourdomain.com/page" />
+```
+
+The canonical tag prevents duplicate content penalties when the same page is reachable at multiple URLs (e.g. with/without trailing slash, HTTP vs HTTPS).
+
+### Open Graph
+
+The non-obvious parts of Open Graph tags:
+
+```html
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://yourdomain.com/" />
+<meta property="og:title" content="Page Title - Brand Name" />
+<meta property="og:description" content="Description for social shares." />
+<meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
+<!-- Width and height prevent the platform from fetching the image to determine dimensions -->
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+```
+
+OG image: 1200x630px. Include `og:image:width` and `og:image:height` — without them, some platforms fetch the image before rendering the preview card, adding latency.
+
+### Twitter/X Card
+
+```html
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@yourhandle" />
+```
+
+Twitter inherits `og:title`, `og:description`, and `og:image` if the corresponding `twitter:*` tags are absent — you don't need to duplicate them. The Twitter Card Validator at `cards-dev.twitter.com` is deprecated and unreliable; use [opengraph.xyz](https://www.opengraph.xyz/) or the LinkedIn Post Inspector for testing OG previews.
+
+Verify: [opengraph.xyz](https://www.opengraph.xyz/) for OG/Twitter preview, [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) for LinkedIn.
+
+---
+
+## Core Web Vitals
+
+Applies when: site targets Google search ranking, or is a SPA.
+
+Core Web Vitals are Google ranking signals measured in the field (real user data via Chrome). The three metrics as of 2026:
+
+- **LCP (Largest Contentful Paint):** Time until the largest visible content element loads. Target: under 2.5 seconds. Common causes of poor LCP: large unoptimized hero images, render-blocking resources, slow server response.
+- **CLS (Cumulative Layout Shift):** Visual instability from elements moving after initial render. Target: under 0.1. Common causes: images without explicit `width`/`height`, ads injecting content, late-loading fonts.
+- **INP (Interaction to Next Paint):** Replaced FID (First Input Delay) in March 2024. Measures the latency of all user interactions throughout the page visit, not just the first. Target: under 200 ms. Common causes in SPAs: heavy JavaScript on the main thread, large React re-renders on input events.
+
+INP is the most impactful change for SPA developers — FID only measured the first interaction, making it easy to pass while the app remained sluggish. INP catches ongoing interaction delays.
+
+Check your scores: [PageSpeed Insights](https://pagespeed.web.dev/) (field + lab data) and [Google Search Console](https://search.google.com/search-console/) > Core Web Vitals report (field data only, requires traffic).
 
 ---
 
 ## SPA Considerations
 
-Single-page apps (React, Vue, etc.) render content via JavaScript. This is a problem because:
+Applies when: site is built with React, Vue, Angular, or another client-side-only framework.
 
-- Search engine crawlers (Googlebot) can render JS but with delays and limits
-- AI crawlers (GPTBot, ClaudeBot, etc.) generally do NOT execute JavaScript
-- Social media crawlers (LinkedIn, Twitter) do NOT execute JavaScript
+SPAs render content via JavaScript. This creates two distinct problems:
 
-### Mitigations (without SSR/SSG)
+- **AI crawlers** (`GPTBot`, `ClaudeBot`, etc.) generally do not execute JavaScript — they see only the initial HTML shell.
+- **Social crawlers** (LinkedIn, Slack, iMessage) do not execute JavaScript — OG tags must be in the static HTML.
+- **Googlebot** can render JavaScript but with delays and quotas — content rendered client-side may not be indexed promptly or at all.
 
-1. **JSON-LD structured data** in `index.html` - crawlable without JS
-2. **llms.txt** - gives AI models your key content directly
-3. **Complete meta tags** - title, description, OG tags in static HTML
-4. **Prerendering** (if needed) - tools like `vite-plugin-prerender` can generate static HTML for key routes at build time
+### Mitigations without SSR
 
-### Full Solution
+Add these to your `index.html` (they work without JavaScript):
 
-For maximum SEO/LLMO, consider:
-- **SSG (Static Site Generation)** via Astro, Next.js (export), or vite-ssg
-- **Prerendering** specific routes at build time
-- These generate real HTML that all crawlers can read
+1. **JSON-LD in `<head>`** — AI crawlers and Google parse it without executing JS
+2. **Complete meta tags** — title, description, canonical, OG tags in static HTML
+3. **llms.txt** — gives AI tools your full content as a separate file
+
+For specific routes that need unique meta tags (e.g. blog posts), use **prerendering** at build time. Tools: `vite-plugin-prerender`, `react-snap`.
+
+### Full solution
+
+For reliable SEO and LLMO with dynamic content, use a framework that generates static HTML:
+
+- **Astro** — best for content sites; generates static HTML with optional JS hydration
+- **Next.js** with `output: 'export'` or SSR — generates per-route HTML
+- **Nuxt** with `ssr: true` — same for Vue
+
+These generate actual HTML files that all crawlers read without JavaScript.
 
 ---
 
-## Amplify / Static Hosting Notes
+## Static Hosting Notes
 
 ### AWS Amplify
 
-- Files in `public/` (Vite) are copied to `dist/` and served as static assets
-- Amplify's SPA rewrite rule (`/<*> -> /index.html` with `404-200`) only applies when no actual file exists, so `robots.txt`, `sitemap.xml`, and `llms.txt` are served directly
-- No config changes needed for serving new static files
-- Set environment variables in Amplify Console > Hosting > Environment variables (e.g., `VITE_API_URL`)
+- Files in `public/` (Vite) are copied to `dist/` and served as-is
+- Amplify's SPA rewrite rule (`/<*> -> /index.html` with 404→200) only fires when no matching file exists — `robots.txt`, `sitemap.xml`, and `llms.txt` are served directly without triggering the rewrite
+- No additional config needed for new static files placed in `public/`
 
 ### CloudFront + S3
 
-- Upload static files to S3 bucket root
-- Ensure `Content-Type` headers are correct:
-  - `robots.txt` -> `text/plain`
-  - `sitemap.xml` -> `application/xml`
-  - `llms.txt` -> `text/plain` or `text/markdown`
+Upload static files to the S3 bucket root. Set explicit `Content-Type` metadata on each object — S3 does not infer content type reliably:
+
+| File | Content-Type |
+|------|--------------|
+| `robots.txt` | `text/plain` |
+| `sitemap.xml` | `application/xml` |
+| `llms.txt` | `text/plain` |
+| `llms-full.txt` | `text/plain` |
+
+If `Content-Type` is wrong, crawlers may reject the file even when the content is valid.
 
 ### Netlify / Vercel
 
-- Files in `public/` are served automatically
-- No additional config needed
+Files in `public/` (or `static/` in some frameworks) are served automatically with correct content types. No additional config needed.
 
 ---
 
-## Validation & Testing
+## Validation
 
-### SEO
+Run these checks after deploying. One command or tool per concern — no separate "validation section" needed at the end of a project.
 
-- **Google Rich Results Test**: https://search.google.com/test/rich-results - validates JSON-LD
-- **Schema.org Validator**: https://validator.schema.org/ - validates structured data
-- **Google Search Console**: submit sitemap, monitor indexing
-- **LinkedIn Post Inspector**: https://www.linkedin.com/post-inspector/ - test OG tags
-- **Twitter Card Validator**: https://cards-dev.twitter.com/validator - test Twitter cards
+### Structured data
 
-### LLMO
+- [Google Rich Results Test](https://search.google.com/test/rich-results) — validates JSON-LD and shows which rich result types are eligible
+- [Schema.org Validator](https://validator.schema.org/) — catches schema errors the Rich Results Test doesn't flag
 
-- Verify `llms.txt` is accessible at `https://yourdomain.com/llms.txt`
-- Verify `robots.txt` allows AI crawlers at `https://yourdomain.com/robots.txt`
-- Test by asking AI chatbots about your site/brand and checking accuracy
-- Monitor server logs for AI crawler user-agents
+### Social sharing previews
 
-### Quick Checks
+- [opengraph.xyz](https://www.opengraph.xyz/) — shows OG and Twitter Card previews as they appear on each platform
+- [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) — LinkedIn-specific preview and cache refresh
+
+### Crawl access
 
 ```bash
-# Verify files are served
-curl -s https://yourdomain.com/robots.txt | head
-curl -s https://yourdomain.com/sitemap.xml | head
-curl -s https://yourdomain.com/llms.txt | head
+# Verify static files are served and accessible
+curl -I https://yourdomain.com/robots.txt
+curl -I https://yourdomain.com/sitemap.xml
+curl -I https://yourdomain.com/llms.txt
 
-# Validate JSON-LD syntax
-curl -s https://yourdomain.com/ | grep -o '<script type="application/ld+json">.*</script>'
+# Check robots.txt content
+curl -s https://yourdomain.com/robots.txt
+
+# Spot-check JSON-LD is present in HTML source (not rendered by JS)
+curl -s https://yourdomain.com/ | grep 'application/ld+json'
 ```
+
+### Performance
+
+- [PageSpeed Insights](https://pagespeed.web.dev/) — Core Web Vitals field + lab data per URL
+- Google Search Console > Core Web Vitals — aggregate field data across your site (requires traffic)
+
+### Indexing
+
+- Google Search Console > Index > Sitemaps — submit and monitor sitemap processing
+- Google Search Console > URL Inspection — check individual page indexing status and last crawl date
