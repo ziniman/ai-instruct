@@ -77,7 +77,7 @@ Some assistants support a global (user-level) instructions file that applies to 
 
 Pull requests are welcome  -  see [CONTRIBUTING.md](./CONTRIBUTING.md) for guide format and writing guidelines. You can:
 
-> Building your own AI instruction guides for a different domain? [Use this repo as a template](https://github.com/ziniman/ai-instruct/generate) to get the folder structure, CONTRIBUTING guidelines, and CLI wired up from the start. (Requires the repo owner to enable **Template repository** in GitHub Settings → General.)
+> Building your own AI instruction guides for a different domain? [Use this repo as a template](https://github.com/ziniman/ai-instruct/generate) to get the folder structure, CONTRIBUTING guidelines, and CLI wired up from the start.
 
 - **Add a new guide**  -  create a focused `.md` file on a specific topic (deployment, accessibility, performance, auth, etc.)
 - **Update an existing guide**  -  fix outdated information, add missing patterns, or improve clarity
