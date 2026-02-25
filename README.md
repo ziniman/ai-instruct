@@ -1,16 +1,21 @@
+<div align="center">
+
 # AI Instruct
 
-Practical markdown guides for developers building websites with AI coding assistants (Cursor, Claude Code, Copilot, etc.). Useful whether you have a coding background or not.
+**Practical markdown guides for developers building websites with AI coding assistants.**
 
-Each guide opens with a short set of plain-English questions so your AI assistant can tailor the output to your specific project — rather than generating generic boilerplate. You don't need to be an expert to answer them; each question includes a sensible default.
+**Each guide asks plain-English questions first — so your AI generates code for your project, not generic boilerplate.**
 
-## Quick Start
-
-Run this in your project directory:
+[![npm version](https://img.shields.io/npm/v/ai-instruct?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/ai-instruct)
+[![npm downloads](https://img.shields.io/npm/dm/ai-instruct?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/ai-instruct)
+[![GitHub stars](https://img.shields.io/github/stars/ziniman/ai-instruct?style=for-the-badge&logo=github&color=181717)](https://github.com/ziniman/ai-instruct)
+[![license](https://img.shields.io/github/license/ziniman/ai-instruct?style=for-the-badge&color=blue)](https://github.com/ziniman/ai-instruct/blob/main/LICENSE)
 
 ```sh
 npx ai-instruct init
 ```
+
+</div>
 
 The CLI detects your AI tool (Claude Code, Cursor, Copilot, Windsurf), lets you pick which guides to add, downloads them to `ai-docs/`, and adds the right reference lines to your config file automatically.
 

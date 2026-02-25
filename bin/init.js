@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
+const { version } = require('../package.json');
 const REPO_RAW = 'https://raw.githubusercontent.com/ziniman/ai-instruct/main';
 const DOCS_DIR = 'ai-docs';
 
@@ -81,7 +82,20 @@ async function downloadFile(url, dest) {
 async function main() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-  console.log('\n── ai-instruct setup ──────────────────────────────\n');
+  const inner = 33;
+  const label = `ai-instruct  v${version}`;
+  const lpad = Math.floor((inner - label.length) / 2);
+  const rpad = inner - label.length - lpad;
+  const versionLine = `  │${' '.repeat(lpad)}${label}${' '.repeat(rpad)}│`;
+  console.log([
+    '',
+    '  ┌─────────────────────────────────┐',
+    '  │  ▄▀▄ █   ▄▀▀ █▄ █ ▄▀▀ ▀█▀ ▄▀▀  │',
+    '  │  █▀█ █   ▀▄▄ █ ▀█ ▄██  █  ▀▄▄  │',
+    versionLine,
+    '  └─────────────────────────────────┘',
+    '',
+  ].join('\n'));
 
   // Detect AI tools
   const detected = detectTools();
