@@ -82,9 +82,9 @@ async function downloadFile(url, dest) {
 async function main() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-  const C = process.stdout.isTTY ? '\x1b[31m' : '';   // red
-  const D = process.stdout.isTTY ? '\x1b[2m' : '';    // dim
-  const R = process.stdout.isTTY ? '\x1b[0m' : '';    // reset
+  const C = '\x1b[31m';  // red
+  const D = '\x1b[2m';   // dim
+  const R = '\x1b[0m';   // reset
 
   console.log(`
 ${C}   █████╗ ██╗${R}
