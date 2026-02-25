@@ -82,20 +82,21 @@ async function downloadFile(url, dest) {
 async function main() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-  const inner = 33;
-  const label = `ai-instruct  v${version}`;
-  const lpad = Math.floor((inner - label.length) / 2);
-  const rpad = inner - label.length - lpad;
-  const versionLine = `  │${' '.repeat(lpad)}${label}${' '.repeat(rpad)}│`;
-  console.log([
-    '',
-    '  ┌─────────────────────────────────┐',
-    '  │  ▄▀▄ █   ▄▀▀ █▄ █ ▄▀▀ ▀█▀ ▄▀▀  │',
-    '  │  █▀█ █   ▀▄▄ █ ▀█ ▄██  █  ▀▄▄  │',
-    versionLine,
-    '  └─────────────────────────────────┘',
-    '',
-  ].join('\n'));
+  const C = process.stdout.isTTY ? '\x1b[36m' : '';   // cyan
+  const D = process.stdout.isTTY ? '\x1b[2m' : '';    // dim
+  const R = process.stdout.isTTY ? '\x1b[0m' : '';    // reset
+
+  console.log(`
+${C}   █████╗ ██╗${R}
+${C}  ██╔══██╗██║${R}
+${C}  ███████║██║${R}
+${C}  ██╔══██║██║${R}
+${C}  ██║  ██║██║${R}
+${C}  ╚═╝  ╚═╝╚═╝${R}
+
+  ${C}instruct${R}  ${D}v${version}${R}
+  AI coding assistant guides
+`);
 
   // Detect AI tools
   const detected = detectTools();
