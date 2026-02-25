@@ -2,7 +2,7 @@
 
 > Applies to: Any website or web app | Updated: February 2026
 
-A practical reference for building accessible websites — covering WCAG 2.2 criteria, semantic HTML, ARIA, forms, touch, and testing.
+A practical reference for building accessible websites  -  covering WCAG 2.2 criteria, semantic HTML, ARIA, forms, touch, and testing.
 
 ---
 
@@ -11,7 +11,7 @@ A practical reference for building accessible websites — covering WCAG 2.2 cri
 Answer these questions before generating accessibility code. Each answer changes which sections apply.
 
 **Q: Where are your users?**
-Default: worldwide — EU/UK requirements (EAA, PSBAR) will be flagged as applicable throughout this guide.
+Default: worldwide  -  EU/UK requirements (EAA, PSBAR) will be flagged as applicable throughout this guide.
 Options: US only | Europe/EU | UK | Worldwide
 
 **Q: What kind of product is this?**
@@ -19,14 +19,14 @@ Default: company/marketing website
 Options: Company/marketing website | Online shop/e-commerce | Web app/SaaS | Media/video site | Document tool
 
 **Q: Will people use this on mobile phones or tablets as well as desktop?**
-Default: yes — touch target sizing and pointer accessibility sections apply.
+Default: yes  -  touch target sizing and pointer accessibility sections apply.
 
 **Q: Are you building with a component library?**
 Default: none
-Options: Radix UI | shadcn/ui | MUI | Chakra UI | Other | None — if a library is detected in `package.json`, note which accessibility features it handles natively so you don't duplicate them.
+Options: Radix UI | shadcn/ui | MUI | Chakra UI | Other | None  -  if a library is detected in `package.json`, note which accessibility features it handles natively so you don't duplicate them.
 
 **Q: Do you need to comply with a specific standard for legal or contract reasons?**
-Default: WCAG 2.2 AA — current best-practice baseline.
+Default: WCAG 2.2 AA  -  current best-practice baseline.
 Options: WCAG 2.1 AA | WCAG 2.2 AA | Section 508 | EN 301 549 | Not sure
 
 > **AI assistant:** Use these answers to prioritize. For EU products: apply EAA compliance notes. For mobile: apply touch target and pointer sections. If a known accessible component library is detected, note which patterns it handles so you don't duplicate effort.
@@ -37,7 +37,7 @@ Options: WCAG 2.1 AA | WCAG 2.2 AA | Section 508 | EN 301 549 | Not sure
 
 1. [Legal & Compliance](#legal--compliance)
 2. [WCAG Standards Overview](#wcag-standards-overview)
-3. [WCAG 2.2 — What's New](#wcag-22--whats-new)
+3. [WCAG 2.2  -  What's New](#wcag-22--whats-new)
 4. [Semantic HTML](#semantic-html)
 5. [Keyboard Navigation](#keyboard-navigation)
 6. [ARIA](#aria)
@@ -55,12 +55,12 @@ Options: WCAG 2.1 AA | WCAG 2.2 AA | Section 508 | EN 301 549 | Not sure
 
 ## Legal & Compliance
 
-Accessibility is a legal requirement across most major markets. Non-compliance carries real risk — fines, market access restrictions, and litigation.
+Accessibility is a legal requirement across most major markets. Non-compliance carries real risk  -  fines, market access restrictions, and litigation.
 
 | Jurisdiction | Law / Standard | Scope | Notes |
 |---|---|---|---|
 | **EU** | European Accessibility Act (EAA) | Private-sector e-commerce, banking, transport, streaming. Enforceable since June 28, 2025. | Standard: EN 301 549 v3.2.1, which references WCAG 2.1 AA; WCAG 2.2 strongly recommended. Non-compliance = market access restrictions. |
-| **US** | ADA Title III | Private-sector websites and apps | ~4,000–4,500 lawsuits/year; e-commerce and hospitality are primary targets. Overlay-only solutions have been named in lawsuits as insufficient. |
+| **US** | ADA Title III | Private-sector websites and apps | ~4,000 - 4,500 lawsuits/year; e-commerce and hospitality are primary targets. Overlay-only solutions have been named in lawsuits as insufficient. |
 | **US Federal** | Section 508 | Federal agencies and contractors | References WCAG 2.0 AA. Agencies procuring software must meet this baseline. |
 | **UK** | Web Accessibility Regulations 2018 + Equality Act 2010 | Public sector: WCAG 2.2 AA required. Private sector: Equality Act applies. | PSBAR (Public Sector Bodies Accessibility Regulations) requires a published accessibility statement. |
 
@@ -72,9 +72,9 @@ Accessibility is a legal requirement across most major markets. Non-compliance c
 
 WCAG (Web Content Accessibility Guidelines) uses three conformance levels:
 
-- **Level A** — minimum baseline; blocking failures (e.g. images with no `alt`)
-- **Level AA** — standard legal requirement across most jurisdictions (e.g. 4.5:1 contrast)
-- **Level AAA** — enhanced; not required site-wide but worth targeting for specific features
+- **Level A**  -  minimum baseline; blocking failures (e.g. images with no `alt`)
+- **Level AA**  -  standard legal requirement across most jurisdictions (e.g. 4.5:1 contrast)
+- **Level AAA**  -  enhanced; not required site-wide but worth targeting for specific features
 
 **Target WCAG 2.2 Level AA** as your default baseline.
 
@@ -82,7 +82,7 @@ WCAG (Web Content Accessibility Guidelines) uses three conformance levels:
 
 ---
 
-## WCAG 2.2 — What's New
+## WCAG 2.2  -  What's New
 
 WCAG 2.2 was published October 2023. These criteria are not in most existing guides or tools. They represent the highest-value additions to implement.
 
@@ -96,12 +96,12 @@ The focus indicator must meet two conditions simultaneously:
 A 1px dotted border fails both. This goes beyond "don't remove `outline`."
 
 ```css
-/* Fails 2.4.11 — thin, low-contrast */
+/* Fails 2.4.11  -  thin, low-contrast */
 :focus {
   outline: 1px dotted #999;
 }
 
-/* Passes 2.4.11 — thick, high-contrast */
+/* Passes 2.4.11  -  thick, high-contrast */
 :focus-visible {
   outline: 3px solid #005fcc;  /* Check #005fcc vs background meets 3:1 */
   outline-offset: 2px;
@@ -110,7 +110,7 @@ A 1px dotted border fails both. This goes beyond "don't remove `outline`."
 
 ### 2.5.7 Dragging Movements (AA)
 
-Any interaction that uses drag-and-drop, slider, or map pan must have a single-pointer (click/tap) alternative. Drag is not a safe assumption — users with motor disabilities cannot rely on it.
+Any interaction that uses drag-and-drop, slider, or map pan must have a single-pointer (click/tap) alternative. Drag is not a safe assumption  -  users with motor disabilities cannot rely on it.
 
 ```html
 <!-- Sortable list: provide up/down buttons alongside drag handles -->
@@ -129,13 +129,13 @@ Interactive targets must be at least **24×24 CSS pixels**, or have spacing such
 Best practice: 44×44px (Apple HIG), 48×48px (Material Design).
 
 ```css
-/* Minimum compliant — 24×24px */
+/* Minimum compliant  -  24×24px */
 .icon-btn {
   min-width: 24px;
   min-height: 24px;
 }
 
-/* Best practice — 44×44px tap target */
+/* Best practice  -  44×44px tap target */
 .icon-btn {
   min-width: 44px;
   min-height: 44px;
@@ -149,14 +149,14 @@ Best practice: 44×44px (Apple HIG), 48×48px (Material Design).
 
 Login and signup flows cannot rely solely on a cognitive test (e.g. image CAPTCHA with no alternative). Acceptable alternatives: passkeys, magic link via email, CAPTCHA with an audio alternative, or copy-paste support in the password field.
 
-Do not block clipboard paste in password fields — this breaks password managers and fails this criterion.
+Do not block clipboard paste in password fields  -  this breaks password managers and fails this criterion.
 
 ### 3.3.7 Redundant Entry (AA)
 
 Multi-step forms must not ask for the same information twice unless it is essential to re-enter. Auto-populate or display previously entered data.
 
 ```html
-<!-- Step 2: shipping address — if billing address was entered in step 1 -->
+<!-- Step 2: shipping address  -  if billing address was entered in step 1 -->
 <label>
   <input type="checkbox" id="same-as-billing" />
   Same as billing address
@@ -167,7 +167,7 @@ Multi-step forms must not ask for the same information twice unless it is essent
 
 If a help mechanism (chat widget, phone number, help link, contact form) appears on more than one page, it must appear in the same relative location on every page.
 
-### 4.1.1 Parsing — Removed in WCAG 2.2
+### 4.1.1 Parsing  -  Removed in WCAG 2.2
 
 WCAG 2.2 removed criterion 4.1.1 Parsing. Modern browsers reliably handle malformed HTML; it no longer represents an accessibility barrier. Automated tools that still report 4.1.1 violations are reporting against a deprecated criterion. Remove it from test baselines if you're targeting WCAG 2.2.
 
@@ -175,7 +175,7 @@ WCAG 2.2 removed criterion 4.1.1 Parsing. Modern browsers reliably handle malfor
 
 ## Semantic HTML
 
-Semantic HTML is the highest-value accessibility improvement — it is free, requires no ARIA, and works with all assistive technologies.
+Semantic HTML is the highest-value accessibility improvement  -  it is free, requires no ARIA, and works with all assistive technologies.
 
 ### Page structure
 
@@ -188,7 +188,7 @@ Semantic HTML is the highest-value accessibility improvement — it is free, req
   <header>
     <nav aria-label="Main">...</nav>
   </header>
-  <main>          <!-- One <main> per page — screen readers jump here -->
+  <main>          <!-- One <main> per page  -  screen readers jump here -->
     <h1>Page Heading</h1>
     <section aria-labelledby="section-heading">
       <h2 id="section-heading">Section Title</h2>
@@ -199,7 +199,7 @@ Semantic HTML is the highest-value accessibility improvement — it is free, req
 </body>
 ```
 
-For inline content in a different language, add the `lang` attribute on the element — screen readers use this to switch pronunciation:
+For inline content in a different language, add the `lang` attribute on the element  -  screen readers use this to switch pronunciation:
 
 ```html
 <p>The French say <span lang="fr">bonjour</span> as a greeting.</p>
@@ -207,7 +207,7 @@ For inline content in a different language, add the `lang` attribute on the elem
 
 ### Use the right element
 
-Native HTML elements carry built-in keyboard support, roles, and states. Prefer them over custom implementations. Use `<button>` for anything that triggers an action, `<a href>` for navigation — never a `<div onclick>`.
+Native HTML elements carry built-in keyboard support, roles, and states. Prefer them over custom implementations. Use `<button>` for anything that triggers an action, `<a href>` for navigation  -  never a `<div onclick>`.
 
 One `<h1>` per page; don't skip heading levels. Use headings to convey document structure, not visual size.
 
@@ -219,7 +219,7 @@ All interactive elements must be reachable and operable with a keyboard alone. U
 
 ### Skip navigation link
 
-Provide a "skip to main content" link as the first focusable element — lets keyboard users bypass repeated navigation:
+Provide a "skip to main content" link as the first focusable element  -  lets keyboard users bypass repeated navigation:
 
 ```html
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -240,7 +240,7 @@ Provide a "skip to main content" link as the first focusable element — lets ke
 
 ### Focus order and tabindex
 
-Focus must follow a logical order — top-to-bottom, left-to-right, matching visual layout. Never use `tabindex` values greater than 0; they override the natural tab order and are nearly impossible to maintain.
+Focus must follow a logical order  -  top-to-bottom, left-to-right, matching visual layout. Never use `tabindex` values greater than 0; they override the natural tab order and are nearly impossible to maintain.
 
 ```html
 <!-- Correct: tabindex="0" adds non-interactive elements to tab order -->
@@ -283,7 +283,7 @@ Use `aria-label` when there is no visible text label:
 <nav aria-label="Breadcrumb">...</nav>
 ```
 
-`aria-label` text must match or begin with the visible button text (WCAG 2.5.3 Label in Name) — otherwise voice control users who say "click Close" cannot activate it.
+`aria-label` text must match or begin with the visible button text (WCAG 2.5.3 Label in Name)  -  otherwise voice control users who say "click Close" cannot activate it.
 
 Use `aria-labelledby` to reference existing visible text, which avoids duplication:
 
@@ -295,7 +295,7 @@ Use `aria-labelledby` to reference existing visible text, which avoids duplicati
 
 ### aria-describedby
 
-Points to supplementary description — announced after the element's name and role:
+Points to supplementary description  -  announced after the element's name and role:
 
 ```html
 <input type="password" id="pw" aria-describedby="pw-hint" />
@@ -313,7 +313,7 @@ Toggle between `"true"` and `"false"` as the element opens and closes:
 
 ### aria-hidden
 
-Hides decorative elements from screen readers. Never apply to focusable elements — a hidden-but-focusable element creates an invisible, unannounced interactive target:
+Hides decorative elements from screen readers. Never apply to focusable elements  -  a hidden-but-focusable element creates an invisible, unannounced interactive target:
 
 ```html
 <span aria-hidden="true">→</span>  <!-- Decorative arrow -->
@@ -321,13 +321,13 @@ Hides decorative elements from screen readers. Never apply to focusable elements
 
 ### aria-live
 
-Announces dynamic content updates. Use `polite` for the vast majority of cases — it waits until the screen reader finishes the current sentence before reading the update. Reserve `assertive` for genuine, time-critical errors that require interrupting the user immediately:
+Announces dynamic content updates. Use `polite` for the vast majority of cases  -  it waits until the screen reader finishes the current sentence before reading the update. Reserve `assertive` for genuine, time-critical errors that require interrupting the user immediately:
 
 ```html
 <!-- Polite: search results count, cart updates, status messages -->
 <div aria-live="polite" aria-atomic="true" id="status"></div>
 
-<!-- Assertive: session timeout warnings, payment failures — use sparingly -->
+<!-- Assertive: session timeout warnings, payment failures  -  use sparingly -->
 <div aria-live="assertive" id="critical-error"></div>
 ```
 
@@ -361,7 +361,7 @@ Every `<img>` must have an `alt` attribute:
 <!-- Functional (inside a link or button): describe the action -->
 <a href="/home"><img src="logo.svg" alt="Go to homepage" /></a>
 
-<!-- Never omit alt — screen readers fall back to the filename -->
+<!-- Never omit alt  -  screen readers fall back to the filename -->
 <img src="hero-image-v2-final.jpg" />  <!-- Wrong -->
 ```
 
@@ -396,7 +396,7 @@ Forms are one of the most common accessibility failure points.
 
 ### Labels
 
-Every input needs a visible, associated label. Never use `placeholder` as a label — it disappears on input and typically fails contrast requirements:
+Every input needs a visible, associated label. Never use `placeholder` as a label  -  it disappears on input and typically fails contrast requirements:
 
 ```html
 <!-- Explicit association via for/id -->
@@ -410,7 +410,7 @@ Every input needs a visible, associated label. Never use `placeholder` as a labe
 </label>
 ```
 
-### autocomplete tokens (WCAG 1.3.5 — Identify Input Purpose)
+### autocomplete tokens (WCAG 1.3.5  -  Identify Input Purpose)
 
 Add `autocomplete` tokens to personal data fields. This enables password managers, browser autofill, and assistive technology for users with cognitive disabilities:
 
@@ -425,7 +425,7 @@ Add `autocomplete` tokens to personal data fields. This enables password manager
 
 ### Required fields
 
-For native `<input>` elements, the `required` attribute is sufficient — it is announced by screen readers and triggers native validation. Add `aria-required="true"` only for custom components that don't use native form elements:
+For native `<input>` elements, the `required` attribute is sufficient  -  it is announced by screen readers and triggers native validation. Add `aria-required="true"` only for custom components that don't use native form elements:
 
 ```html
 <!-- Native input: required alone is sufficient -->
@@ -449,7 +449,7 @@ Link errors to their input using `aria-describedby`. Set `aria-invalid="true"` w
 
 ### Fieldsets for grouped inputs
 
-Group related inputs (radio buttons, checkboxes) with `<fieldset>` and `<legend>` — the legend is announced before each option, providing essential context:
+Group related inputs (radio buttons, checkboxes) with `<fieldset>` and `<legend>`  -  the legend is announced before each option, providing essential context:
 
 ```html
 <fieldset>
@@ -496,9 +496,9 @@ Interactive targets must be at least 24×24 CSS pixels. Best practice is 44×44p
 
 Tooltips, sub-menus, and dropdowns that appear on hover or focus must meet three conditions:
 
-1. **Dismissable** — the user can dismiss the tooltip without moving pointer or focus (Escape key closes it)
-2. **Hoverable** — the mouse can move from the trigger into the tooltip without it disappearing
-3. **Persistent** — the tooltip stays visible until the user dismisses it, moves focus, or removes the pointer
+1. **Dismissable**  -  the user can dismiss the tooltip without moving pointer or focus (Escape key closes it)
+2. **Hoverable**  -  the mouse can move from the trigger into the tooltip without it disappearing
+3. **Persistent**  -  the tooltip stays visible until the user dismisses it, moves focus, or removes the pointer
 
 ```css
 /* Wrong: tooltip disappears when pointer leaves trigger */
@@ -511,13 +511,13 @@ Tooltips, sub-menus, and dropdowns that appear on hover or focus must meet three
 }
 ```
 
-Also expose tooltip content via keyboard/focus — not hover alone.
+Also expose tooltip content via keyboard/focus  -  not hover alone.
 
 ---
 
 ## Color & Contrast
 
-Color alone must never be the only way to convey information — always pair color with text, icons, or patterns.
+Color alone must never be the only way to convey information  -  always pair color with text, icons, or patterns.
 
 ### Contrast ratios (WCAG 2.2 AA)
 
@@ -541,7 +541,7 @@ Color alone must never be the only way to convey information — always pair col
 
 - [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
 - [Colour Contrast Analyser](https://www.tpgi.com/color-contrast-checker/) (desktop, eyedropper tool)
-- Chrome/Firefox DevTools color picker — shows contrast ratio inline
+- Chrome/Firefox DevTools color picker  -  shows contrast ratio inline
 
 ---
 
@@ -563,7 +563,7 @@ Never remove focus outlines without a replacement. WCAG 2.4.11 (new in 2.2) requ
 }
 ```
 
-Use `:focus-visible` rather than `:focus` — it shows the indicator for keyboard users but suppresses it for mouse clicks, matching user expectations.
+Use `:focus-visible` rather than `:focus`  -  it shows the indicator for keyboard users but suppresses it for mouse clicks, matching user expectations.
 
 ### Dialogs and modals
 
@@ -590,7 +590,7 @@ function closeDialog() {
 When content updates dynamically (search results, filtered lists, notifications), announce it or move focus:
 
 ```javascript
-// Option A: announce via live region (no focus move — least disruptive)
+// Option A: announce via live region (no focus move  -  least disruptive)
 statusEl.textContent = `${results.length} results found.`;  // aria-live="polite" on statusEl
 
 // Option B: move focus to the new content region
@@ -626,18 +626,18 @@ Provide pause/stop controls for any auto-playing animation or carousel. Do not a
 
 ## Testing
 
-No single tool catches everything. Use this order — each layer catches what the previous misses.
+No single tool catches everything. Use this order  -  each layer catches what the previous misses.
 
 ### 1. Automated scan
 
-Run first — fast and catches obvious violations. Automated tools catch approximately 30–40% of WCAG issues.
+Run first  -  fast and catches obvious violations. Automated tools catch approximately 30 - 40% of WCAG issues.
 
-- **axe DevTools** (browser extension) — WCAG violations, ARIA errors
-- **Lighthouse** (Chrome DevTools > Lighthouse tab) — accessibility score, summary of issues
-- **WAVE** (browser extension) — visual overlay showing errors, warnings, and structural info
-- **IBM Equal Access** (browser extension) — WCAG 2.2 coverage
+- **axe DevTools** (browser extension)  -  WCAG violations, ARIA errors
+- **Lighthouse** (Chrome DevTools > Lighthouse tab)  -  accessibility score, summary of issues
+- **WAVE** (browser extension)  -  visual overlay showing errors, warnings, and structural info
+- **IBM Equal Access** (browser extension)  -  WCAG 2.2 coverage
 
-**Accessibility tree inspection:** Chrome DevTools > Elements panel > Accessibility tab shows the computed accessible name, role, and state for any element. Firefox has a dedicated Accessibility Inspector panel. Use these to debug unexpected announcements — more diagnostic than running axe alone.
+**Accessibility tree inspection:** Chrome DevTools > Elements panel > Accessibility tab shows the computed accessible name, role, and state for any element. Firefox has a dedicated Accessibility Inspector panel. Use these to debug unexpected announcements  -  more diagnostic than running axe alone.
 
 ### 2. Keyboard-only
 
@@ -654,7 +654,7 @@ Updated pairings (as of 2026):
 | Screen reader | Platform | Browser | Free? |
 |---|---|---|---|
 | NVDA | Windows | Chrome (primary), Firefox | Yes |
-| JAWS | Windows | Chrome | No — most common enterprise SR |
+| JAWS | Windows | Chrome | No  -  most common enterprise SR |
 | Narrator | Windows | Edge | Yes (built-in) |
 | VoiceOver | macOS / iOS | Safari | Yes (built-in) |
 | TalkBack | Android | Chrome | Yes (built-in) |
@@ -663,8 +663,8 @@ Basic test: navigate by headings (H in NVDA/JAWS), by landmarks (D), and by form
 
 ### 4. Zoom
 
-- 200% — no content should overflow or become inaccessible
-- 400% — content must reflow to a single column without horizontal scrolling (WCAG 1.4.10 Reflow)
+- 200%  -  no content should overflow or become inaccessible
+- 400%  -  content must reflow to a single column without horizontal scrolling (WCAG 1.4.10 Reflow)
 
 ### 5. Text spacing
 
@@ -674,7 +674,7 @@ Bookmarklet source: [stevefaulkner's text spacing bookmarklet](https://www.html5
 
 ### 6. Color and vision
 
-- Grayscale filter: Chrome DevTools > Rendering > Emulate vision deficiencies > Achromatopsia — verify no information is lost
+- Grayscale filter: Chrome DevTools > Rendering > Emulate vision deficiencies > Achromatopsia  -  verify no information is lost
 - Also test: Deuteranopia (red/green), Protanopia
 - Verify no information relies on color alone
 
@@ -684,16 +684,16 @@ Bookmarklet source: [stevefaulkner's text spacing bookmarklet](https://www.html5
 
 Flag these actively when encountered in code review or generation:
 
-- **Accessibility overlay scripts as sole compliance strategy** — overlays do not achieve WCAG conformance and have been challenged in ADA litigation. Mention this explicitly.
-- **`aria-label` that doesn't match visible button text** — breaks voice control (WCAG 2.5.3). The label must match or begin with the visible text so "click Submit" works.
-- **`aria-hidden="true"` on focusable elements** — creates a keyboard trap: the element receives focus but is invisible to screen readers.
-- **`tabindex` values greater than 0** — overrides the natural tab order and becomes unmanageable.
-- **Hover-only content with no keyboard/focus equivalent** — fails WCAG 2.1.1 and 1.4.13.
-- **Infinite scroll with no keyboard access to footer content** — users cannot reach content below the scroll boundary. Provide a "Load more" button or pagination.
-- **Custom date pickers with no keyboard support** — implement full arrow-key navigation or use a native `<input type="date">`.
-- **`aria-required="true"` on native `<input required>`** — redundant in modern browsers; keep only `required`.
-- **Placeholder text as the only label** — disappears when the user types; fails 1.3.1 and 2.4.6.
-- **Blocking clipboard paste in password fields** — breaks password managers and fails WCAG 3.3.8.
+- **Accessibility overlay scripts as sole compliance strategy**  -  overlays do not achieve WCAG conformance and have been challenged in ADA litigation. Mention this explicitly.
+- **`aria-label` that doesn't match visible button text**  -  breaks voice control (WCAG 2.5.3). The label must match or begin with the visible text so "click Submit" works.
+- **`aria-hidden="true"` on focusable elements**  -  creates a keyboard trap: the element receives focus but is invisible to screen readers.
+- **`tabindex` values greater than 0**  -  overrides the natural tab order and becomes unmanageable.
+- **Hover-only content with no keyboard/focus equivalent**  -  fails WCAG 2.1.1 and 1.4.13.
+- **Infinite scroll with no keyboard access to footer content**  -  users cannot reach content below the scroll boundary. Provide a "Load more" button or pagination.
+- **Custom date pickers with no keyboard support**  -  implement full arrow-key navigation or use a native `<input type="date">`.
+- **`aria-required="true"` on native `<input required>`**  -  redundant in modern browsers; keep only `required`.
+- **Placeholder text as the only label**  -  disappears when the user types; fails 1.3.1 and 2.4.6.
+- **Blocking clipboard paste in password fields**  -  breaks password managers and fails WCAG 3.3.8.
 
 ---
 
@@ -723,7 +723,7 @@ Flag these actively when encountered in code review or generation:
 - [ ] All product images have descriptive alt text
 - [ ] Form fields have `autocomplete` tokens (name, email, address, card details)
 - [ ] Multi-step checkout does not ask for repeated information (WCAG 3.3.7)
-- [ ] No CAPTCHA-only authentication — provide an accessible alternative (WCAG 3.3.8)
+- [ ] No CAPTCHA-only authentication  -  provide an accessible alternative (WCAG 3.3.8)
 - [ ] Touch targets on product cards and CTAs are at least 44×44px
 - [ ] Error recovery: clear error messages linked to specific fields
 

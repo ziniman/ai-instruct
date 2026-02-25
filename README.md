@@ -4,7 +4,7 @@
 
 **Practical markdown guides for developers building websites with AI coding assistants.**
 
-**Each guide asks plain-English questions first — so your AI generates code for your project, not generic boilerplate.**
+**Each guide asks plain-English questions first  -  so your AI generates code for your project, not generic boilerplate.**
 
 [![npm version](https://img.shields.io/npm/v/ai-instruct?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/ai-instruct)
 [![npm downloads](https://img.shields.io/npm/dm/ai-instruct?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/ai-instruct)
@@ -23,10 +23,10 @@ The CLI detects your AI tool (Claude Code, Cursor, Copilot, Windsurf), lets you 
 
 | Guide | File | Description |
 |-------|------|-------------|
-| Deploying a Static SPA on AWS | [aws-spa-deployment-guide.md](./aws-spa-deployment-guide.md) | Deploying a static single-page app (React/Vite) on AWS — Amplify hosting, custom domains, CDK backend with API Gateway + Lambda, SES email, CORS, and environment variables. |
-| Google Analytics 4 Implementation | [google-analytics-guide.md](./google-analytics-guide.md) | Google Analytics 4 (GA4) implementation — installation (gtag.js and GTM), event tracking, user properties, e-commerce, Consent Mode v2, and debugging. |
-| SEO & LLMO Implementation | [seo-llmo-guide.md](./seo-llmo-guide.md) | SEO & LLMO (Large Language Model Optimization) implementation for static sites — meta tags, Open Graph, structured data (JSON-LD), llms.txt, robots.txt for AI crawlers, sitemaps, and validation tools. Based on practices as of early 2026. |
-| Web Accessibility | [web-accessibility-guide.md](./web-accessibility-guide.md) | WCAG 2.2 AA implementation — semantic HTML, keyboard navigation, ARIA, forms, color contrast, focus management, motion, and testing with automated tools and screen readers. |
+| Deploying a Static SPA on AWS | [aws-spa-deployment-guide.md](./aws-spa-deployment-guide.md) | Deploying a static single-page app (React/Vite) on AWS  -  Amplify hosting, custom domains, CDK backend with API Gateway + Lambda, SES email, CORS, and environment variables. |
+| Google Analytics 4 Implementation | [google-analytics-guide.md](./google-analytics-guide.md) | Google Analytics 4 (GA4) implementation  -  installation (gtag.js and GTM), event tracking, user properties, e-commerce, Consent Mode v2, and debugging. |
+| SEO & LLMO Implementation | [seo-llmo-guide.md](./seo-llmo-guide.md) | SEO & LLMO (Large Language Model Optimization) implementation for static sites  -  meta tags, Open Graph, structured data (JSON-LD), llms.txt, robots.txt for AI crawlers, sitemaps, and validation tools. Based on practices as of early 2026. |
+| Web Accessibility | [web-accessibility-guide.md](./web-accessibility-guide.md) | WCAG 2.2 AA implementation  -  semantic HTML, keyboard navigation, ARIA, forms, color contrast, focus management, motion, and testing with automated tools and screen readers. |
 
 ## How to Use
 
@@ -46,7 +46,7 @@ Copy a guide's contents (or a relevant section) and paste it directly into your 
 
 ### 2. Add to your project's AI instructions file (recommended)
 
-Most AI coding assistants read a persistent instructions file from your project root. Download the relevant guide(s) into your project and reference them from your instructions file — the assistant will have the context automatically on every session.
+Most AI coding assistants read a persistent instructions file from your project root. Download the relevant guide(s) into your project and reference them from your instructions file  -  the assistant will have the context automatically on every session.
 
 | Assistant | Instructions file | How to reference a guide |
 |-----------|------------------|--------------------------|
@@ -58,7 +58,7 @@ Most AI coding assistants read a persistent instructions file from your project 
 
 **Best practices for instruction files:**
 
-- Keep guides as separate files rather than pasting everything into one giant instructions file — it's easier to update individual guides and keeps the instructions file readable
+- Keep guides as separate files rather than pasting everything into one giant instructions file  -  it's easier to update individual guides and keeps the instructions file readable
 - Only include guides relevant to your project to avoid unnecessary context
 - Put guides in a dedicated folder (e.g. `ai-docs/`) and reference them from your instructions file
 - When a guide is updated in this repo, re-download it to get the latest practices
@@ -75,18 +75,18 @@ Some assistants support a global (user-level) instructions file that applies to 
 
 ## Contributing
 
-Pull requests are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guide format and writing guidelines. You can:
+Pull requests are welcome  -  see [CONTRIBUTING.md](./CONTRIBUTING.md) for guide format and writing guidelines. You can:
 
 > Building your own AI instruction guides for a different domain? [Use this repo as a template](https://github.com/ziniman/ai-instruct/generate) to get the folder structure, CONTRIBUTING guidelines, and CLI wired up from the start. (Requires the repo owner to enable **Template repository** in GitHub Settings → General.)
 
-- **Add a new guide** — create a focused `.md` file on a specific topic (deployment, accessibility, performance, auth, etc.)
-- **Update an existing guide** — fix outdated information, add missing patterns, or improve clarity
-- **Fix errors** — typos, broken examples, wrong commands
+- **Add a new guide**  -  create a focused `.md` file on a specific topic (deployment, accessibility, performance, auth, etc.)
+- **Update an existing guide**  -  fix outdated information, add missing patterns, or improve clarity
+- **Fix errors**  -  typos, broken examples, wrong commands
 
 ### Guidelines for new guides
 
 - Keep guides focused on a single topic
-- Start with a "Before You Start" section — plain-English questions that let an AI assistant tailor its output (see [CONTRIBUTING.md](./CONTRIBUTING.md))
+- Start with a "Before You Start" section  -  plain-English questions that let an AI assistant tailor its output (see [CONTRIBUTING.md](./CONTRIBUTING.md))
 - Write for an audience that may not have deep coding experience
 - Include working code snippets and real commands
 - Note the date/context for time-sensitive information (e.g. "as of 2026")
@@ -94,4 +94,4 @@ Pull requests are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guide
 
 ## License
 
-Apache 2.0 — see [LICENSE](./LICENSE). Free to use, modify, and redistribute.
+Apache 2.0  -  see [LICENSE](./LICENSE). Free to use, modify, and redistribute.

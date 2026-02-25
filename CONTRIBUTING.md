@@ -20,14 +20,14 @@ The metadata line tells readers (and AI models) the scope and freshness of the g
 
 ### Section 0: Before You Start
 
-Every guide must include a "Section 0: Before You Start" immediately after the header block (before the table of contents). This is the core of the tailored approach — it replaces generic boilerplate with targeted questions that let an AI assistant skip irrelevant sections and fill in the right details.
+Every guide must include a "Section 0: Before You Start" immediately after the header block (before the table of contents). This is the core of the tailored approach  -  it replaces generic boilerplate with targeted questions that let an AI assistant skip irrelevant sections and fill in the right details.
 
 **Format:**
 
 ```markdown
 ## Section 0: Before You Start
 
-Answer these questions before generating any code. Each has a default — confirm or change it.
+Answer these questions before generating any code. Each has a default  -  confirm or change it.
 
 **Q: [Plain-English question a non-expert can answer]**
 Default: [sensible default based on what the model can detect from the project, or best practice]
@@ -35,19 +35,19 @@ Default: [sensible default based on what the model can detect from the project, 
 **Q: ...**
 Default: ...
 
-> **AI assistant:** [One instruction telling the model what to do with these answers — e.g. which sections to skip, what to auto-detect from the project.]
+> **AI assistant:** [One instruction telling the model what to do with these answers  -  e.g. which sections to skip, what to auto-detect from the project.]
 ```
 
 **Rules for questions:**
-- Write in plain English — assume the reader has no domain expertise
+- Write in plain English  -  assume the reader has no domain expertise
 - Keep each question to one sentence
 - Always include a default. The default should be either:
   - Something the AI can detect from the project (e.g. "check `package.json` for a SPA framework")
   - A best-practice baseline (e.g. "WCAG 2.2 AA")
-- 4–6 questions per guide is the right range — fewer if the topic is narrow, no more than 6
+- 4 - 6 questions per guide is the right range  -  fewer if the topic is narrow, no more than 6
 
 **AI assistant instruction line:**
-End the section with a `> **AI assistant:**` blockquote. This tells the model concretely what to do with the answers — which sections to skip, what to generate only if confirmed, what to auto-detect. Keep it to 2–3 sentences.
+End the section with a `> **AI assistant:**` blockquote. This tells the model concretely what to do with the answers  -  which sections to skip, what to generate only if confirmed, what to auto-detect. Keep it to 2 - 3 sentences.
 
 ### Table of contents
 
@@ -62,7 +62,7 @@ Include a table of contents for any guide longer than ~150 lines. Use anchor lin
 
 ### Section structure
 
-- One concept per section — don't mix unrelated topics under one heading
+- One concept per section  -  don't mix unrelated topics under one heading
 - Keep sections self-contained so they can be quoted or used in isolation
 - Use `###` for subsections, `####` sparingly and only when genuinely needed
 
@@ -83,7 +83,7 @@ Include a table of contents for any guide longer than ~150 lines. Use anchor lin
 Add a canonical tag to every page.
 
 <!-- better -->
-Add a canonical tag to every page — it prevents duplicate content penalties
+Add a canonical tag to every page  -  it prevents duplicate content penalties
 when the same page is accessible at multiple URLs.
 ```
 
@@ -97,10 +97,10 @@ Use JSON-LD (JavaScript Object Notation for Linked Data) for structured data.
 
 - Include working code, not pseudocode
 - Use placeholder values that are obviously placeholders: `yourdomain.com`, `YOUR_APP_ID`, `your-region`
-- Add a comment when a line needs explanation — keep comments brief
+- Add a comment when a line needs explanation  -  keep comments brief
 
 ```typescript
-// Use HTTP API (v2) — cheaper and simpler than REST API
+// Use HTTP API (v2)  -  cheaper and simpler than REST API
 const httpApi = new apigwv2.HttpApi(this, 'HttpApi', { ... });
 ```
 
@@ -110,7 +110,7 @@ Flag anything that may become outdated:
 
 ```markdown
 Known AI crawler user-agents (as of 2026):
-- `GPTBot` — OpenAI
+- `GPTBot`  -  OpenAI
 ```
 
 Update the `Updated:` date in the metadata block whenever time-sensitive content changes.
@@ -128,8 +128,8 @@ AWS_SPA_GUIDE.md            ✗  (wrong case)
 
 ## Submitting a pull request
 
-1. **New guide** — create a new `.md` file following this format and add a row to the table in `README.md` with the guide name, filename, and description
-2. **Update existing guide** — update the `Updated:` date in the metadata block
-3. **Fix** — no extra steps needed beyond the fix itself
+1. **New guide**  -  create a new `.md` file following this format and add a row to the table in `README.md` with the guide name, filename, and description
+2. **Update existing guide**  -  update the `Updated:` date in the metadata block
+3. **Fix**  -  no extra steps needed beyond the fix itself
 
 Keep PRs focused: one guide or one fix per PR. This makes review faster and keeps the git history clean.

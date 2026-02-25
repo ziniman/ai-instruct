@@ -2,17 +2,17 @@
 
 > Applies to: Any website or web app | Updated: February 2026
 
-A practical guide for implementing Search Engine Optimization (SEO) and Large Language Model Optimization (LLMO) — making your site discoverable by both search engines and AI tools.
+A practical guide for implementing Search Engine Optimization (SEO) and Large Language Model Optimization (LLMO)  -  making your site discoverable by both search engines and AI tools.
 
 ---
 
 ## Section 0: Before You Start
 
-Answer these questions before generating any code. Each has a default — use it if the user hasn't said otherwise.
+Answer these questions before generating any code. Each has a default  -  use it if the user hasn't said otherwise.
 
 **Q: What kind of site is this?**
 (blog, online shop, company/marketing site, web app, documentation)
-Default: company/marketing site — drives which schema types to prioritize.
+Default: company/marketing site  -  drives which schema types to prioritize.
 
 **Q: How is the site built?**
 (plain HTML, React/Vue/Angular SPA, Next.js/Astro/Nuxt with server rendering, WordPress/CMS)
@@ -20,14 +20,14 @@ Default: if a framework config file (e.g. `vite.config.*`, `next.config.*`, `ast
 
 **Q: Where are your visitors?**
 (one country, multiple countries/languages, worldwide)
-Default: worldwide, single language — skip hreflang unless multiple languages are confirmed.
+Default: worldwide, single language  -  skip hreflang unless multiple languages are confirmed.
 
 **Q: What's your main goal with SEO?**
 (show up in Google search, get cited by AI tools like ChatGPT/Perplexity, both, social sharing)
 Default: both Google and AI tools.
 
 **Q: Do you already have a robots.txt, sitemap, or structured data set up?**
-Default: no — but check for existing files before creating new ones, and merge rather than overwrite.
+Default: no  -  but check for existing files before creating new ones, and merge rather than overwrite.
 
 > **AI assistant:** Read the user's answers (or use the defaults above) before generating any code. Skip sections that don't apply to their setup.
 
@@ -119,7 +119,7 @@ Use on any page with a Q&A section. FAQPage triggers Google rich results (expand
 }
 ```
 
-Write answers that make sense in isolation — AI tools extract and quote them without the surrounding page.
+Write answers that make sense in isolation  -  AI tools extract and quote them without the surrounding page.
 
 ### Service and Article schema
 
@@ -164,7 +164,7 @@ Applies when: goal includes AI tool visibility.
 ```markdown
 # Site Name
 
-> One-paragraph summary of what the site is and who it's for. Be specific — this is the context an AI tool will use when answering questions about your brand.
+> One-paragraph summary of what the site is and who it's for. Be specific  -  this is the context an AI tool will use when answering questions about your brand.
 
 ## Main Content
 
@@ -182,7 +182,7 @@ Applies when: goal includes AI tool visibility.
 
 Rules:
 - H1 (site name) is required
-- Blockquote summary immediately after H1 is recommended — it's the first thing read
+- Blockquote summary immediately after H1 is recommended  -  it's the first thing read
 - H2 sections organize links by category
 - `## Optional` marks resources that can be omitted when context window is limited
 - Links follow the pattern: `[Name](URL): Description`
@@ -197,7 +197,7 @@ For sites with substantial content, add `llms-full.txt` alongside `llms.txt`. Th
 - [Full text version](https://yourdomain.com/llms-full.txt): Complete content for larger context windows.
 ```
 
-Verify: `curl -s https://yourdomain.com/llms.txt` — confirm the file is accessible and the H1 and blockquote render correctly.
+Verify: `curl -s https://yourdomain.com/llms.txt`  -  confirm the file is accessible and the H1 and blockquote render correctly.
 
 ---
 
@@ -231,7 +231,7 @@ Allow: /
 User-agent: ClaudeBot
 Allow: /
 
-# AI training crawlers (these feed static training datasets — blocking does not affect live AI search)
+# AI training crawlers (these feed static training datasets  -  blocking does not affect live AI search)
 User-agent: CCBot
 Disallow: /
 
@@ -257,24 +257,24 @@ Sitemap: https://yourdomain.com/sitemap.xml
 
 These are different things with different implications for blocking:
 
-- **Retrieval crawlers** (`GPTBot` when used by ChatGPT Search, `PerplexityBot`, `ChatGPT-User`) fetch your content at query time for AI search products. Blocking these removes your site from those products' answers — freshness matters here.
+- **Retrieval crawlers** (`GPTBot` when used by ChatGPT Search, `PerplexityBot`, `ChatGPT-User`) fetch your content at query time for AI search products. Blocking these removes your site from those products' answers  -  freshness matters here.
 - **Training crawlers** (`CCBot`, `Bytespider`) collect data for static training datasets with a fixed cutoff date. Blocking them does not affect whether AI tools cite you in live searches.
 
 `Google-Extended` covers Google's AI features (Gemini, AI Overviews) and is separate from `Googlebot`. Block one without affecting the other.
 
 Known AI crawler user-agents (as of 2026):
-- `GPTBot` — OpenAI training + ChatGPT Search retrieval
-- `ChatGPT-User` — ChatGPT browsing/retrieval
-- `ClaudeBot` — Anthropic
-- `PerplexityBot` — Perplexity AI (retrieval)
-- `Google-Extended` — Google AI features / Gemini
-- `Applebot-Extended` — Apple Intelligence
-- `Meta-ExternalAgent` — Meta AI
-- `Amazonbot` — Amazon Alexa/AI
-- `CCBot` — Common Crawl (used by many training pipelines)
-- `Bytespider` — ByteDance/TikTok
+- `GPTBot`  -  OpenAI training + ChatGPT Search retrieval
+- `ChatGPT-User`  -  ChatGPT browsing/retrieval
+- `ClaudeBot`  -  Anthropic
+- `PerplexityBot`  -  Perplexity AI (retrieval)
+- `Google-Extended`  -  Google AI features / Gemini
+- `Applebot-Extended`  -  Apple Intelligence
+- `Meta-ExternalAgent`  -  Meta AI
+- `Amazonbot`  -  Amazon Alexa/AI
+- `CCBot`  -  Common Crawl (used by many training pipelines)
+- `Bytespider`  -  ByteDance/TikTok
 
-Verify: `curl -s https://yourdomain.com/robots.txt` — confirm the `Sitemap:` line and your intended Allow/Disallow rules are present.
+Verify: `curl -s https://yourdomain.com/robots.txt`  -  confirm the `Sitemap:` line and your intended Allow/Disallow rules are present.
 
 ---
 
@@ -300,7 +300,7 @@ Applies when: site has more than one page and you want search engine indexing.
 </urlset>
 ```
 
-`<changefreq>` and `<priority>` are largely ignored by Google — omit them to keep the sitemap clean. `<lastmod>` is used and should reflect when the page content actually changed.
+`<changefreq>` and `<priority>` are largely ignored by Google  -  omit them to keep the sitemap clean. `<lastmod>` is used and should reflect when the page content actually changed.
 
 After deploying, submit the sitemap URL in Google Search Console (Index > Sitemaps). For Bing and Yandex, use the **IndexNow** protocol for instant URL submission rather than waiting for crawl discovery:
 
@@ -328,7 +328,7 @@ Verify: Submit sitemap in Google Search Console and check for errors under Index
 
 Applies when: goal includes social sharing or Google click-through rates.
 
-Every page needs these — they're table stakes, not differentiators:
+Every page needs these  -  they're table stakes, not differentiators:
 
 ```html
 <title>Page Title - Brand Name</title>
@@ -353,7 +353,7 @@ The non-obvious parts of Open Graph tags:
 <meta property="og:image:height" content="630" />
 ```
 
-OG image: 1200x630px. Include `og:image:width` and `og:image:height` — without them, some platforms fetch the image before rendering the preview card, adding latency.
+OG image: 1200x630px. Include `og:image:width` and `og:image:height`  -  without them, some platforms fetch the image before rendering the preview card, adding latency.
 
 ### Twitter/X Card
 
@@ -362,7 +362,7 @@ OG image: 1200x630px. Include `og:image:width` and `og:image:height` — without
 <meta name="twitter:site" content="@yourhandle" />
 ```
 
-Twitter inherits `og:title`, `og:description`, and `og:image` if the corresponding `twitter:*` tags are absent — you don't need to duplicate them. The Twitter Card Validator at `cards-dev.twitter.com` is deprecated and unreliable; use [opengraph.xyz](https://www.opengraph.xyz/) or the LinkedIn Post Inspector for testing OG previews.
+Twitter inherits `og:title`, `og:description`, and `og:image` if the corresponding `twitter:*` tags are absent  -  you don't need to duplicate them. The Twitter Card Validator at `cards-dev.twitter.com` is deprecated and unreliable; use [opengraph.xyz](https://www.opengraph.xyz/) or the LinkedIn Post Inspector for testing OG previews.
 
 Verify: [opengraph.xyz](https://www.opengraph.xyz/) for OG/Twitter preview, [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) for LinkedIn.
 
@@ -378,7 +378,7 @@ Core Web Vitals are Google ranking signals measured in the field (real user data
 - **CLS (Cumulative Layout Shift):** Visual instability from elements moving after initial render. Target: under 0.1. Common causes: images without explicit `width`/`height`, ads injecting content, late-loading fonts.
 - **INP (Interaction to Next Paint):** Replaced FID (First Input Delay) in March 2024. Measures the latency of all user interactions throughout the page visit, not just the first. Target: under 200 ms. Common causes in SPAs: heavy JavaScript on the main thread, large React re-renders on input events.
 
-INP is the most impactful change for SPA developers — FID only measured the first interaction, making it easy to pass while the app remained sluggish. INP catches ongoing interaction delays.
+INP is the most impactful change for SPA developers  -  FID only measured the first interaction, making it easy to pass while the app remained sluggish. INP catches ongoing interaction delays.
 
 Check your scores: [PageSpeed Insights](https://pagespeed.web.dev/) (field + lab data) and [Google Search Console](https://search.google.com/search-console/) > Core Web Vitals report (field data only, requires traffic).
 
@@ -390,17 +390,17 @@ Applies when: site is built with React, Vue, Angular, or another client-side-onl
 
 SPAs render content via JavaScript. This creates two distinct problems:
 
-- **AI crawlers** (`GPTBot`, `ClaudeBot`, etc.) generally do not execute JavaScript — they see only the initial HTML shell.
-- **Social crawlers** (LinkedIn, Slack, iMessage) do not execute JavaScript — OG tags must be in the static HTML.
-- **Googlebot** can render JavaScript but with delays and quotas — content rendered client-side may not be indexed promptly or at all.
+- **AI crawlers** (`GPTBot`, `ClaudeBot`, etc.) generally do not execute JavaScript  -  they see only the initial HTML shell.
+- **Social crawlers** (LinkedIn, Slack, iMessage) do not execute JavaScript  -  OG tags must be in the static HTML.
+- **Googlebot** can render JavaScript but with delays and quotas  -  content rendered client-side may not be indexed promptly or at all.
 
 ### Mitigations without SSR
 
 Add these to your `index.html` (they work without JavaScript):
 
-1. **JSON-LD in `<head>`** — AI crawlers and Google parse it without executing JS
-2. **Complete meta tags** — title, description, canonical, OG tags in static HTML
-3. **llms.txt** — gives AI tools your full content as a separate file
+1. **JSON-LD in `<head>`**  -  AI crawlers and Google parse it without executing JS
+2. **Complete meta tags**  -  title, description, canonical, OG tags in static HTML
+3. **llms.txt**  -  gives AI tools your full content as a separate file
 
 For specific routes that need unique meta tags (e.g. blog posts), use **prerendering** at build time. Tools: `vite-plugin-prerender`, `react-snap`.
 
@@ -408,9 +408,9 @@ For specific routes that need unique meta tags (e.g. blog posts), use **prerende
 
 For reliable SEO and LLMO with dynamic content, use a framework that generates static HTML:
 
-- **Astro** — best for content sites; generates static HTML with optional JS hydration
-- **Next.js** with `output: 'export'` or SSR — generates per-route HTML
-- **Nuxt** with `ssr: true` — same for Vue
+- **Astro**  -  best for content sites; generates static HTML with optional JS hydration
+- **Next.js** with `output: 'export'` or SSR  -  generates per-route HTML
+- **Nuxt** with `ssr: true`  -  same for Vue
 
 These generate actual HTML files that all crawlers read without JavaScript.
 
@@ -421,12 +421,12 @@ These generate actual HTML files that all crawlers read without JavaScript.
 ### AWS Amplify
 
 - Files in `public/` (Vite) are copied to `dist/` and served as-is
-- Amplify's SPA rewrite rule (`/<*> -> /index.html` with 404→200) only fires when no matching file exists — `robots.txt`, `sitemap.xml`, and `llms.txt` are served directly without triggering the rewrite
+- Amplify's SPA rewrite rule (`/<*> -> /index.html` with 404→200) only fires when no matching file exists  -  `robots.txt`, `sitemap.xml`, and `llms.txt` are served directly without triggering the rewrite
 - No additional config needed for new static files placed in `public/`
 
 ### CloudFront + S3
 
-Upload static files to the S3 bucket root. Set explicit `Content-Type` metadata on each object — S3 does not infer content type reliably:
+Upload static files to the S3 bucket root. Set explicit `Content-Type` metadata on each object  -  S3 does not infer content type reliably:
 
 | File | Content-Type |
 |------|--------------|
@@ -445,17 +445,17 @@ Files in `public/` (or `static/` in some frameworks) are served automatically wi
 
 ## Validation
 
-Run these checks after deploying. One command or tool per concern — no separate "validation section" needed at the end of a project.
+Run these checks after deploying. One command or tool per concern  -  no separate "validation section" needed at the end of a project.
 
 ### Structured data
 
-- [Google Rich Results Test](https://search.google.com/test/rich-results) — validates JSON-LD and shows which rich result types are eligible
-- [Schema.org Validator](https://validator.schema.org/) — catches schema errors the Rich Results Test doesn't flag
+- [Google Rich Results Test](https://search.google.com/test/rich-results)  -  validates JSON-LD and shows which rich result types are eligible
+- [Schema.org Validator](https://validator.schema.org/)  -  catches schema errors the Rich Results Test doesn't flag
 
 ### Social sharing previews
 
-- [opengraph.xyz](https://www.opengraph.xyz/) — shows OG and Twitter Card previews as they appear on each platform
-- [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) — LinkedIn-specific preview and cache refresh
+- [opengraph.xyz](https://www.opengraph.xyz/)  -  shows OG and Twitter Card previews as they appear on each platform
+- [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/)  -  LinkedIn-specific preview and cache refresh
 
 ### Crawl access
 
@@ -474,10 +474,10 @@ curl -s https://yourdomain.com/ | grep 'application/ld+json'
 
 ### Performance
 
-- [PageSpeed Insights](https://pagespeed.web.dev/) — Core Web Vitals field + lab data per URL
-- Google Search Console > Core Web Vitals — aggregate field data across your site (requires traffic)
+- [PageSpeed Insights](https://pagespeed.web.dev/)  -  Core Web Vitals field + lab data per URL
+- Google Search Console > Core Web Vitals  -  aggregate field data across your site (requires traffic)
 
 ### Indexing
 
-- Google Search Console > Index > Sitemaps — submit and monitor sitemap processing
-- Google Search Console > URL Inspection — check individual page indexing status and last crawl date
+- Google Search Console > Index > Sitemaps  -  submit and monitor sitemap processing
+- Google Search Console > URL Inspection  -  check individual page indexing status and last crawl date
