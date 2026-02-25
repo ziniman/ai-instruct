@@ -113,7 +113,7 @@ ${C}  ╚═╝  ╚═╝╚═╝${R}
     console.log('No AI tool config detected in the current directory.');
     console.log('\nSupported tools:');
     TOOL_CONFIGS.forEach((t, i) => console.log(`  ${i + 1}. ${t.name}  (${t.file})`));
-    console.log(`  ${TOOL_CONFIGS.length + 1}. Skip — download guides only`);
+    console.log(`  ${TOOL_CONFIGS.length + 1}. Skip - download guides only`);
     const ans = await ask(rl, `\nSelect [1-${TOOL_CONFIGS.length + 1}]: `);
     const idx = parseInt(ans) - 1;
     if (idx >= 0 && idx < TOOL_CONFIGS.length) {
