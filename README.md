@@ -10,6 +10,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/ai-instruct?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/ai-instruct)
 [![GitHub stars](https://img.shields.io/github/stars/ziniman/ai-instruct?style=for-the-badge&logo=github&logoColor=white&color=181717)](https://github.com/ziniman/ai-instruct/stargazers)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue?style=for-the-badge)](https://github.com/ziniman/ai-instruct/blob/main/LICENSE)
+[![last commit](https://img.shields.io/github/last-commit/ziniman/ai-instruct?style=for-the-badge&logo=github&logoColor=white&color=181717)](https://github.com/ziniman/ai-instruct/commits/main)
 
 ```sh
 npx ai-instruct init
