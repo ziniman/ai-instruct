@@ -4,6 +4,16 @@ Practical markdown guides for developers building websites with AI coding assist
 
 Each guide opens with a short set of plain-English questions so your AI assistant can tailor the output to your specific project — rather than generating generic boilerplate. You don't need to be an expert to answer them; each question includes a sensible default.
 
+## Quick Start
+
+Run this in your project directory:
+
+```sh
+npx ai-instruct init
+```
+
+The CLI detects your AI tool (Claude Code, Cursor, Copilot, Windsurf), lets you pick which guides to add, downloads them to `ai-docs/`, and adds the right reference lines to your config file automatically.
+
 ## Guides
 
 | Guide | File | Description |
@@ -15,7 +25,15 @@ Each guide opens with a short set of plain-English questions so your AI assistan
 
 ## How to Use
 
-The guides are written to be read by both humans and AI models. There are three main ways to use them:
+The guides are written to be read by both humans and AI models. There are four main ways to use them:
+
+### 0. CLI setup (recommended)
+
+```sh
+npx ai-instruct init
+```
+
+Run in your project root. The CLI handles detection, download, and config file updates automatically.
 
 ### 1. Paste into chat
 
@@ -53,6 +71,8 @@ Some assistants support a global (user-level) instructions file that applies to 
 ## Contributing
 
 Pull requests are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guide format and writing guidelines. You can:
+
+> Building your own AI instruction guides for a different domain? [Use this repo as a template](https://github.com/ziniman/ai-instruct/generate) to get the folder structure, CONTRIBUTING guidelines, and CLI wired up from the start. (Requires the repo owner to enable **Template repository** in GitHub Settings → General.)
 
 - **Add a new guide** — create a focused `.md` file on a specific topic (deployment, accessibility, performance, auth, etc.)
 - **Update an existing guide** — fix outdated information, add missing patterns, or improve clarity

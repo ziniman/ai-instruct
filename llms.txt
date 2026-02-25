@@ -1,0 +1,20 @@
+# AI Instruct
+
+> Practical markdown guides for developers building websites with AI coding assistants.
+
+Each guide opens with plain-English questions so AI assistants can tailor output to the specific project rather than generating generic boilerplate. Covers SEO, AWS deployment, Google Analytics, and web accessibility.
+
+## Guides
+
+- [SEO & LLMO Implementation](https://raw.githubusercontent.com/ziniman/ai-instruct/main/seo-llmo-guide.md): JSON-LD structured data, llms.txt, robots.txt for AI crawlers, sitemaps, Open Graph, Core Web Vitals (INP), IndexNow.
+- [Deploying a Static SPA on AWS](https://raw.githubusercontent.com/ziniman/ai-instruct/main/aws-spa-deployment-guide.md): React/Vite SPA on AWS — Amplify hosting, CDK v2, Lambda, API Gateway HTTP API, SES email, CORS.
+- [Google Analytics 4 Implementation](https://raw.githubusercontent.com/ziniman/ai-instruct/main/google-analytics-guide.md): GA4 setup — gtag.js, GTM, event tracking, e-commerce, Consent Mode v2, single-page apps, BigQuery export.
+- [Web Accessibility](https://raw.githubusercontent.com/ziniman/ai-instruct/main/web-accessibility-guide.md): WCAG 2.2 AA — semantic HTML, keyboard navigation, ARIA, forms, color contrast, focus management, testing.
+
+## Usage
+
+Add guides to your project:
+
+    npx ai-instruct init
+
+Or download and reference them manually from your AI tool's instructions file (CLAUDE.md, .cursorrules, .github/copilot-instructions.md, .windsurfrules).

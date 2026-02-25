@@ -1,0 +1,17 @@
+{
+  "name": "ai-instruct",
+  "version": "1.0.0",
+  "description": "Practical markdown guides for developers building websites with AI coding assistants",
+  "bin": {
+    "ai-instruct": "./bin/init.js"
+  },
+  "keywords": ["ai", "llm", "claude", "cursor", "copilot", "windsurf", "guides", "instructions"],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ziniman/ai-instruct"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
