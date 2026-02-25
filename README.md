@@ -11,6 +11,7 @@ Each guide is a focused, copy-paste-friendly reference you can drop directly int
 | Deploying a Static SPA on AWS | [aws-spa-deployment-guide.md](./aws-spa-deployment-guide.md) | Deploying a static single-page app (React/Vite) on AWS — Amplify hosting, custom domains, CDK backend with API Gateway + Lambda, SES email, CORS, and environment variables. |
 | Google Analytics 4 Implementation | [google-analytics-guide.md](./google-analytics-guide.md) | Google Analytics 4 (GA4) implementation — installation (gtag.js and GTM), event tracking, user properties, e-commerce, Consent Mode v2, and debugging. |
 | SEO & LLMO Implementation | [seo-llmo-guide.md](./seo-llmo-guide.md) | SEO & LLMO (Large Language Model Optimization) implementation for static sites — meta tags, Open Graph, structured data (JSON-LD), llms.txt, robots.txt for AI crawlers, sitemaps, and validation tools. Based on practices as of early 2026. |
+| Web Accessibility | [web-accessibility-guide.md](./web-accessibility-guide.md) | WCAG 2.2 AA implementation — semantic HTML, keyboard navigation, ARIA, forms, color contrast, focus management, motion, and testing with automated tools and screen readers. |
 
 ## How to Use
 
