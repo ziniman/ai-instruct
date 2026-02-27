@@ -1,6 +1,6 @@
 {
   "name": "ai-instruct",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Practical markdown guides for developers building websites with AI coding assistants",
   "bin": {
     "ai-instruct": "bin/init.js"
@@ -14,6 +14,13 @@
     "windsurf",
     "guides",
     "instructions"
+  ],
+  "files": [
+    "bin/",
+    "README.md",
+    "LICENSE",
+    "*-guide.md",
+    "llms.txt"
   ],
   "license": "Apache-2.0",
   "repository": {
