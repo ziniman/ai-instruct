@@ -35,6 +35,12 @@ const GUIDES = [
     desc: 'WCAG 2.2 AA, ARIA, keyboard navigation, testing',
     topic: 'web accessibility (WCAG 2.2)',
   },
+  {
+    name: 'Web Performance',
+    file: 'web-performance-guide.md',
+    desc: 'Core Web Vitals, images, fonts, JS/CSS bundle size, CDN caching',
+    topic: 'web performance and Core Web Vitals',
+  },
 ];
 
 const TOOL_CONFIGS = [

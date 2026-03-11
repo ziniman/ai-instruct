@@ -1,6 +1,6 @@
 # Web Accessibility Guide
 
-> Applies to: Any website or web app | Updated: February 2026
+> Applies to: Any website or web app | Updated: March 2026
 
 A practical reference for building accessible websites  -  covering WCAG 2.2 criteria, semantic HTML, ARIA, forms, touch, and testing.
 
@@ -537,6 +537,84 @@ Color alone must never be the only way to convey information  -  always pair col
 <p id="err">Email is required.</p>
 ```
 
+### Warning: semi-transparent rgba() text
+
+Semi-transparent colors for text are unreliable for contrast compliance. The effective contrast of `rgba(R,G,B,0.5)` depends on every background layer beneath it, including parent elements, stacked components, and page backgrounds. You cannot evaluate the contrast of a semi-transparent color in isolation.
+
+**The problem:** `rgba(16,185,129,0.5)` (50% emerald-500) on white resolves to approximately `#87DCCA`, which has a contrast ratio around 1.9:1 against white. On a dark background the same token may pass. The color looks "present" visually but fails silently.
+
+**Rule:** Never use semi-transparent rgba() values for text content. Use fully opaque color tokens instead. If you need a "muted" appearance, pick a specific opaque value and measure its contrast directly.
+
+```css
+/* Wrong: contrast is unpredictable across backgrounds */
+color: rgba(16, 185, 129, 0.5);
+color: rgba(239, 68, 68, 0.5);
+
+/* Correct: fully opaque, measurable value */
+color: #059669;   /* emerald-600, 4.5:1 on white */
+color: #dc2626;   /* red-600, 5.9:1 on white */
+```
+
+### Context-dependent contrast: the same color token can pass or fail
+
+A color that passes contrast on one background will fail on another. This is the most common real-world failure pattern in multi-section layouts where sections use different background colors.
+
+**Example:** `slate-500` (#64748B)
+- On white (#FFFFFF): 4.48:1 — passes AA (barely)
+- On slate-50 (#F8FAFC): 4.17:1 — fails AA for normal text
+- On slate-100 (#F1F5F9): 3.86:1 — fails AA for normal text
+
+**Rule:** When a color token is used in more than one context, verify contrast against each background it appears on. Do not assume a token that passes on white will pass on tinted section backgrounds.
+
+### Tailwind slate palette contrast reference
+
+Measured contrast ratios for slate shades against common backgrounds. AA requires 4.5:1 for normal text, 3:1 for large text and UI components.
+
+| Slate shade | Hex value | On white #FFFFFF | On slate-50 #F8FAFC | On slate-100 #F1F5F9 |
+|---|---|---|---|---|
+| slate-400 | #94A3B8 | 2.85:1 — FAIL | 2.65:1 — FAIL | 2.45:1 — FAIL |
+| slate-500 | #64748B | 4.48:1 — FAIL (AA) | 4.17:1 — FAIL | 3.86:1 — FAIL |
+| slate-600 | #475569 | 6.32:1 — PASS | 5.88:1 — PASS | 5.45:1 — PASS |
+| slate-700 | #334155 | 9.52:1 — PASS | 8.86:1 — PASS | 8.20:1 — PASS |
+| slate-800 | #1E293B | 13.3:1 — PASS | 12.4:1 — PASS | 11.5:1 — PASS |
+| slate-900 | #0F172A | 17.4:1 — PASS | 16.2:1 — PASS | 15.0:1 — PASS |
+
+**Key takeaways:**
+- `slate-400` and `slate-500` fail AA for normal text on all common backgrounds. Use them only for decorative, non-informational content or large text (3:1 threshold).
+- `slate-600` is the minimum safe value for normal text on white and light tinted backgrounds.
+- On slate-50 or slate-100 section backgrounds, be especially careful: the effective contrast is lower than on white by about 15-20%.
+
+### Brand color accessibility: decorative vs. text tokens
+
+Bright brand colors are optimized for visual identity, not readability. Saturated greens, teals, and ambers that look bold and confident often fail AA contrast for normal-sized text, particularly on light backgrounds.
+
+**Example:** `emerald-500` (#10B981)
+- On white: 3.8:1 — FAIL for normal text (passes only for large text/UI components at 3:1)
+- On slate-100: approximately 3.5:1 — FAIL
+
+**Pattern: two tokens for one brand color**
+
+Define separate tokens for text use and decorative use. Never use the decorative/icon token on body-size text without checking contrast.
+
+```css
+/* Token pair for a brand green */
+--color-brand-decorative: #10B981;  /* emerald-500: icons, borders, backgrounds, large headings */
+--color-brand-text:       #059669;  /* emerald-600: inline text, small labels — 4.5:1 on white */
+```
+
+```tsx
+// Wrong: brand green on small text
+<span className="text-emerald-500">Status: Active</span>   {/* 3.8:1 on white — FAIL */}
+
+// Correct: darker shade for text use
+<span className="text-emerald-600">Status: Active</span>   {/* 4.5:1 on white — PASS */}
+
+// Decorative use (icon, badge background) — emerald-500 is fine here
+<span className="bg-emerald-500 text-white rounded px-2">Active</span>
+```
+
+Check every brand color at the size and background where it actually appears. "It looks bold" is not a contrast measurement.
+
 ### Tools
 
 - [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
@@ -694,6 +772,8 @@ Flag these actively when encountered in code review or generation:
 - **`aria-required="true"` on native `<input required>`**  -  redundant in modern browsers; keep only `required`.
 - **Placeholder text as the only label**  -  disappears when the user types; fails 1.3.1 and 2.4.6.
 - **Blocking clipboard paste in password fields**  -  breaks password managers and fails WCAG 3.3.8.
+- **Semi-transparent rgba() colors for text**  -  the effective contrast depends on all stacked backgrounds and cannot be measured from the color value alone. Use fully opaque tokens for any text content and measure the resulting rendered color against its background.
+- **Mid-gray palette values (slate-400, slate-500) on light section backgrounds**  -  slate-500 (#64748B) achieves only 4.48:1 on white (barely failing AA) and drops further on tinted backgrounds such as slate-50 (4.17:1) or slate-100 (3.86:1). Use slate-600 or darker for normal text on any light background. Flag all uses of slate-400 and slate-500 on text content for contrast verification.
 
 ---
 

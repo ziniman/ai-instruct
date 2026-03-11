@@ -26,6 +26,7 @@ The CLI detects your AI tool (Claude Code, Cursor, Copilot, Windsurf), lets you 
 | Google Analytics 4 Implementation | [google-analytics-guide.md](./google-analytics-guide.md) | Google Analytics 4 (GA4) implementation  -  installation (gtag.js and GTM), event tracking, user properties, e-commerce, Consent Mode v2, and debugging. |
 | SEO & LLMO Implementation | [seo-llmo-guide.md](./seo-llmo-guide.md) | SEO & LLMO (Large Language Model Optimization) implementation for static sites  -  meta tags, Open Graph, structured data (JSON-LD), llms.txt, robots.txt for AI crawlers, sitemaps, and validation tools. Based on practices as of early 2026. |
 | Web Accessibility | [web-accessibility-guide.md](./web-accessibility-guide.md) | WCAG 2.2 AA implementation  -  semantic HTML, keyboard navigation, ARIA, forms, color contrast, focus management, motion, and testing with automated tools and screen readers. |
+| Web Performance | [web-performance-guide.md](./web-performance-guide.md) | Core Web Vitals (LCP, CLS, INP), image and font optimization, JavaScript bundle size, CSS build size, CDN caching, third-party JavaScript impact, and validation tools. |
 
 ## How to Use
 
