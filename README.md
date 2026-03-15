@@ -30,7 +30,7 @@ The CLI detects your AI tool (Claude Code, Cursor, Copilot, Windsurf), lets you 
 
 ## How to Use
 
-The guides are written to be read by both humans and AI models. There are four main ways to use them:
+The guides are written to be read by both humans and AI models. There are five main ways to use them:
 
 ### 0. CLI setup (recommended)
 
@@ -44,7 +44,20 @@ Run in your project root. The CLI handles detection, download, and config file u
 
 Copy a guide's contents (or a relevant section) and paste it directly into your AI chat before asking your question. Best for one-off tasks.
 
-### 2. Add to your project's AI instructions file (recommended)
+### 2. Reference from chat (on-demand, no config needed)
+
+Download the guides to your project with `npx ai-instruct init`, then point your assistant directly to the `ai-docs/` folder in your chat. The assistant reads the guide and applies it for that session — no permanent instructions file setup required.
+
+| Assistant | How to reference a guide in chat |
+|-----------|----------------------------------|
+| **Claude Code** | `@ai-docs/seo-llmo-guide.md` in the chat, or ask: _"Read ai-docs/seo-llmo-guide.md and implement the SEO recommendations"_ |
+| **Cursor** | `@ai-docs/seo-llmo-guide.md` in the chat composer |
+| **GitHub Copilot** | `#file:ai-docs/seo-llmo-guide.md` in the chat |
+| **Windsurf** | `@ai-docs/seo-llmo-guide.md` in the chat |
+
+Good for one-off tasks where you don't want the guide loaded on every session.
+
+### 3. Add to your project's AI instructions file (recommended)
 
 Most AI coding assistants read a persistent instructions file from your project root. Download the relevant guide(s) into your project and reference them from your instructions file  -  the assistant will have the context automatically on every session.
 
@@ -65,7 +78,7 @@ Most AI coding assistants read a persistent instructions file from your project 
 - Put guides in a dedicated folder (e.g. `ai-docs/`) and reference them from your instructions file
 - When a guide is updated in this repo, re-download it to get the latest practices
 
-### 3. Global AI assistant instructions
+### 4. Global AI assistant instructions
 
 Some assistants support a global (user-level) instructions file that applies to all projects. Useful for guides you always want active.
 
