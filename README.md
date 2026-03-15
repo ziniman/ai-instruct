@@ -46,7 +46,7 @@ Copy a guide's contents (or a relevant section) and paste it directly into your 
 
 ### 2. Reference from chat (on-demand, no config needed)
 
-Download the guides to your project with `npx ai-instruct init`, then point your assistant directly to the `ai-docs/` folder in your chat. The assistant reads the guide and applies it for that session — no permanent instructions file setup required.
+Download the guides to your project with `npx ai-instruct init`, then point your assistant directly to the `ai-docs/` folder in your chat. The assistant reads the guide and applies it for that session  -  no permanent instructions file setup required.
 
 | Assistant | How to reference a guide in chat |
 |-----------|----------------------------------|

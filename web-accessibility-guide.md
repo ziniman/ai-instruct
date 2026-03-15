@@ -560,9 +560,9 @@ color: #dc2626;   /* red-600, 5.9:1 on white */
 A color that passes contrast on one background will fail on another. This is the most common real-world failure pattern in multi-section layouts where sections use different background colors.
 
 **Example:** `slate-500` (#64748B)
-- On white (#FFFFFF): 4.48:1 — passes AA (barely)
-- On slate-50 (#F8FAFC): 4.17:1 — fails AA for normal text
-- On slate-100 (#F1F5F9): 3.86:1 — fails AA for normal text
+- On white (#FFFFFF): 4.48:1  -  passes AA (barely)
+- On slate-50 (#F8FAFC): 4.17:1  -  fails AA for normal text
+- On slate-100 (#F1F5F9): 3.86:1  -  fails AA for normal text
 
 **Rule:** When a color token is used in more than one context, verify contrast against each background it appears on. Do not assume a token that passes on white will pass on tinted section backgrounds.
 
@@ -572,12 +572,12 @@ Measured contrast ratios for slate shades against common backgrounds. AA require
 
 | Slate shade | Hex value | On white #FFFFFF | On slate-50 #F8FAFC | On slate-100 #F1F5F9 |
 |---|---|---|---|---|
-| slate-400 | #94A3B8 | 2.85:1 — FAIL | 2.65:1 — FAIL | 2.45:1 — FAIL |
-| slate-500 | #64748B | 4.48:1 — FAIL (AA) | 4.17:1 — FAIL | 3.86:1 — FAIL |
-| slate-600 | #475569 | 6.32:1 — PASS | 5.88:1 — PASS | 5.45:1 — PASS |
-| slate-700 | #334155 | 9.52:1 — PASS | 8.86:1 — PASS | 8.20:1 — PASS |
-| slate-800 | #1E293B | 13.3:1 — PASS | 12.4:1 — PASS | 11.5:1 — PASS |
-| slate-900 | #0F172A | 17.4:1 — PASS | 16.2:1 — PASS | 15.0:1 — PASS |
+| slate-400 | #94A3B8 | 2.85:1  -  FAIL | 2.65:1  -  FAIL | 2.45:1  -  FAIL |
+| slate-500 | #64748B | 4.48:1  -  FAIL (AA) | 4.17:1  -  FAIL | 3.86:1  -  FAIL |
+| slate-600 | #475569 | 6.32:1  -  PASS | 5.88:1  -  PASS | 5.45:1  -  PASS |
+| slate-700 | #334155 | 9.52:1  -  PASS | 8.86:1  -  PASS | 8.20:1  -  PASS |
+| slate-800 | #1E293B | 13.3:1  -  PASS | 12.4:1  -  PASS | 11.5:1  -  PASS |
+| slate-900 | #0F172A | 17.4:1  -  PASS | 16.2:1  -  PASS | 15.0:1  -  PASS |
 
 **Key takeaways:**
 - `slate-400` and `slate-500` fail AA for normal text on all common backgrounds. Use them only for decorative, non-informational content or large text (3:1 threshold).
@@ -589,8 +589,8 @@ Measured contrast ratios for slate shades against common backgrounds. AA require
 Bright brand colors are optimized for visual identity, not readability. Saturated greens, teals, and ambers that look bold and confident often fail AA contrast for normal-sized text, particularly on light backgrounds.
 
 **Example:** `emerald-500` (#10B981)
-- On white: 3.8:1 — FAIL for normal text (passes only for large text/UI components at 3:1)
-- On slate-100: approximately 3.5:1 — FAIL
+- On white: 3.8:1  -  FAIL for normal text (passes only for large text/UI components at 3:1)
+- On slate-100: approximately 3.5:1  -  FAIL
 
 **Pattern: two tokens for one brand color**
 
@@ -599,17 +599,17 @@ Define separate tokens for text use and decorative use. Never use the decorative
 ```css
 /* Token pair for a brand green */
 --color-brand-decorative: #10B981;  /* emerald-500: icons, borders, backgrounds, large headings */
---color-brand-text:       #059669;  /* emerald-600: inline text, small labels — 4.5:1 on white */
+--color-brand-text:       #059669;  /* emerald-600: inline text, small labels  -  4.5:1 on white */
 ```
 
 ```tsx
 // Wrong: brand green on small text
-<span className="text-emerald-500">Status: Active</span>   {/* 3.8:1 on white — FAIL */}
+<span className="text-emerald-500">Status: Active</span>   {/* 3.8:1 on white  -  FAIL */}
 
 // Correct: darker shade for text use
-<span className="text-emerald-600">Status: Active</span>   {/* 4.5:1 on white — PASS */}
+<span className="text-emerald-600">Status: Active</span>   {/* 4.5:1 on white  -  PASS */}
 
-// Decorative use (icon, badge background) — emerald-500 is fine here
+// Decorative use (icon, badge background)  -  emerald-500 is fine here
 <span className="bg-emerald-500 text-white rounded px-2">Active</span>
 ```
 
