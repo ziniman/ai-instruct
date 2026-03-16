@@ -55,7 +55,7 @@ Download the guides to your project with `npx ai-instruct init`, then point your
 | **GitHub Copilot** | `#file:ai-docs/seo-llmo-guide.md` in the chat |
 | **Windsurf** | `@ai-docs/seo-llmo-guide.md` in the chat |
 
-Good for one-off tasks where you don't want the guide loaded on every session.
+Good for one-off tasks where you don't want the guide loaded on every session. For many guides in this repo - deployment, analytics setup, performance optimization - this is not just the easiest approach but the right one: you implement it once and you're done.
 
 ### 3. Add to your project's AI instructions file (recommended)
 
