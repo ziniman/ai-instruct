@@ -147,6 +147,46 @@ Write answers that make sense in isolation  -  AI tools extract and quote them w
 }
 ```
 
+### Product schema
+
+Applies when: site type is online shop.
+
+`Product` schema is the highest-impact schema type for e-commerce. It surfaces pricing, availability, and ratings directly in Google Shopping results and is a primary signal AI tools use when answering product queries. Add one block per product page:
+
+```json
+{
+  "@type": "Product",
+  "@id": "https://yourdomain.com/products/product-slug#product",
+  "name": "Product Name",
+  "description": "What this product is and what problem it solves. Write for someone who has never seen your site.",
+  "image": [
+    "https://yourdomain.com/images/product-front.jpg",
+    "https://yourdomain.com/images/product-side.jpg"
+  ],
+  "brand": {
+    "@type": "Brand",
+    "name": "Your Brand"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "https://yourdomain.com/products/product-slug",
+    "priceCurrency": "USD",
+    "price": "49.00",
+    "availability": "https://schema.org/InStock",
+    "itemCondition": "https://schema.org/NewCondition"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.7",
+    "reviewCount": "128"
+  }
+}
+```
+
+Key fields for AI visibility: `description` (write it to stand alone, without surrounding page context), `offers.availability` (keep it accurate and current - AI tools actively surface in-stock status), and `aggregateRating` (AI shopping results weight social proof heavily).
+
+If the product has variants (sizes, colors), add a `hasVariant` array or use `variesBy` - see [schema.org/Product](https://schema.org/Product) for the full spec.
+
 **Other useful types:** `Review`, `AggregateRating`, `Event`, `HowTo`, `BreadcrumbList`
 
 Verify: [Google Rich Results Test](https://search.google.com/test/rich-results) and [Schema.org Validator](https://validator.schema.org/)
