@@ -9,7 +9,7 @@
     {
       "name": "ai-instruct",
       "source": "./",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "description": "Drop-in skills for Claude Code covering AWS deployment, Google Analytics 4, SEO/LLMO, web accessibility, and Core Web Vitals.",
       "category": "skills",
       "keywords": [
