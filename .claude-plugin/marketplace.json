@@ -1,0 +1,25 @@
+{
+  "name": "ai-instruct",
+  "owner": {
+    "name": "Boaz Ziniman",
+    "email": "ziniman@gmail.com",
+    "url": "https://github.com/ziniman"
+  },
+  "plugins": [
+    {
+      "name": "ai-instruct",
+      "source": "./",
+      "version": "1.1.1",
+      "description": "Drop-in skills for Claude Code covering AWS deployment, Google Analytics 4, SEO/LLMO, web accessibility, and Core Web Vitals.",
+      "category": "skills",
+      "keywords": [
+        "seo",
+        "accessibility",
+        "wcag",
+        "web-performance",
+        "google-analytics",
+        "aws"
+      ]
+    }
+  ]
+}

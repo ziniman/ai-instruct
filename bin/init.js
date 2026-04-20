@@ -3,45 +3,16 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const readline = require('readline');
 
 const { version } = require('../package.json');
+const { GUIDES, buildSkillFrontmatter } = require('./lib/guides');
 const REPO_RAW = 'https://raw.githubusercontent.com/ziniman/ai-instruct/main';
 const DOCS_DIR = 'ai-docs';
-
-const GUIDES = [
-  {
-    name: 'SEO & LLMO Implementation',
-    file: 'seo-llmo-guide.md',
-    desc: 'Structured data, llms.txt, AI crawlers, Core Web Vitals',
-    topic: 'SEO/LLMO practices',
-  },
-  {
-    name: 'Deploying a Static SPA on AWS',
-    file: 'aws-spa-deployment-guide.md',
-    desc: 'Amplify, CDK, Lambda, API Gateway, SES, CORS',
-    topic: 'AWS SPA deployment',
-  },
-  {
-    name: 'Google Analytics 4',
-    file: 'google-analytics-guide.md',
-    desc: 'Events, e-commerce, Consent Mode v2, SPA tracking',
-    topic: 'Google Analytics 4 implementation',
-  },
-  {
-    name: 'Web Accessibility',
-    file: 'web-accessibility-guide.md',
-    desc: 'WCAG 2.2 AA, ARIA, keyboard navigation, testing',
-    topic: 'web accessibility (WCAG 2.2)',
-  },
-  {
-    name: 'Web Performance',
-    file: 'web-performance-guide.md',
-    desc: 'Core Web Vitals, images, fonts, JS/CSS bundle size, CDN caching',
-    topic: 'web performance and Core Web Vitals',
-  },
-];
+const PACKAGE_ROOT = path.resolve(__dirname, '..');
+const PACKAGE_SKILLS_DIR = path.join(PACKAGE_ROOT, 'skills');
 
 const TOOL_CONFIGS = [
   {
@@ -85,7 +56,78 @@ async function downloadFile(url, dest) {
   fs.writeFileSync(dest, await res.text());
 }
 
+async function fetchText(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.text();
+}
+
+async function runSkillsFlow(rl, userScope) {
+  const baseDir = userScope
+    ? path.join(os.homedir(), '.claude', 'skills')
+    : path.join('.claude', 'skills');
+
+  console.log(`Installing as Claude Code skills (${userScope ? 'user' : 'project'} scope).`);
+  console.log(`Target: ${baseDir}/\n`);
+
+  console.log('Available guides:');
+  GUIDES.forEach((g, i) => console.log(`  ${i + 1}. ${g.name}\n     ${g.desc}`));
+  const sel = await ask(rl, `\nWhich guides? [1-${GUIDES.length}, comma-separated, or Enter for all]: `);
+
+  const selected = sel === ''
+    ? GUIDES
+    : sel.split(',').map(s => GUIDES[parseInt(s.trim()) - 1]).filter(Boolean);
+
+  if (selected.length === 0) {
+    console.log('\nNo valid guides selected. Exiting.');
+    return;
+  }
+
+  if (!fs.existsSync(baseDir)) {
+    fs.mkdirSync(baseDir, { recursive: true });
+    console.log(`\nCreated ${baseDir}/`);
+  } else {
+    console.log(`\nUsing existing ${baseDir}/`);
+  }
+
+  console.log('');
+  for (const guide of selected) {
+    const skillDir = path.join(baseDir, guide.skillName);
+    if (!fs.existsSync(skillDir)) fs.mkdirSync(skillDir, { recursive: true });
+
+    const dest = path.join(skillDir, 'SKILL.md');
+    const localSkill = path.join(PACKAGE_SKILLS_DIR, guide.skillName, 'SKILL.md');
+    process.stdout.write(`  Installing ${guide.skillName}... `);
+    try {
+      let content;
+      if (fs.existsSync(localSkill)) {
+        content = fs.readFileSync(localSkill, 'utf8');
+      } else {
+        const body = await fetchText(`${REPO_RAW}/${guide.file}`);
+        content = buildSkillFrontmatter(guide) + body;
+      }
+      fs.writeFileSync(dest, content);
+      console.log('✓');
+    } catch (err) {
+      console.log(`✗  ${err.message}`);
+    }
+  }
+
+  console.log('\n--------------------------------------------------');
+  console.log(`Done! ${selected.length} skill(s) installed in ${baseDir}/`);
+  console.log('Claude Code will auto-discover them on next session.');
+  if (!userScope) {
+    console.log('Commit .claude/skills/ if you want your team to share these.\n');
+  } else {
+    console.log('');
+  }
+}
+
 async function main() {
+  const args = process.argv.slice(2);
+  const skillsMode = args.includes('--skills');
+  const userScope = args.includes('--user');
+
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
   const C = '\x1b[31m';  // red
@@ -103,6 +145,15 @@ ${C}  ╚═╝  ╚═╝╚═╝${R}
   ${C}instruct${R}  ${D}v${version}${R}
   AI coding assistant guides
 `);
+
+  if (skillsMode) {
+    try {
+      await runSkillsFlow(rl, userScope);
+    } finally {
+      rl.close();
+    }
+    return;
+  }
 
   // Detect AI tools
   const detected = detectTools();
@@ -179,7 +230,7 @@ ${C}  ╚═╝  ╚═╝╚═╝${R}
       console.log(`\nUpdated ${tool.file}:`);
       added.forEach(name => console.log(`  + ${name}`));
     } else {
-      console.log(`\n${tool.file}: all selected guides already referenced — no changes.`);
+      console.log(`\n${tool.file}: all selected guides already referenced - no changes.`);
     }
   }
 

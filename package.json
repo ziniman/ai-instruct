@@ -5,6 +5,12 @@
   "bin": {
     "ai-instruct": "bin/init.js"
   },
+  "scripts": {
+    "build:skills": "node scripts/build-skills.js",
+    "sync:versions": "node scripts/sync-versions.js",
+    "version": "node scripts/sync-versions.js && node scripts/build-skills.js && git add .claude-plugin/ skills/",
+    "prepublishOnly": "node scripts/build-skills.js"
+  },
   "keywords": [
     "ai",
     "llm",
@@ -17,6 +23,9 @@
   ],
   "files": [
     "bin/",
+    "scripts/",
+    "skills/",
+    ".claude-plugin/",
     "README.md",
     "LICENSE",
     "*-guide.md",

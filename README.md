@@ -18,6 +18,8 @@ npx ai-instruct init
 
 The CLI detects your AI tool (Claude Code, Cursor, Copilot, Windsurf), lets you pick which guides to add, downloads them to `ai-docs/`, and adds the right reference lines to your config file automatically.
 
+Claude Code users can also install the guides as native [skills](https://docs.claude.com/en/docs/claude-code/skills), either via `npx ai-instruct init --skills` or as a one-command [plugin install](#claude-code-install-as-a-plugin).
+
 ## Guides
 
 | Guide | File | Description |
@@ -39,6 +41,30 @@ npx ai-instruct init
 ```
 
 Run in your project root. The CLI handles detection, download, and config file updates automatically.
+
+#### Claude Code: install as skills
+
+If you use Claude Code, you can install the guides as native [skills](https://docs.claude.com/en/docs/claude-code/skills) instead of referencing them from `CLAUDE.md`. Each skill has a description that tells Claude when to load it, so the guide content only enters context when it is actually relevant (a deployment task pulls in the AWS skill, a UI task pulls in the accessibility skill, etc.). This keeps your base `CLAUDE.md` lean and avoids loading every guide on every turn.
+
+```sh
+npx ai-instruct init --skills          # writes to .claude/skills/  (project scope, commit to share)
+npx ai-instruct init --skills --user   # writes to ~/.claude/skills/ (personal, all your projects)
+```
+
+Project scope is the default and is the right choice when the guides apply to one specific project. Use `--user` for guides you want active across every project you work on.
+
+#### Claude Code: install as a plugin
+
+`ai-instruct` is also published as a Claude Code [plugin](https://docs.claude.com/en/docs/claude-code/plugins) bundling all 5 guides as skills. The repo is its own marketplace, so you can install everything in two commands inside Claude Code:
+
+```
+/plugin marketplace add ziniman/ai-instruct
+/plugin install ai-instruct@ai-instruct
+```
+
+After installing, the skills become available as `/ai-instruct:seo-llmo`, `/ai-instruct:web-accessibility`, etc., and trigger automatically based on what you ask Claude to do. Update with `/plugin update ai-instruct`.
+
+Use the plugin if you want one-command install and automatic updates. Use `--skills` (above) if you prefer to commit the skill files into your own repo for the team to share, or if you want to pick which skills to install.
 
 ### 1. Paste into chat
 
@@ -84,8 +110,8 @@ Some assistants support a global (user-level) instructions file that applies to 
 
 | Assistant | Global instructions location |
 |-----------|------------------------------|
-| **Claude Code** | `~/.claude/CLAUDE.md` |
-| **Cursor** | Settings → Rules for AI → User Rules |
+| **Claude Code** | `~/.claude/CLAUDE.md`, or install guides as user-scope skills with `npx ai-instruct init --skills --user` (writes to `~/.claude/skills/`) |
+| **Cursor** | Settings, Rules for AI, User Rules |
 | **GitHub Copilot** | Not supported (project-level only) |
 
 ## Contributing
