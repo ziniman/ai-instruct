@@ -1,8 +1,10 @@
 # SEO & LLMO Implementation Guide
 
-> Applies to: Any website or web app | Updated: February 2026
+> Applies to: Any website or web app | Updated: April 2026
 
-A practical guide for implementing Search Engine Optimization (SEO) and Large Language Model Optimization (LLMO)  -  making your site discoverable by both search engines and AI tools.
+A practical guide for implementing Search Engine Optimization (SEO), Large Language Model Optimization (LLMO), and agent-readiness  -  making your site discoverable and usable by search engines, AI chat tools, and autonomous agents.
+
+Agents (ChatGPT deep research, Claude with web, Perplexity, Cloudflare Agents, browser agents) don't just index your page, they fetch and act on it. That raises the bar on three things beyond classic SEO: telling crawlers what they may do with your content (Content Signals), serving a clean Markdown version on demand, and advertising any programmatic entry points you expose. You can check your agent-readiness score at [isitagentready.com](https://isitagentready.com/).
 
 ---
 
@@ -23,8 +25,8 @@ Default: if a framework config file (e.g. `vite.config.*`, `next.config.*`, `ast
 Default: worldwide, single language  -  skip hreflang unless multiple languages are confirmed.
 
 **Q: What's your main goal with SEO?**
-(show up in Google search, get cited by AI tools like ChatGPT/Perplexity, both, social sharing)
-Default: both Google and AI tools.
+(show up in Google search, get cited by AI chat tools like ChatGPT/Perplexity, be usable by autonomous agents, social sharing, all of the above)
+Default: all of the above  -  the baseline checklist covers Google + AI chat citation + agent-readiness in one pass.
 
 **Q: Do you already have a robots.txt, sitemap, or structured data set up?**
 Default: no  -  but check for existing files before creating new ones, and merge rather than overwrite.
@@ -40,10 +42,11 @@ Default: no  -  but check for existing files before creating new ones, and merge
 3. [robots.txt for AI and Search Crawlers](#robotstxt-for-ai-and-search-crawlers)
 4. [Sitemap](#sitemap)
 5. [Meta Tags and Social Sharing](#meta-tags-and-social-sharing)
-6. [Core Web Vitals](#core-web-vitals)
-7. [SPA Considerations](#spa-considerations)
-8. [Static Hosting Notes](#static-hosting-notes)
-9. [Validation](#validation)
+6. [Agent-Readiness](#agent-readiness)
+7. [Core Web Vitals](#core-web-vitals)
+8. [SPA Considerations](#spa-considerations)
+9. [Static Hosting Notes](#static-hosting-notes)
+10. [Validation](#validation)
 
 ---
 
@@ -302,6 +305,34 @@ These are different things with different implications for blocking:
 
 `Google-Extended` covers Google's AI features (Gemini, AI Overviews) and is separate from `Googlebot`. Block one without affecting the other.
 
+### Content-Signal directive
+
+`Content-Signal` is a 2025 robots.txt extension (pushed by Cloudflare and covered by [contentsignals.org](https://contentsignals.org/)) that separates **permission to crawl** (`Allow`/`Disallow`) from **permission to use the content afterwards**. It's the robots.txt equivalent of "you can read this, but here's what you may do with it."
+
+Three signals are defined, each takes `yes` or `no`:
+
+- `search`  -  indexing + returning hyperlinks and short excerpts (excludes AI-generated summaries)
+- `ai-input`  -  RAG, grounding, live AI answers (retrieval-augmented generation at query time)
+- `ai-train`  -  training or fine-tuning AI models
+
+Add one line per `User-agent` block. Most content sites want everything on (agent-readiness scanners reward presence, not restrictiveness):
+
+```
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+Allow: /
+```
+
+If you want to license training separately (e.g. publishers selling training data), set `ai-train=no` and handle licensing out-of-band:
+
+```
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Allow: /
+```
+
+A signal you don't list is neither granted nor denied  -  it's just unstated. The isitagentready.com scanner only checks that the directive is present and parses, not the values.
+
 Known AI crawler user-agents (as of 2026):
 - `GPTBot`  -  OpenAI training + ChatGPT Search retrieval
 - `ChatGPT-User`  -  ChatGPT browsing/retrieval
@@ -422,6 +453,133 @@ Verify: [opengraph.xyz](https://www.opengraph.xyz/) for OG/Twitter preview, [Lin
 
 ---
 
+## Agent-Readiness
+
+Applies when: goal includes being usable by autonomous agents (browser agents, deep research tools, agentic commerce), not just cited by AI chat.
+
+Agents fetch your page, parse it, and often take action on it. Three signals make that far more reliable, in descending order of impact:
+
+1. **Markdown content negotiation**  -  serve a clean Markdown version of each page so agents don't burn context on your nav, footer, and ad slots.
+2. **Link HTTP response headers**  -  point agents at machine-readable entry points (API docs, alternate formats, describedby) without parsing HTML.
+3. **Agent Skills index**  -  if you publish reusable skills (documentation + scripts), advertise them at a well-known path.
+
+Cloudflare runs a free scanner at [isitagentready.com](https://isitagentready.com/) that scores these (plus robots.txt, sitemap, Content-Signal from the sections above). Use it as your acceptance test.
+
+### Markdown content negotiation
+
+Agents ask for Markdown with an `Accept: text/markdown` HTTP header. If the server returns `Content-Type: text/markdown`, the agent uses it; otherwise it falls back to HTML + a full DOM parse.
+
+**If your site is behind Cloudflare:** enable **Markdown for Agents** in the dashboard (Pro/Business/Enterprise). Cloudflare does the HTML→Markdown conversion at the edge, no code changes. See [developers.cloudflare.com/fundamentals/reference/markdown-for-agents/](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/).
+
+**Static site (S3/CloudFront, Amplify, Netlify, Vercel) without Cloudflare:** generate a `.md` alongside each `.html` at build time, then branch on the `Accept` header at the edge. The CloudFront Function below is a working example (CloudFront Functions run in ~1ms, no Lambda cold start):
+
+```javascript
+// cloudfront-function-markdown.js
+function handler(event) {
+  var request = event.request;
+  var accept = request.headers.accept && request.headers.accept.value || '';
+
+  // If the agent prefers markdown and we're asking for an HTML route, rewrite to .md
+  if (accept.indexOf('text/markdown') !== -1) {
+    var uri = request.uri;
+    if (uri.endsWith('/')) uri += 'index.md';
+    else if (!uri.includes('.')) uri += '.md';
+    else if (uri.endsWith('.html')) uri = uri.replace(/\.html$/, '.md');
+    request.uri = uri;
+  }
+  return request;
+}
+```
+
+Attach this as a `viewer-request` CloudFront Function. Then add a Response Headers Policy that sets `Content-Type: text/markdown; charset=utf-8` for `*.md` objects (S3 returns `binary/octet-stream` by default for unknown extensions).
+
+**Produce the .md files** by piping your rendered HTML through a converter. For a static SPA, at build time:
+
+```sh
+# Astro / Next export / Vite: iterate over every built .html and write a .md sibling
+npx turndown dist/**/*.html --output dist
+```
+
+For hand-rolled static sites, author the content in Markdown to begin with and render both formats from the same source.
+
+**HTML hint (lightweight fallback):** even without content negotiation, tell agents where the Markdown version lives via a `<link>` tag in `<head>`. Some agents check this; the isitagentready.com scanner does not count it, but it doesn't hurt:
+
+```html
+<link rel="alternate" type="text/markdown" href="/index.md" />
+```
+
+### Link HTTP response headers
+
+The `Link:` response header (RFC 8288) advertises relationships from the current resource to others. Agents read it before parsing HTML, so it's the cheapest way to expose machine-readable entry points.
+
+The agent-useful rel values as of 2026:
+
+| `rel` value | Points to |
+|-------------|-----------|
+| `service-doc` | Human-readable API docs |
+| `service-desc` | Machine-readable API description (OpenAPI) |
+| `describedby` | Metadata about this resource (schema, Dublin Core) |
+| `alternate` | Same content, different format or language |
+| `license` | The license the content is available under |
+
+Example output for a homepage that has an OpenAPI spec at `/api/openapi.json` and HTML API docs at `/api/`:
+
+```
+HTTP/2 200
+Link: </api/>; rel="service-doc", </api/openapi.json>; rel="service-desc"
+Content-Type: text/html
+```
+
+**How to add it, by platform:**
+
+- **Cloudflare Workers / Pages**: set `response.headers.append('Link', '...')` in your worker
+- **CloudFront + S3**: attach a Response Headers Policy with a Custom Header named `Link`
+- **AWS Amplify Hosting**: `customHeaders` in `amplify.yml` (format: one header per URL pattern)
+- **Netlify**: in `netlify.toml`, add `[[headers]]` block with `Link = "</api/>; rel=\"service-doc\""`
+- **Vercel**: `headers` array in `vercel.json`
+- **Nginx / Apache**: `add_header Link` / `Header set Link`
+
+The scanner treats the check as "pass" as long as at least one agent-useful rel is present. If you have no API, a `license` link to your Terms of Service is a valid minimum:
+
+```
+Link: </terms>; rel="license"
+```
+
+### Agent Skills index
+
+Applies when: you publish agent-runnable skills (instructions, scripts, references) that others should be able to discover and install.
+
+The [Agent Skills spec](https://agentskills.io/specification) defines a folder format (`SKILL.md` + bundled resources) originally from Anthropic, now adopted by Claude, Cursor, Copilot, Gemini CLI, Codex, Goose, and others. Sites that host such skills publish a JSON index at a well-known path.
+
+Serve a file at `/.well-known/agent-skills/index.json` (newer spec) or `/.well-known/skills/index.json` (legacy, still accepted by scanners):
+
+```json
+{
+  "skills": [
+    {
+      "name": "my-skill",
+      "description": "One sentence description of what the skill does and when to load it.",
+      "files": ["SKILL.md", "references/details.md", "scripts/helper.py"]
+    }
+  ]
+}
+```
+
+Each `files` path is relative to `/.well-known/agent-skills/<name>/`. Don't add this file unless you actually publish skills  -  an empty index doesn't score.
+
+### What's out of scope for this guide
+
+isitagentready.com also checks MCP Server Card, WebMCP, OAuth discovery, OAuth Protected Resource Metadata (RFC 9728), A2A Agent Card, and commerce protocols (x402, UCP, ACP). These apply to sites that expose **programmatic actions** agents can take (booking, purchasing, querying authenticated APIs), not to content/marketing sites. If you're building one, see:
+
+- [modelcontextprotocol.io](https://modelcontextprotocol.io/) for MCP server authoring
+- [webmcp.org](https://webmcp.org/) for exposing MCP capabilities from a browser context
+- [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) for OAuth Protected Resource Metadata
+- [x402.org](https://www.x402.org/), [ucp.dev](https://ucp.dev/), [agenticcommerce.dev](https://agenticcommerce.dev) for agent payments
+
+Verify: scan your deployed site at `https://isitagentready.com/<yourdomain>` and aim for level 4+ (Agent-Integrated).
+
+---
+
 ## Core Web Vitals
 
 Applies when: site targets Google search ranking, or is a SPA.
@@ -504,6 +662,8 @@ Upload static files to the S3 bucket root. Set explicit `Content-Type` metadata 
 | `sitemap.xml` | `application/xml` |
 | `llms.txt` | `text/plain` |
 | `llms-full.txt` | `text/plain` |
+| `*.md` (Markdown alternates) | `text/markdown; charset=utf-8` |
+| `.well-known/agent-skills/index.json` | `application/json; charset=utf-8` |
 
 If `Content-Type` is wrong, crawlers may reject the file even when the content is valid.
 
@@ -535,12 +695,26 @@ curl -I https://yourdomain.com/robots.txt
 curl -I https://yourdomain.com/sitemap.xml
 curl -I https://yourdomain.com/llms.txt
 
-# Check robots.txt content
+# Check robots.txt content (including Content-Signal directive)
 curl -s https://yourdomain.com/robots.txt
 
 # Spot-check JSON-LD is present in HTML source (not rendered by JS)
 curl -s https://yourdomain.com/ | grep 'application/ld+json'
 ```
+
+### Agent-readiness
+
+```bash
+# Confirm Markdown content negotiation works end-to-end
+curl -sI -H "Accept: text/markdown" https://yourdomain.com/ | grep -i content-type
+# Expected: content-type: text/markdown; charset=utf-8
+
+# Confirm Link response headers are present
+curl -sI https://yourdomain.com/ | grep -i '^link:'
+# Expected at least one rel: service-doc | service-desc | describedby | license
+```
+
+- [isitagentready.com](https://isitagentready.com/)  -  Cloudflare's agent-readiness scanner. Run `https://isitagentready.com/yourdomain.com` and aim for level 4+ out of 5. Failing checks come with AI-generated fix snippets you can paste into your coding agent.
 
 ### Performance
 

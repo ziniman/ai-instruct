@@ -2,12 +2,12 @@
 
 const GUIDES = [
   {
-    name: 'SEO & LLMO Implementation',
+    name: 'SEO, LLMO & Agent-Readiness',
     file: 'seo-llmo-guide.md',
-    desc: 'Structured data, llms.txt, AI crawlers, Core Web Vitals',
-    topic: 'SEO/LLMO practices',
+    desc: 'Structured data, llms.txt, AI crawlers, Markdown for Agents, Content Signals, Link headers',
+    topic: 'SEO/LLMO/agent-readiness practices',
     skillName: 'seo-llmo',
-    skillDescription: 'Use this skill whenever the user is building, reviewing, or preparing to launch any public-facing website or web app. SEO and LLMO are baseline requirements for every public site, not optional add-ons. Covers meta tags, Open Graph, JSON-LD structured data, robots.txt, sitemap.xml, llms.txt, and AI crawler access (GPTBot, ClaudeBot, PerplexityBot). Trigger for marketing sites, landing pages, blogs, docs, and e-commerce stores; before any "launch" or "go live"; during pre-launch checklists; and when scaffolding a new public site, even if the user does not explicitly mention SEO. Skip for internal tools, admin panels, or auth-gated dashboards with no public surface.',
+    skillDescription: 'Use this skill whenever the user is building, reviewing, or preparing to launch any public-facing website or web app. SEO, LLMO, and agent-readiness are baseline requirements for every public site, not optional add-ons. Covers meta tags, Open Graph, JSON-LD structured data, robots.txt (including the Content-Signal directive), sitemap.xml, llms.txt, AI crawler access (GPTBot, ClaudeBot, PerplexityBot), Markdown content negotiation for agents, Link response headers, and the Agent Skills index. Trigger for marketing sites, landing pages, blogs, docs, and e-commerce stores; before any "launch" or "go live"; during pre-launch checklists; when the user mentions isitagentready.com, agent-readiness, Cloudflare Markdown for Agents, or wants AI agents (ChatGPT deep research, Claude, Perplexity, browser agents) to use their site; and when scaffolding a new public site, even if the user does not explicitly mention SEO. Skip for internal tools, admin panels, or auth-gated dashboards with no public surface.',
   },
   {
     name: 'Deploying a Static SPA on AWS',
