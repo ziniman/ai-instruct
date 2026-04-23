@@ -27,6 +27,7 @@
     "skills/",
     ".claude-plugin/",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "*-guide.md",
     "llms.txt"

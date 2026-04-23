@@ -85,6 +85,22 @@ The Section 0 pattern is the core of the approach: questions replace generic boi
 5. Run `npm run build:skills` to generate `skills/<skillName>/SKILL.md` and commit it alongside the guide
 6. Add the guide's raw GitHub URL to `llms.txt`
 
+## Changelog
+
+`CHANGELOG.md` in the repo root tracks all meaningful changes. Update it on every commit that adds, modifies, or removes guide content, CLI behaviour, skills, or plugin metadata. Skip changelog entries for typo fixes, formatting-only changes, and version-bump-only commits.
+
+Format: add a new `## YYYY-MM-DD - vX.Y.Z` section at the top with a table:
+
+```markdown
+## YYYY-MM-DD - vX.Y.Z
+
+| Date | Affected skill(s) | Change |
+|------|------------------|--------|
+| YYYY-MM-DD | `skill-name` | One-line description of what changed and why it matters |
+```
+
+Use backtick skill names (`seo-llmo`, `web-accessibility`, etc.) or `all` / `README` / `CLI` when the change is not skill-specific.
+
 ## Commit style
 
 - No `Co-Authored-By` lines
