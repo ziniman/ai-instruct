@@ -89,17 +89,17 @@ The Section 0 pattern is the core of the approach: questions replace generic boi
 
 `CHANGELOG.md` in the repo root tracks all meaningful changes. Update it on every commit that adds, modifies, or removes guide content, CLI behaviour, skills, or plugin metadata. Skip changelog entries for typo fixes, formatting-only changes, and version-bump-only commits.
 
-Format: add a new `## YYYY-MM-DD - vX.Y.Z` section at the top with a table:
+Format: add a new `## vX.Y.Z · YYYY-MM-DD` section at the top with one bold entry per changed area:
 
 ```markdown
-## YYYY-MM-DD - vX.Y.Z
+## vX.Y.Z &nbsp;·&nbsp; YYYY-MM-DD
 
-| Date | Affected skill(s) | Change |
-|------|------------------|--------|
-| YYYY-MM-DD | `skill-name` | One-line description of what changed and why it matters |
+**`skill-name`** — One-line description of what changed and why it matters
+
+**`another-skill`** — Another change
 ```
 
-Use backtick skill names (`seo-llmo`, `web-accessibility`, etc.) or `all` / `README` / `CLI` when the change is not skill-specific.
+Use backtick skill names (`seo-llmo`, `web-accessibility`, etc.) or `all guides`, `CLI`, `README` when the change is not skill-specific.
 
 ## Commit style
 
