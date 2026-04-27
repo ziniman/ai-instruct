@@ -4,7 +4,7 @@ All notable content and feature changes to ai-instruct. Ordered newest to oldest
 
 ---
 
-## v2.0.1 &nbsp;·&nbsp; 2026-04-27
+## v2.0.2 &nbsp;·&nbsp; 2026-04-27
 
 **`seo-llmo`** — Expanded agent-readiness coverage from ORA (ora.run) scan analysis: sameAs entity linking (Wikidata/Wikipedia), Speakable schema, Organization contactPoint/address, agent instruction block in llms.txt, modular per-section llms.txt, NLWeb schemamap robots.txt directive, trust anchor pages (500+ chars), pricing.md, /.well-known/agent.json, AGENTS.md, ?mode=agent view, content efficiency (text:HTML ratio), and ORA scanner in validation
 
