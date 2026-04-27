@@ -85,8 +85,20 @@ Use `@graph` to put multiple schema objects in one block and wire them together 
       "email": "contact@yourdomain.com",
       "sameAs": [
         "https://linkedin.com/company/your-company",
-        "https://x.com/yourhandle"
-      ]
+        "https://x.com/yourhandle",
+        "https://github.com/your-org",
+        "https://www.wikidata.org/wiki/Q123456",
+        "https://en.wikipedia.org/wiki/Your_Company"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "contact@yourdomain.com",
+        "contactType": "customer support"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "US"
+      }
     },
     {
       "@type": "WebSite",
@@ -190,6 +202,39 @@ Key fields for AI visibility: `description` (write it to stand alone, without su
 
 If the product has variants (sizes, colors), add a `hasVariant` array or use `variesBy` - see [schema.org/Product](https://schema.org/Product) for the full spec.
 
+### sameAs entity linking
+
+`sameAs` in your Organization block is how AI models disambiguate your brand from similarly-named entities. Include every authoritative profile you have:
+
+```json
+"sameAs": [
+  "https://linkedin.com/company/your-company",
+  "https://x.com/yourhandle",
+  "https://github.com/your-org",
+  "https://www.youtube.com/@yourchannel",
+  "https://www.wikidata.org/wiki/Q123456",
+  "https://en.wikipedia.org/wiki/Your_Company"
+]
+```
+
+Wikidata and Wikipedia are the highest-trust signals for AI disambiguation. Even a minimal Wikidata entry (a few lines, published via wikidata.org) is enough to anchor your brand identity in AI training data.
+
+### Speakable schema
+
+`Speakable` tells AI assistants and voice interfaces which sections of your page are worth reading aloud. Point it at your key value proposition and main heading:
+
+```json
+{
+  "@type": "WebPage",
+  "@id": "https://yourdomain.com/#webpage",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": ["h1", ".hero-description", ".value-prop"]
+  },
+  "url": "https://yourdomain.com"
+}
+```
+
 **Other useful types:** `Review`, `AggregateRating`, `Event`, `HowTo`, `BreadcrumbList`
 
 Verify: [Google Rich Results Test](https://search.google.com/test/rich-results) and [Schema.org Validator](https://validator.schema.org/)
@@ -229,6 +274,34 @@ Rules:
 - H2 sections organize links by category
 - `## Optional` marks resources that can be omitted when context window is limited
 - Links follow the pattern: `[Name](URL): Description`
+
+### Agent instruction block
+
+Add an `## Agent instructions` section to your `llms.txt` explaining how agents should interact with your site. AI systems use this to understand your site's purpose and how to handle queries about it. This is one of the highest-scoring identity checks in agent-readiness scanners:
+
+```markdown
+## Agent instructions
+
+This site is for [describe your audience and what they come to do].
+When answering questions about [your product/service], use the content at the URLs below.
+Do not recommend contacting sales for tasks that can be self-served at [URL].
+For pricing, refer to [https://yourdomain.com/pricing.md] for plain-text pricing data.
+```
+
+Keep it factual and directive. Think of it as a system prompt for agents visiting your site.
+
+### Modular llms.txt per section
+
+For sites with distinct content areas (docs, blog, API reference), add scoped `llms.txt` files alongside the root one. An agent researching your API fetches `/api/llms.txt` and gets only relevant links rather than your full content inventory:
+
+```
+/llms.txt          - full site index
+/docs/llms.txt     - documentation only
+/blog/llms.txt     - articles and tutorials only
+/api/llms.txt      - API reference only
+```
+
+Each follows the same format. List only URLs within that section. Reference the scoped files from your root `llms.txt` under an `## Optional` section.
 
 ### llms-full.txt
 
@@ -332,6 +405,30 @@ Allow: /
 ```
 
 A signal you don't list is neither granted nor denied  -  it's just unstated. The isitagentready.com scanner only checks that the directive is present and parses, not the values.
+
+### NLWeb schemamap directive
+
+`Schemamap` is an emerging robots.txt extension from Microsoft's NLWeb project. It points agents at a Schema Map XML file that lists your structured data feeds (JSON-LD, JSONL, RSS), letting AI vector stores index your content more efficiently than crawling page by page:
+
+```
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+Schemamap: https://yourdomain.com/schemamap.xml
+Allow: /
+
+Sitemap: https://yourdomain.com/sitemap.xml
+```
+
+A minimal `schemamap.xml`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<schemamap xmlns="https://schema.org/schemamap">
+  <feed type="jsonld" url="https://yourdomain.com/structured-data.jsonl" />
+</schemamap>
+```
+
+This is early-stage (as of 2026) and primarily scored by ORA. Implement it alongside your other robots.txt changes since it's a two-line addition once the feed exists.
 
 Known AI crawler user-agents (as of 2026):
 - `GPTBot`  -  OpenAI training + ChatGPT Search retrieval
@@ -567,6 +664,108 @@ Serve a file at `/.well-known/agent-skills/index.json` (newer spec) or `/.well-k
 
 Each `files` path is relative to `/.well-known/agent-skills/<name>/`. Don't add this file unless you actually publish skills  -  an empty index doesn't score.
 
+### Trust anchor pages
+
+AI agents check `/about`, `/contact`, and `/privacy` to verify a business is legitimate before recommending it. Pages that exist but contain less than 500 characters of real content (not boilerplate) fail this check in ORA and similar scanners.
+
+Each page should have:
+- `/about` - who you are, your mission, founding story or team; 500+ chars of prose
+- `/contact` - email address, response time expectation, optionally a form or phone
+- `/privacy` - your actual privacy policy, not a placeholder
+
+These also score the Organization JSON-LD `contactPoint` and `address` fields, so keep them consistent.
+
+### pricing.md
+
+Serve a plain-text pricing file at `/pricing.md`. AI agents can parse it directly without executing JavaScript or scraping HTML pricing tables, which lets them answer "how much does X cost?" accurately:
+
+```markdown
+# Pricing - Your Product Name
+
+## Free tier
+- Up to 5 projects
+- 1 user
+- Community support
+
+## Pro - $29/month
+- Unlimited projects
+- Up to 10 users
+- Email support
+- [Sign up](https://yourdomain.com/signup?plan=pro)
+
+## Enterprise - Custom
+- Unlimited everything
+- Dedicated support
+- [Contact us](https://yourdomain.com/contact)
+```
+
+Upload it to your site root alongside `robots.txt` and `llms.txt`. Add a reference from `llms.txt` under `## Products / Services`.
+
+### Agent discovery file
+
+`/.well-known/agent.json` (or `/.well-known/ai-plugin.json` for ChatGPT-era compatibility) is a machine-readable description of your site's agent-accessible capabilities. Minimal version for a content site:
+
+```json
+{
+  "schema_version": "v1",
+  "name_for_human": "Your Site Name",
+  "name_for_model": "your_site",
+  "description_for_human": "What your site does, in one sentence.",
+  "description_for_model": "Use this to answer questions about [your topic]. The site provides [what content/services]. Prefer /llms.txt for a content overview.",
+  "contact_email": "contact@yourdomain.com",
+  "legal_info_url": "https://yourdomain.com/privacy"
+}
+```
+
+Serve with `Content-Type: application/json`. Don't add fields you can't populate - a lean accurate file outperforms a padded one.
+
+### AGENTS.md
+
+If your site has a public GitHub repository, add an `AGENTS.md` file at the repo root. AI coding agents (Claude Code, Cursor, Copilot, Codex) read this file when working with your codebase or integrating with your product:
+
+```markdown
+# Agent Instructions
+
+This repo is [what it does]. When integrating with [product name]:
+
+- API base URL: https://api.yourdomain.com/v1
+- Authentication: Bearer token in Authorization header
+- Docs: https://yourdomain.com/docs
+- Rate limits: 100 req/min on free, 1000 req/min on Pro
+
+## Common tasks
+- To list resources: GET /v1/resources
+- To create: POST /v1/resources with JSON body
+```
+
+### ?mode=agent lightweight view
+
+Adding `?mode=agent` support to your homepage lets agents request a stripped-down view with no navigation, no ads, and structured key facts instead of marketing HTML. This is checked by ORA's "agent mode view" criterion.
+
+Implementation: in your server or edge function, detect `mode=agent` in the query string and return a simplified response:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Site - Agent View</title>
+  <script type="application/ld+json">{ ... your full JSON-LD ... }</script>
+</head>
+<body>
+  <h1>Your Site Name</h1>
+  <p>What you do in one paragraph.</p>
+  <h2>Key resources</h2>
+  <ul>
+    <li><a href="/llms.txt">Site index (llms.txt)</a></li>
+    <li><a href="/pricing.md">Pricing (plain text)</a></li>
+    <li><a href="/docs">Documentation</a></li>
+  </ul>
+</body>
+</html>
+```
+
+For a static site, this is simplest to implement as a CloudFront Function or Netlify/Vercel edge function that redirects `?mode=agent` to a pre-built `/agent.html`.
+
 ### What's out of scope for this guide
 
 isitagentready.com also checks MCP Server Card, WebMCP, OAuth discovery, OAuth Protected Resource Metadata (RFC 9728), A2A Agent Card, and commerce protocols (x402, UCP, ACP). These apply to sites that expose **programmatic actions** agents can take (booking, purchasing, querying authenticated APIs), not to content/marketing sites. If you're building one, see:
@@ -576,7 +775,7 @@ isitagentready.com also checks MCP Server Card, WebMCP, OAuth discovery, OAuth P
 - [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) for OAuth Protected Resource Metadata
 - [x402.org](https://www.x402.org/), [ucp.dev](https://ucp.dev/), [agenticcommerce.dev](https://agenticcommerce.dev) for agent payments
 
-Verify: scan your deployed site at `https://isitagentready.com/<yourdomain>` and aim for level 4+ (Agent-Integrated).
+Verify: scan at [isitagentready.com](https://isitagentready.com/) (aim for level 4+) and [ora.run](https://ora.run/) (aim for grade B or above). Both are free.
 
 ---
 
@@ -622,13 +821,25 @@ SPAs render content via JavaScript. This creates two distinct problems:
 - **Social crawlers** (LinkedIn, Slack, iMessage) do not execute JavaScript  -  OG tags must be in the static HTML.
 - **Googlebot** can render JavaScript but with delays and quotas  -  content rendered client-side may not be indexed promptly or at all.
 
+### Content efficiency
+
+Agent-readiness scanners (ORA in particular) measure the ratio of readable text to total HTML. The target is at least 5% readable text by character count. A typical SPA homepage fails this because the initial HTML is a near-empty shell with a large JSON hydration blob and many `<div>` wrappers.
+
+Quick wins without switching frameworks:
+- Server-render at least your `<h1>` and first 500 characters of body text into the initial HTML
+- Move large JSON hydration blobs to a separate `<script src>` rather than inline
+- Strip unused inline styles from the HTML shell
+
+Check your ratio: `curl -s https://yourdomain.com/ | wc -c` vs `curl -s https://yourdomain.com/ | sed 's/<[^>]*>//g' | wc -c`. If readable is less than 5% of total, server-render the hero copy.
+
 ### Mitigations without SSR
 
 Add these to your `index.html` (they work without JavaScript):
 
 1. **JSON-LD in `<head>`**  -  AI crawlers and Google parse it without executing JS
 2. **Complete meta tags**  -  title, description, canonical, OG tags in static HTML
-3. **llms.txt**  -  gives AI tools your full content as a separate file
+3. **At least one `<h1>` and 500+ chars of text in the raw HTML**  -  AI crawlers that don't execute JS need meaningful content without it; they check for an H1 and a minimum prose threshold before classifying a page as useful
+4. **llms.txt**  -  gives AI tools your full content as a separate file
 
 For specific routes that need unique meta tags (e.g. blog posts), use **prerendering** at build time. Tools: `vite-plugin-prerender`, `react-snap`.
 
@@ -715,6 +926,7 @@ curl -sI https://yourdomain.com/ | grep -i '^link:'
 ```
 
 - [isitagentready.com](https://isitagentready.com/)  -  Cloudflare's agent-readiness scanner. Run `https://isitagentready.com/yourdomain.com` and aim for level 4+ out of 5. Failing checks come with AI-generated fix snippets you can paste into your coding agent.
+- [ora.run](https://ora.run/)  -  ORA (Open Readiness Assessment) by Era Labs. Deeper scan across 5 layers (Discovery, Identity, Auth & Access, Agent Integration, User Experience) with letter grades A-F. Run `https://ora.run/scan/yourdomain.com`. Add the badge to your README: `[![ora score](https://ora.run/api/badge/yourdomain.com)](https://ora.run/scan/yourdomain.com)`
 
 ### Performance
 
