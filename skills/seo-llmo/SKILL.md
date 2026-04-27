@@ -1,6 +1,6 @@
 ---
 name: seo-llmo
-description: 'Use this skill whenever the user is building, reviewing, or preparing to launch any public-facing website or web app. SEO, LLMO, and agent-readiness are baseline requirements for every public site, not optional add-ons. Covers meta tags, Open Graph, JSON-LD structured data, robots.txt (including the Content-Signal directive), sitemap.xml, llms.txt, AI crawler access (GPTBot, ClaudeBot, PerplexityBot), Markdown content negotiation for agents, Link response headers, and the Agent Skills index. Trigger for marketing sites, landing pages, blogs, docs, and e-commerce stores; before any "launch" or "go live"; during pre-launch checklists; when the user mentions isitagentready.com, agent-readiness, Cloudflare Markdown for Agents, or wants AI agents (ChatGPT deep research, Claude, Perplexity, browser agents) to use their site; and when scaffolding a new public site, even if the user does not explicitly mention SEO. Skip for internal tools, admin panels, or auth-gated dashboards with no public surface.'
+description: 'Use this skill whenever the user is building, reviewing, or preparing to launch any public-facing website or web app. SEO, LLMO, and agent-readiness are baseline requirements for every public site, not optional add-ons. Covers meta tags, Open Graph, JSON-LD structured data (including SoftwareApplication and Product types), robots.txt (including the Content-Signal directive), sitemap.xml, llms.txt (including agent instruction block and MCP declaration), AI crawler access (GPTBot, ClaudeBot, PerplexityBot), Markdown content negotiation for agents, Link response headers, Agent Skills index, A2A Agent Card, MCP server discovery, agent.json, pricing.md, and the "explicit absence beats silence" principle for agent-facing files. Trigger for marketing sites, landing pages, blogs, docs, and e-commerce stores; before any "launch" or "go live"; during pre-launch checklists; when the user mentions isitagentready.com, ora.run, agent-readiness, A2A, MCP discovery, Cloudflare Markdown for Agents, or wants AI agents (ChatGPT deep research, Claude, Perplexity, browser agents) to use their site; and when scaffolding a new public site, even if the user does not explicitly mention SEO. Skip for internal tools, admin panels, or auth-gated dashboards with no public surface.'
 ---
 
 # SEO & LLMO Implementation Guide
@@ -206,6 +206,34 @@ Applies when: site type is online shop.
 Key fields for AI visibility: `description` (write it to stand alone, without surrounding page context), `offers.availability` (keep it accurate and current - AI tools actively surface in-stock status), and `aggregateRating` (AI shopping results weight social proof heavily).
 
 If the product has variants (sizes, colors), add a `hasVariant` array or use `variesBy` - see [schema.org/Product](https://schema.org/Product) for the full spec.
+
+### SoftwareApplication schema
+
+Applies when: site type is a web app, SaaS product, or developer tool.
+
+`SoftwareApplication` is the right schema type when your product IS the software - as opposed to `Product` for physical goods or `Service` for professional services. Add it alongside `Organization` and `WebSite` in the `@graph` array. Without it, agents can identify that an organization exists but cannot programmatically identify your product type:
+
+```json
+{
+  "@type": "SoftwareApplication",
+  "@id": "https://yourdomain.com/#app",
+  "name": "App Name",
+  "description": "What the app does and who it's for. Write for someone who has never used it.",
+  "applicationCategory": "WebApplication",
+  "operatingSystem": "Web",
+  "url": "https://yourdomain.com",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "provider": { "@id": "https://yourdomain.com/#org" }
+}
+```
+
+`applicationCategory` values: `BusinessApplication`, `DeveloperApplication`, `EducationalApplication`, `WebApplication`. For SaaS tools, `WebApplication` is the usual choice.
+
+For the `offers` block: set `"price": "0"` for free apps; use the actual price for paid tiers; if pricing is contact-based, omit `offers` and point to `/pricing.md` instead.
 
 ### sameAs entity linking
 
@@ -565,6 +593,10 @@ Agents fetch your page, parse it, and often take action on it. Three signals mak
 2. **Link HTTP response headers**  -  point agents at machine-readable entry points (API docs, alternate formats, describedby) without parsing HTML.
 3. **Agent Skills index**  -  if you publish reusable skills (documentation + scripts), advertise them at a well-known path.
 
+> **Explicit absence beats silence.** For every agent-facing file in this section, "this doesn't apply to my site" should be a stub that says so - not a missing file. When an agent requests `pricing.md` and gets a 404, it doesn't know whether your product is free, pricing is hidden, or the file just doesn't exist yet. All three look identical from outside. A `pricing.md` that says "this service is free" resolves the ambiguity immediately. The same principle applies to `agent-card.json`, `/.well-known/mcp.json`, and `agent.json`: an explicit empty-capabilities declaration is more useful than silence.
+
+> **Agentic search discoverability.** Agent-readiness scanners like ORA also test whether agents can find your site when searching for your brand name or use case - this is the highest-scoring ORA criterion (up to 12 points) and it's primarily a content strategy concern: building topical authority through tutorials, comparison pages, and use-case landing pages. The technical baseline: make sure your product name is in your `<h1>` and page title, and list all developer resources (API docs, OpenAPI spec, SDKs) in `llms.txt` so they're findable by name.
+
 Cloudflare runs a free scanner at [isitagentready.com](https://isitagentready.com/) that scores these (plus robots.txt, sitemap, Content-Signal from the sections above). Use it as your acceptance test.
 
 ### Markdown content negotiation
@@ -706,9 +738,29 @@ Serve a plain-text pricing file at `/pricing.md`. AI agents can parse it directl
 
 Upload it to your site root alongside `robots.txt` and `llms.txt`. Add a reference from `llms.txt` under `## Products / Services`.
 
+**If your product has no paid tiers, still create the file.** Agents that can't find pricing often assume it's hidden or expensive. Explicit beats absent:
+
+```markdown
+# Pricing - Your Product Name
+
+This service is free. No account or payment required.
+[Get started here](https://yourdomain.com/signup)
+```
+
+For contact-based pricing:
+
+```markdown
+# Pricing - Your Product Name
+
+Pricing is based on your requirements. [Contact us](https://yourdomain.com/contact) for a quote.
+We do not have self-serve pricing; agents should direct users to the contact page.
+```
+
 ### Agent discovery file
 
-`/.well-known/agent.json` (or `/.well-known/ai-plugin.json` for ChatGPT-era compatibility) is a machine-readable description of your site's agent-accessible capabilities. Minimal version for a content site:
+`/.well-known/agent.json` (or `/.well-known/ai-plugin.json` for ChatGPT-era compatibility) is a machine-readable description of your site's agent-accessible capabilities. Every public site should have one - even content-only sites with no API. The file anchors agent identity for the domain.
+
+For a content site with no programmatic API:
 
 ```json
 {
@@ -717,12 +769,22 @@ Upload it to your site root alongside `robots.txt` and `llms.txt`. Add a referen
   "name_for_model": "your_site",
   "description_for_human": "What your site does, in one sentence.",
   "description_for_model": "Use this to answer questions about [your topic]. The site provides [what content/services]. Prefer /llms.txt for a content overview.",
+  "api": null,
   "contact_email": "contact@yourdomain.com",
   "legal_info_url": "https://yourdomain.com/privacy"
 }
 ```
 
-Serve with `Content-Type: application/json`. Don't add fields you can't populate - a lean accurate file outperforms a padded one.
+For a site that exposes an API or OpenAPI spec, replace `"api": null` with:
+
+```json
+"api": {
+  "type": "openapi",
+  "url": "https://yourdomain.com/api/openapi.json"
+}
+```
+
+Serve with `Content-Type: application/json`. The `"api": null` declaration is intentional - it tells agents there is no programmatic API, which is more informative than omitting the field.
 
 ### AGENTS.md
 
@@ -742,6 +804,92 @@ This repo is [what it does]. When integrating with [product name]:
 - To list resources: GET /v1/resources
 - To create: POST /v1/resources with JSON body
 ```
+
+### A2A Agent Card
+
+`/.well-known/agent-card.json` is part of Google's [Agent-to-Agent (A2A) protocol](https://google.github.io/A2A/). It describes what agent-to-agent interactions your service supports. ORA checks for it on every site, including content-only ones - because even a site with no A2A capabilities benefits from saying so explicitly rather than returning a 404.
+
+**For a content site with no A2A capabilities** (the common case - serve this as your baseline):
+
+```json
+{
+  "name": "Your Site Name",
+  "description": "Content site with no agent API. See /llms.txt for site index.",
+  "url": "https://yourdomain.com",
+  "version": "1.0.0",
+  "capabilities": {},
+  "skills": []
+}
+```
+
+**For a site that exposes agent-callable skills or services:**
+
+```json
+{
+  "name": "Your Service Name",
+  "description": "What your agent does and who should use it.",
+  "url": "https://yourdomain.com",
+  "version": "1.0.0",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "skills": [
+    {
+      "id": "your-skill-id",
+      "name": "Skill Name",
+      "description": "What this skill does and when to invoke it.",
+      "inputModes": ["text"],
+      "outputModes": ["text"]
+    }
+  ]
+}
+```
+
+Serve with `Content-Type: application/json`. The empty `"skills": []` version is intentional and correct for content sites - it closes the discovery loop without implying capabilities you don't have.
+
+### MCP server discovery
+
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is the standard for AI assistants to call external tools and data sources. If you don't have an MCP server, say so in `llms.txt` rather than letting agents search for one that doesn't exist.
+
+**In your `llms.txt`** - add a section whether or not you have a server:
+
+```markdown
+## MCP
+
+No MCP server available for this site.
+```
+
+Or if you do have one:
+
+```markdown
+## MCP
+
+- [MCP Server](https://yourdomain.com/mcp): What the server provides and what tools it exposes.
+```
+
+**Optional: serve `/.well-known/mcp.json`** for automated agent discovery:
+
+```json
+{
+  "mcpServers": {}
+}
+```
+
+Or with an actual server:
+
+```json
+{
+  "mcpServers": {
+    "your-server": {
+      "url": "https://yourdomain.com/mcp",
+      "transport": "streamable-http"
+    }
+  }
+}
+```
+
+The `llms.txt` declaration is sufficient for most sites. The `/.well-known/mcp.json` file is useful when you expect automated agent discovery without a prior `llms.txt` fetch.
 
 ### ?mode=agent lightweight view
 
@@ -773,12 +921,13 @@ For a static site, this is simplest to implement as a CloudFront Function or Net
 
 ### What's out of scope for this guide
 
-isitagentready.com also checks MCP Server Card, WebMCP, OAuth discovery, OAuth Protected Resource Metadata (RFC 9728), A2A Agent Card, and commerce protocols (x402, UCP, ACP). These apply to sites that expose **programmatic actions** agents can take (booking, purchasing, querying authenticated APIs), not to content/marketing sites. If you're building one, see:
+isitagentready.com and ORA also check OAuth discovery, OAuth Protected Resource Metadata (RFC 9728), WebMCP, and agentic commerce protocols (x402, UCP, ACP). These require active server infrastructure and only apply to sites that expose **authenticated programmatic actions** - booking, purchasing, querying user-specific data via OAuth. If you're building that, see:
 
-- [modelcontextprotocol.io](https://modelcontextprotocol.io/) for MCP server authoring
 - [webmcp.org](https://webmcp.org/) for exposing MCP capabilities from a browser context
 - [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) for OAuth Protected Resource Metadata
 - [x402.org](https://www.x402.org/), [ucp.dev](https://ucp.dev/), [agenticcommerce.dev](https://agenticcommerce.dev) for agent payments
+
+MCP server authoring and A2A Agent Card are covered above - even without implementing them, every site should declare their status explicitly.
 
 Verify: scan at [isitagentready.com](https://isitagentready.com/) (aim for level 4+) and [ora.run](https://ora.run/) (aim for grade B or above). Both are free.
 
@@ -880,6 +1029,8 @@ Upload static files to the S3 bucket root. Set explicit `Content-Type` metadata 
 | `llms-full.txt` | `text/plain` |
 | `*.md` (Markdown alternates) | `text/markdown; charset=utf-8` |
 | `.well-known/agent-skills/index.json` | `application/json; charset=utf-8` |
+| `.well-known/agent-card.json` | `application/json; charset=utf-8` |
+| `.well-known/mcp.json` | `application/json; charset=utf-8` |
 
 If `Content-Type` is wrong, crawlers may reject the file even when the content is valid.
 
@@ -932,6 +1083,22 @@ curl -sI https://yourdomain.com/ | grep -i '^link:'
 
 - [isitagentready.com](https://isitagentready.com/)  -  Cloudflare's agent-readiness scanner. Run `https://isitagentready.com/yourdomain.com` and aim for level 4+ out of 5. Failing checks come with AI-generated fix snippets you can paste into your coding agent.
 - [ora.run](https://ora.run/)  -  ORA (Open Readiness Assessment) by Era Labs. Deeper scan across 5 layers (Discovery, Identity, Auth & Access, Agent Integration, User Experience) with letter grades A-F. Run `https://ora.run/scan/yourdomain.com`. Add the badge to your README: `[![ora score](https://ora.run/api/badge/yourdomain.com)](https://ora.run/scan/yourdomain.com)`
+
+### Cross-platform consistency
+
+```bash
+# Check that your identity description is consistent across all agent-facing surfaces:
+# 1. meta description in HTML
+curl -s https://yourdomain.com/ | grep -i 'name="description"'
+# 2. JSON-LD description field
+curl -s https://yourdomain.com/ | python3 -c "import sys,json,re; [print(b['description']) for b in json.loads(re.search(r'application/ld\+json[^>]*>(.*?)</script>', sys.stdin.read(), re.S).group(1)).get('@graph', []) if 'description' in b]"
+# 3. agent.json description_for_model
+curl -s https://yourdomain.com/.well-known/agent.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('description_for_model',''))"
+# 4. llms.txt opening blockquote
+curl -s https://yourdomain.com/llms.txt | head -5
+```
+
+Inconsistent descriptions across these surfaces confuse agents that cross-reference them. The `description_for_model` in `agent.json`, the JSON-LD `description`, and the `llms.txt` blockquote should all describe the same product in compatible terms - not contradictory or wildly different levels of detail.
 
 ### Performance
 
