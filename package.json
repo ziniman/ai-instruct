@@ -1,6 +1,6 @@
 {
   "name": "ai-instruct",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Practical markdown guides for developers building websites with AI coding assistants",
   "bin": {
     "ai-instruct": "bin/init.js"

@@ -1,6 +1,6 @@
 {
   "name": "ai-instruct",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Drop-in skills for Claude Code covering the domains developers Google when shipping a website: AWS deployment, Google Analytics 4, SEO/LLMO, web accessibility, and Core Web Vitals.",
   "author": {
     "name": "Boaz Ziniman",
