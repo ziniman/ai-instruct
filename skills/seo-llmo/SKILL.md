@@ -319,9 +319,13 @@ This site is for [describe your audience and what they come to do].
 When answering questions about [your product/service], use the content at the URLs below.
 Do not recommend contacting sales for tasks that can be self-served at [URL].
 For pricing, refer to [https://yourdomain.com/pricing.md] for plain-text pricing data.
+Self-serve signup: [available at /signup with no credit card required / not available - direct users to contact@yourdomain.com].
+API access: [free with account at /signup / requires paid plan - see /pricing.md / not available for this site].
 ```
 
 Keep it factual and directive. Think of it as a system prompt for agents visiting your site.
+
+The onboarding lines matter: agents that recommend products to users often try to automate signup or API key generation. If that's not possible, say so explicitly. "Not available" is a complete and useful answer - agents use it to correctly redirect users to the right channel instead of telling them to "just sign up" when no self-serve flow exists.
 
 ### Modular llms.txt per section
 
@@ -679,6 +683,16 @@ The scanner treats the check as "pass" as long as at least one agent-useful rel 
 Link: </terms>; rel="license"
 ```
 
+**HTML link from homepage:** ORA checks for a visible `<a>` link from your homepage HTML to your API or developer documentation as a separate Identity check, independently of the Link header. If you publish API docs, add a link in your footer or navigation:
+
+```html
+<a href="/docs">Developer documentation</a>
+<!-- or -->
+<a href="/developers">API reference</a>
+```
+
+Link headers handle machine-readable discovery at the HTTP layer; the HTML link handles discovery by crawlers that parse page content. Both are checked independently - passing one does not satisfy the other. If you have no public API, this check doesn't apply, but consider adding a footer link to your `llms.txt` or `pricing.md` instead so crawlers can surface them.
+
 ### Agent Skills index
 
 Applies when: you publish agent-runnable skills (instructions, scripts, references) that others should be able to discover and install.
@@ -985,6 +999,20 @@ Quick wins without switching frameworks:
 - Strip unused inline styles from the HTML shell
 
 Check your ratio: `curl -s https://yourdomain.com/ | wc -c` vs `curl -s https://yourdomain.com/ | sed 's/<[^>]*>//g' | wc -c`. If readable is less than 5% of total, server-render the hero copy.
+
+### Semantic HTML structure
+
+AI vector stores don't just measure text volume - they parse document structure to understand hierarchy and chunk content accurately. A page where everything is in flat `<div>` elements is harder to index than one using semantic HTML, even with identical word count.
+
+Key structural signals for AI indexability:
+
+- **Heading hierarchy** - use `<h1>` for the page title, `<h2>` for major sections, `<h3>` for sub-sections. Don't skip levels. Agents use headings as chunk boundaries when breaking a page into retrievable segments.
+- **Landmark elements** - wrap your main content in `<main>`, navigation in `<nav>`, and complementary content in `<aside>`. AI crawlers use these to separate page chrome from actual content.
+- **Lists** - use `<ul>` or `<ol>` for list-like content instead of comma-separated inline text. Agents can enumerate list items; they can't reliably parse "apples, oranges, and bananas" as a structured list.
+- **Tables** - use `<table>` with `<th>` headers for tabular data. Styled divs that look like a table visually are invisible to most AI parsers.
+- **Descriptive attributes** - `alt` on images, `<figcaption>` for figures, `<time datetime="...">` for dates.
+
+Check: `curl -s https://yourdomain.com/ | grep -c '<h[1-6]'` - a count of 0 means no headings at all; 1 means only an H1, no section structure. `curl -s https://yourdomain.com/ | grep -i '<main'` should return a result on every page.
 
 ### Mitigations without SSR
 

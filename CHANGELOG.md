@@ -4,6 +4,12 @@ All notable content and feature changes to ai-instruct. Ordered newest to oldest
 
 ---
 
+## v2.0.4 &nbsp;·&nbsp; 2026-04-28
+
+**`seo-llmo`** — Fixed three remaining ORA gaps: semantic HTML structure section (heading hierarchy, landmark elements, lists/tables as AI indexability signals with curl checks); HTML link from homepage to API docs (separate from Link headers, ORA checks both independently); onboarding friction declaration in llms.txt Agent instructions (self-serve signup and API access lines so agents don't mislead users about availability)
+
+---
+
 ## v2.0.3 &nbsp;·&nbsp; 2026-04-28
 
 **`seo-llmo`** — Added "explicit absence beats silence" principle (stubs for pricing.md, agent.json, A2A card, MCP when not applicable beat missing files); added SoftwareApplication JSON-LD schema for SaaS/app sites; added A2A Agent Card section (/.well-known/agent-card.json with full and no-capabilities templates); added MCP server discovery section (llms.txt declaration + /.well-known/mcp.json); updated agent.json to include "api": null for sites with no API; added cross-platform consistency validation check; updated out-of-scope section to reflect A2A and MCP are now in-scope; added agent-card.json and mcp.json content types to Static Hosting Notes; updated skill description to cover all new checks
