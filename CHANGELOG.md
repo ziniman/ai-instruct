@@ -4,6 +4,12 @@ All notable content and feature changes to ai-instruct. Ordered newest to oldest
 
 ---
 
+## v2.0.5 &nbsp;·&nbsp; 2026-04-28
+
+**`web-performance`** — Added four new sections: preconnect/dns-prefetch decision rule for third-party origins (2-second threshold, crossorigin requirement, over-hinting cost); script loading strategy decision table with tag manager before/after and requestIdleCallback pattern; fetchpriority vs loading="eager" clarification with 5-point LCP diagnostic checklist; CSP interaction with inlined critical CSS (three approaches: unsafe-inline, nonce, hash). Added corresponding pre-deploy checklist items for all four.
+
+---
+
 ## v2.0.4 &nbsp;·&nbsp; 2026-04-28
 
 **`seo-llmo`** — Fixed three remaining ORA gaps: semantic HTML structure section (heading hierarchy, landmark elements, lists/tables as AI indexability signals with curl checks); HTML link from homepage to API docs (separate from Link headers, ORA checks both independently); onboarding friction declaration in llms.txt Agent instructions (self-serve signup and API access lines so agents don't mislead users about availability)

@@ -134,6 +134,54 @@ const nextConfig: NextConfig = {
 
 `inlineCss` is the stronger fix for LCP. Neither fully resolves render-blocking CSS in Next.js 15; this is a known framework-level issue tracked in the Next.js repository.
 
+### CSP interaction with inlined critical CSS
+
+Inlining critical CSS is one of the most effective LCP improvements, but it has a silent failure mode: if a `Content-Security-Policy` header is active with a `style-src` directive that does not allow inline styles, the browser silently blocks the inlined `<style>` block. The page renders without styles, LCP worsens, and no build-time warning is produced - the only signal is a CSP violation in the browser console.
+
+Three approaches, in order of security:
+
+**Option (a): allow `'unsafe-inline'` in `style-src`**
+
+Easiest to add, weakest protection. Permits any inline style, including styles injected by XSS. Acceptable for apps with no elevated security requirements:
+
+```
+Content-Security-Policy: style-src 'self' 'unsafe-inline';
+```
+
+**Option (b): nonce-based allowlisting (recommended for strict CSP)**
+
+Generate a random nonce per request on the server and add it to each inline `<style>` tag. The CSP header must carry the same nonce:
+
+```
+Content-Security-Policy: style-src 'self' 'nonce-rAnd0mN0nce';
+```
+
+```html
+<style nonce="rAnd0mN0nce">
+  /* Critical CSS */
+  body { margin: 0; }
+  .hero { ... }
+</style>
+```
+
+The nonce must change on every request - a static nonce is functionally equivalent to `'unsafe-inline'`. This approach requires server-side nonce injection (available in Next.js middleware and most edge runtimes).
+
+**Option (c): hash-based allowlisting (works for static content)**
+
+Compute the SHA-256 hash of the exact inline style content and list it in `style-src`. Only that precise block is permitted - any change to the styles requires updating the hash:
+
+```
+Content-Security-Policy: style-src 'self' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=';
+```
+
+Generate the hash for your critical CSS block:
+
+```bash
+printf 'body { margin: 0; }' | openssl dgst -sha256 -binary | openssl base64
+```
+
+**Detecting the problem:** after deploying inlined critical CSS, open Chrome DevTools > Console and look for messages beginning with `Refused to apply inline style because it violates the following Content Security Policy directive`. The page may appear completely unstyled even though the `<style>` block is present in the HTML source.
+
 ### Reduce server response time (TTFB)
 
 A slow Time to First Byte delays everything downstream.
@@ -192,6 +240,46 @@ import Image from 'next/image';
   priority
 />
 ```
+
+### fetchpriority and the LCP image
+
+Two attributes are often confused when optimizing the LCP image - they are complementary, not alternatives:
+
+- `loading="eager"` tells the browser to fetch this image immediately without deferring it. It is the default for images in the initial viewport; it only matters when overriding `loading="lazy"` on an above-the-fold image.
+- `fetchpriority="high"` tells the browser's resource scheduler to deprioritize other in-flight requests relative to this one. The image is fetched eagerly AND jumps the network queue ahead of competing CSS and font downloads.
+
+An image can be fetched eagerly but still lose the priority race against render-blocking stylesheets. Use both attributes together on the LCP image and its preload hint:
+
+```html
+<!-- Preload link in <head>: fetchpriority on the hint is the higher-impact attribute -->
+<link rel="preload" as="image" href="/images/hero.webp" fetchpriority="high" />
+
+<!-- The img element: both attributes reinforce each other -->
+<img
+  src="/images/hero.webp"
+  alt="Hero image"
+  loading="eager"
+  fetchpriority="high"
+  width="1200"
+  height="630"
+/>
+```
+
+The `fetchpriority="high"` on the `<link rel="preload">` is the more impactful placement: the browser's preload scanner runs before the DOM is parsed, so it can begin fetching the image while HTML is still streaming in. Without it, the browser may classify the preload as low priority and delay it behind CSS.
+
+**Diagnostic checklist: PageSpeed still reports slow LCP despite the image appearing in the initial HTML**
+
+Work through these in order:
+
+1. **Render-blocking wrapper.** A `'use client'` component wrapping the LCP image in Next.js App Router delays its render until JS hydration completes. The `<img>` tag must appear in the raw HTML response - confirm with `curl -s https://yourdomain.com/ | grep 'hero'`. If the tag is absent from the curl output, it is being injected by JavaScript.
+
+2. **Preload hint in `<body>` instead of `<head>`.** The preload scanner only processes hints found in `<head>`. Check: `curl -s https://yourdomain.com/ | grep -B5 'preload.*image'` - confirm the `<link>` appears before `</head>`.
+
+3. **Missing `fetchpriority="high"` on the preload link.** Check: `curl -s https://yourdomain.com/ | grep 'fetchpriority'` - if this returns nothing, the attribute is absent.
+
+4. **Late-hydrating client component.** In Next.js App Router, an image inside a `'use client'` component that renders after a Suspense boundary will have its `src` set by JavaScript, not the initial HTML. The preload hint exists but the browser cannot match it to a real `<img>` element until hydration, defeating the optimization.
+
+5. **TTFB above 200 ms.** If the server is slow, no preload optimization can compensate. Fix TTFB first - resource hints only recover time that the network is the bottleneck.
 
 ---
 
@@ -729,6 +817,72 @@ src/app/
 
 Clerk v6 changed `<ClerkProvider>` behavior: it no longer opts the entire application into dynamic rendering by default. Routes that don't use auth data can be statically rendered even when `<ClerkProvider>` is present in a parent layout. When auth data is needed during server rendering, use `<ClerkProvider dynamic>` on the specific layout that requires it.
 
+### Script loading strategies
+
+Analytics, tag managers, and chat widgets are the most common cause of unused JavaScript and long tasks on otherwise well-optimized pages. The correct strategy depends on when the script's functionality is first needed.
+
+| Script type | Strategy | Rationale |
+|---|---|---|
+| Google Tag Manager | `defer` in `<head>` | Must fire before meaningful user events; does not block rendering |
+| Google Analytics (gtag.js) | `defer` in `<head>` | Same as GTM |
+| Error monitoring (Sentry, Datadog RUM) | `async` in `<head>` | Must start early; fully independent, no DOM dependency |
+| A/B testing / feature flags | Synchronous or server-side | Affects above-the-fold layout; must run before first render |
+| Chat widgets | Load on user interaction | Never needed until the user engages; heavy payload |
+| Video player embeds | Load when in viewport | Heavy; not needed until content is visible |
+| Session replay / heatmaps | `requestIdleCallback` | No urgency; load when the browser has nothing else to do |
+| Social sharing buttons | `defer` | No rendering dependency; defer is the safe minimum |
+
+**The three modes:**
+- **Blocking (default, no attribute):** pauses HTML parsing until the script downloads and executes. Never use for third-party scripts.
+- **`defer`:** downloads in parallel with HTML parsing; executes after parsing completes, in source order. Use for scripts that depend on the DOM or on each other.
+- **`async`:** downloads in parallel; executes as soon as downloaded, interrupting HTML parsing. Use for fully independent scripts with no ordering dependency.
+
+**Before/after: Google Tag Manager moved from blocking to deferred**
+
+GTM's default vendor install snippet places an inline blocking script in `<head>`. This is the documented baseline; it is not the optimal placement:
+
+```html
+<!-- Before: inline script in <head>, pauses HTML parsing -->
+<head>
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');
+  </script>
+</head>
+```
+
+```html
+<!-- After: declarative defer; dataLayer initialized synchronously so queued events are preserved -->
+<head>
+  <script>window.dataLayer = window.dataLayer || [];</script>
+  <script defer src="https://www.googletagmanager.com/gtm.js?id=GTM-XXXXXXX"></script>
+</head>
+```
+
+The synchronous `dataLayer` initialization ensures that any events pushed before GTM finishes loading are queued and replayed when GTM initializes. The declarative `defer` attribute is also picked up by the browser's preload scanner, so the GTM file downloads in parallel with HTML parsing - only its execution is deferred.
+
+For scripts with no time requirement (heatmaps, session replay), delay loading until the browser is genuinely idle:
+
+```js
+function loadWhenIdle(src) {
+  const load = () => {
+    const script = document.createElement('script');
+    script.src = src;
+    document.head.appendChild(script);
+  };
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(load, { timeout: 3000 });
+  } else {
+    setTimeout(load, 3000);
+  }
+}
+
+loadWhenIdle('https://session-replay.example.com/tracker.js');
+```
+
 ### Defer non-critical third-party scripts
 
 Use `defer` or `async` on all third-party script tags. `defer` maintains execution order; `async` executes as soon as downloaded (use for independent scripts):
@@ -761,6 +915,41 @@ For analytics and tracking scripts that don't need DOM access, [Partytown](https
 ### Self-host third-party scripts where possible
 
 Self-hosting a third-party script (vendoring it into your own static assets) eliminates the external DNS lookup and connection. The tradeoff: you must update it manually. Appropriate for stable scripts (analytics libraries) but not for scripts that require a live connection to a third-party server.
+
+### preconnect and dns-prefetch for third-party origins
+
+When the browser first contacts a new origin, it must complete three steps before the first byte can arrive: DNS resolution (~20-120 ms), TCP handshake (~20-80 ms), and TLS negotiation (~40-160 ms). For origins contacted early in the page load, this full setup sequence adds directly to LCP.
+
+Two resource hints reduce this cost:
+
+- `preconnect` - opens the full DNS + TCP + TLS connection proactively, before the browser encounters the first request to that origin. Use for origins that load within the first 2 seconds of the page.
+- `dns-prefetch` - resolves only DNS. Much lower resource cost. Use for origins that load after the initial render, or as a fallback for browsers that don't support `preconnect`.
+
+**Decision rule:** origins that fire within the first 2 seconds (fonts, analytics, auth CDN, hero image CDN) get `preconnect`. Origins that load later (chat widget on scroll, video player on click) get `dns-prefetch`.
+
+**Identifying retained third-party origins:** after scoping scripts to routes that need them and self-hosting what's feasible, list the external origins that still fire on the initial page load of your most important pages. Those are the candidates. Most pages have 2-5 retained origins.
+
+```html
+<!-- Origins needed within 2 seconds: full connection warm-up -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.analytics.example.com" />
+
+<!-- Origins needed after initial render: DNS only -->
+<link rel="dns-prefetch" href="https://chat.provider.com" />
+<link rel="dns-prefetch" href="https://player.vimeo.com" />
+```
+
+**The `crossorigin` attribute** is required on `preconnect` hints for any origin serving fonts (which use CORS fetches). Without it the browser opens two separate connections: one from the preconnect hint (no CORS) and one for the actual font request (with CORS). The preconnect then saves nothing:
+
+```html
+<!-- Font origin: crossorigin required -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+<!-- Script or API origin: crossorigin not needed -->
+<link rel="preconnect" href="https://api.analytics.example.com" />
+```
+
+**The cost of over-hinting:** each `preconnect` opens a TCP + TLS handshake immediately. Chrome keeps the connection warm for 10 seconds before dropping it if unused. Preconnecting to 6+ origins simultaneously creates competing handshakes that can interfere with the connections that actually matter. Limit `preconnect` to your 2-4 most critical origins and use `dns-prefetch` for the rest.
 
 ---
 
@@ -1032,6 +1221,10 @@ onINP(({ name, value, rating }) => {
 - [ ] Third-party scripts scoped to the routes that need them, not the root layout
 - [ ] `browserslist` set in `package.json` if not already present
 - [ ] Dynamic class name assembly avoided (full class name literals in source)
+- [ ] `preconnect` hints added in `<head>` for third-party origins that load within 2 seconds; `dns-prefetch` for later-loading origins; `crossorigin` attribute present on font origin preconnects
+- [ ] Analytics and tag managers load with `defer` (not blocking); chat widgets, video players, and heatmaps deferred to user interaction or `requestIdleCallback`
+- [ ] LCP image preload link has `fetchpriority="high"` and is in `<head>`; `<img>` tag carries both `loading="eager"` and `fetchpriority="high"`
+- [ ] If critical CSS is inlined, CSP `style-src` directive allows it via `'unsafe-inline'`, per-request nonce, or SHA-256 hash
 
 ### After deploying to production
 
