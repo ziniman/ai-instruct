@@ -16,9 +16,11 @@ npx ai-instruct init
 
 </div>
 
-The CLI detects your AI tool (Claude Code, Cursor, Copilot, Windsurf), lets you pick which guides to add, downloads them to `ai-docs/`, and adds the right reference lines to your config file automatically.
+Each guide is a deep reference on one domain - the real-world patterns, production decisions, and gotchas that take experience to get right. Drop them into your project and your AI assistant gets that domain expertise immediately, without extra prompting.
 
-Claude Code users can also install the guides as native [skills](https://docs.claude.com/en/docs/claude-code/skills), either via `npx ai-instruct init --skills` or as a one-command [plugin install](#claude-code-install-as-a-plugin).
+The CLI handles setup automatically: detects your tool (Claude Code, Cursor, Copilot, Windsurf), downloads the guides you pick, and wires up the right config references so your assistant loads them on every session.
+
+Claude Code users can also install as native [skills](https://docs.claude.com/en/docs/claude-code/skills) or a one-command [plugin](#claude-code-install-as-a-plugin) - guides trigger automatically based on what you're working on, keeping your base context lean.
 
 ## Guides
 
