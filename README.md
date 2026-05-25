@@ -2,7 +2,7 @@
 
 # AI Instruct
 
-**Drop-in guides for your AI assistant covering the domains most developers Google when building: deployment, analytics, SEO, accessibility, and more.**
+**Turn your AI assistant into a senior web developer. Production-ready guides for SEO, performance, agent-readiness, and more.**
 
 [![npm version](https://img.shields.io/npm/v/ai-instruct?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/ai-instruct)
 [![npm downloads](https://img.shields.io/npm/dm/ai-instruct?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/ai-instruct)
