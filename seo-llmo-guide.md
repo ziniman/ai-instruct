@@ -396,7 +396,7 @@ Allow: /
 
 User-agent: CCBot
 User-agent: Bytespider
-Content-Signal: search=yes, ai-input=no, ai-train=no
+Content-Signal: search=no, ai-input=no, ai-train=no
 Disallow: /
 
 Sitemap: https://yourdomain.com/sitemap.xml

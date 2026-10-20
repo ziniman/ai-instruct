@@ -466,16 +466,22 @@ gtag('config', 'G-XXXXXXXXXX', {
 Fire `page_view` on each route change:
 
 ```javascript
-// Call this on every route change, including the initial load
+// Call this on every route change, including the initial load.
+// Pass an explicit title when you have one; otherwise wait a frame so
+// frameworks that set document.title in an effect have updated it.
 function trackPageView(title) {
-  gtag('event', 'page_view', {
+  const send = () => gtag('event', 'page_view', {
     page_location: window.location.href,  // Full URL; GA4 derives page path and other page dimensions from it
-    page_title: title,
+    page_title: title || document.title,
   });
+  if (title) send();
+  else requestAnimationFrame(send);
 }
 ```
 
 Always send `page_location` (the full URL including domain, e.g. `https://yoursite.com/pricing`) and `page_title`  -  those are the parameters Google documents for manual page views. The Universal Analytics-era `page_path` parameter is not needed.
+
+Router hooks often fire before the new page has set `document.title`, which is why Option 1 can report the previous title. The one-frame wait covers titles set synchronously during render or in an effect. If a page sets its title only after data loads, pass the title explicitly (from route metadata or the page component) instead of relying on `document.title`.
 
 #### Framework Integration Examples
 
@@ -488,7 +494,7 @@ import { useLocation } from 'react-router-dom';
 function usePageTracking() {
   const location = useLocation();
   useEffect(() => {
-    trackPageView(document.title);
+    trackPageView();
   }, [location]);
 }
 ```
@@ -506,7 +512,7 @@ export function PageTracker() {
   const pathname = usePathname();
   const query = useSearchParams().toString();  // Track query-only navigations too
   useEffect(() => {
-    trackPageView(document.title);
+    trackPageView();
   }, [pathname, query]);
   return null;
 }
@@ -515,7 +521,7 @@ export function PageTracker() {
 **Vue Router:**
 ```javascript
 router.afterEach((to) => {
-  trackPageView(to.meta.title || document.title);
+  trackPageView(to.meta.title);  // Falls back to document.title after a frame
 });
 ```
 
