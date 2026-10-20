@@ -31,11 +31,15 @@ jobs:
           NAME=$(node -p "require('./package.json').name")
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+          if out=$(npm view "$NAME@$VERSION" version 2>&1); then
             echo "$NAME@$VERSION is already on npm, nothing to release." >> "$GITHUB_STEP_SUMMARY"
             echo "publish=false" >> "$GITHUB_OUTPUT"
-          else
+          elif grep -q E404 <<< "$out"; then
             echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "$out"
+            echo "::error::Could not check npm for $NAME@$VERSION. Re-run this workflow once the registry is reachable."
+            exit 1
           fi
 
       # Auth via npm trusted publishing (OIDC), so no NPM_TOKEN secret and no 2FA prompt.
