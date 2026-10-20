@@ -401,6 +401,7 @@ Allow: /
 
 User-agent: CCBot
 User-agent: Bytespider
+Content-Signal: search=yes, ai-input=no, ai-train=no
 Disallow: /
 
 Sitemap: https://yourdomain.com/sitemap.xml
@@ -607,7 +608,7 @@ Agents fetch your page, parse it, and often take action on it. Three signals mak
 2. **Link HTTP response headers**  -  point agents at machine-readable entry points (API docs, alternate formats, describedby) without parsing HTML.
 3. **Agent Skills index**  -  if you publish reusable skills (documentation + scripts), advertise them at a well-known path.
 
-> **Explicit absence beats silence.** For every agent-facing resource in this section, "this doesn't apply to my site" should be stated somewhere an agent will look - not left as silence. For free-form files like `pricing.md`, that means a short file that says so. When an agent requests `pricing.md` and gets a 404, it doesn't know whether your product is free, pricing is hidden, or the file just doesn't exist yet. All three look identical from outside. A `pricing.md` that says "this service is free" resolves the ambiguity immediately. For protocol files with strict schemas (the A2A Agent Card, MCP Server Cards), do not publish an empty stub: their specs make an empty card invalid. Express absence in two spec-clean ways instead: (a) declare it in `llms.txt` (see the `## Agent protocols` block below), and (b) serve a real `404` with a short Markdown body for the missing path, saying what is missing and pointing to `/llms.txt`. ORA's "Agent-friendly 404s" check gives partial credit for a real 404 or 410 status and full credit when a Markdown error body is also available.
+> **Explicit absence beats silence.** For every agent-facing resource in this section, "this doesn't apply to my site" should be stated somewhere an agent will look - not left as silence. For free-form files like `pricing.md`, that means a short file that says so. When an agent requests `pricing.md` and gets a 404, it doesn't know whether your product is free, pricing is hidden, or the file just doesn't exist yet. All three look identical from outside. A `pricing.md` that says "this service is free" resolves the ambiguity immediately. For protocol files with strict schemas (the A2A Agent Card, MCP Server Cards), do not publish an empty stub: their specs make an empty card invalid. Express absence in two spec-clean ways instead: (a) declare it in `llms.txt` (see the `## Agent protocols` block below), and (b) serve a real `404` with a short Markdown body for the missing path, saying what is missing and pointing to `/llms.txt` (SPA hosts return a soft 200 here unless you configure them; see Static Hosting Notes). ORA's "Agent-friendly 404s" check gives partial credit for a real 404 or 410 status and full credit when a Markdown error body is also available.
 
 > **Agentic search discoverability.** Agent-readiness scanners like ORA also test whether agents can find your site when searching for your brand name, your use case, or your developer resources - three checks worth about 12 of ORA's 100 points combined (as of October 2026). It's primarily a content strategy concern: building topical authority through tutorials, comparison pages, and use-case landing pages. The technical baseline: make sure your product name is in your `<h1>` and page title, and list all developer resources (API docs, OpenAPI spec, SDKs) in `llms.txt` so they're findable by name.
 
@@ -937,6 +938,13 @@ This site does not run an A2A agent or an MCP server.
 See https://yourdomain.com/llms.txt for what is available.
 ```
 
+SPA hosting turns these into soft 200s by default, because the fallback rule serves `index.html` with status 200 for every missing path. See "Static Hosting Notes" below for the Amplify and CloudFront fixes, then confirm the status:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://yourdomain.com/.well-known/agent-card.json
+# Expected: 404 (a 200 means the SPA fallback is still catching it)
+```
+
 **If you run a remote MCP server, publish a Server Card and an AI Catalog.** This is MCP's official discovery mechanism: the Server Card extension (SEP-2127, where SEP means MCP Specification Enhancement Proposal; an Extensions Track proposal marked Final in October 2026, whose wire format still lives in the extension repository and may change). It has two parts:
 
 1. A **Server Card** describing the server, served at your MCP endpoint URL plus `/server-card` (for example `https://yourdomain.com/mcp/server-card`). Its `description` must be 100 characters or fewer:
@@ -1118,6 +1126,26 @@ These generate actual HTML files that all crawlers read without JavaScript.
 - Files in `public/` (Vite) are copied to `dist/` and served as-is
 - Amplify's SPA rewrite rule (`/<*> -> /index.html` with 404→200) only fires when no matching file exists  -  `robots.txt`, `sitemap.xml`, and `llms.txt` are served directly without triggering the rewrite
 - No additional config needed for new static files placed in `public/`
+- That same SPA rule returns `index.html` with status 200 for missing agent discovery paths. Amplify applies rules from the top of the list down, so add a `404` rule **above** the SPA rule that sends `/.well-known/` misses to a Markdown 404 file (put `404.md` in `public/`):
+
+```json
+[
+  {
+    "source": "/.well-known/<*>",
+    "status": "404",
+    "target": "/404.md",
+    "condition": null
+  },
+  {
+    "source": "/<*>",
+    "status": "404-200",
+    "target": "/index.html",
+    "condition": null
+  }
+]
+```
+
+Amplify's docs describe the `404` type as showing the target page for addresses that don't exist, so files you do publish under `/.well-known/` (such as `agent-skills/index.json`) should still be served. After deploying, re-run the curl check above and confirm a file you do publish still returns 200.
 
 ### CloudFront + S3
 
@@ -1135,6 +1163,28 @@ Upload static files to the S3 bucket root. Set explicit `Content-Type` metadata 
 | `.well-known/ai-catalog.json` (if you publish one) | `application/ai-catalog+json` |
 
 If `Content-Type` is wrong, crawlers may reject the file even when the content is valid.
+
+**Keep `/.well-known/` misses as real 404s.** SPA setups often add a custom error response that maps 403/404 to `/index.html` with status 200. Custom error responses are set on the distribution, not per cache behavior, so they catch `/.well-known/` too. A CloudFront Function that returns a 400-or-above status bypasses custom error pages for that status, so answer the protocol paths you don't serve directly in your `viewer-request` function, before the Markdown rewrite logic:
+
+```javascript
+// Protocol discovery paths this site does not serve
+var NOT_SERVED = ['/.well-known/agent-card.json', '/.well-known/ai-catalog.json', '/.well-known/mcp/server-card.json'];
+
+function handler(event) {
+  var request = event.request;
+  if (NOT_SERVED.indexOf(request.uri) !== -1) {
+    return {
+      statusCode: 404,
+      statusDescription: 'Not Found',
+      headers: { 'content-type': { value: 'text/markdown; charset=utf-8' } },
+      body: '# Not found\n\nThis site does not run an A2A agent or an MCP server.\nSee https://yourdomain.com/llms.txt for what is available.\n'
+    };
+  }
+  return request; // in production, merge this check into the Markdown handler above (one viewer-request function per behavior)
+}
+```
+
+Remove a path from `NOT_SERVED` when you start publishing that file.
 
 ### Netlify / Vercel
 

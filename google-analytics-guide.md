@@ -496,15 +496,18 @@ function usePageTracking() {
 **Next.js App Router:**
 ```javascript
 'use client';
-// Render <PageTracker /> once in app/layout.js
+// Render once in app/layout.js, wrapped in Suspense (required for useSearchParams
+// on static pages, or the production build fails):
+//   <Suspense fallback={null}><PageTracker /></Suspense>
 import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 export function PageTracker() {
   const pathname = usePathname();
+  const query = useSearchParams().toString();  // Track query-only navigations too
   useEffect(() => {
     trackPageView(document.title);
-  }, [pathname]);
+  }, [pathname, query]);
   return null;
 }
 ```

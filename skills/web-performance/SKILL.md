@@ -245,10 +245,13 @@ import Image from 'next/image';
   alt="Hero image"
   width={1200}
   height={630}
+  sizes="100vw"
   fetchPriority="high"
   loading="eager"
 />
 ```
+
+Set `sizes` whenever the image is styled to be responsive (a full-width hero, `fill`, or CSS `width: 100%`). Without it, `next/image` only generates 1x and 2x variants of the declared width, so phones download the full desktop image. Match the value to the layout, for example `sizes="(max-width: 768px) 100vw, 1200px"`.
 
 ### fetchpriority and the LCP image
 

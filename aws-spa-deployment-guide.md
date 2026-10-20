@@ -370,22 +370,44 @@ import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 
 const ses = new SESv2Client({}); // created once per execution environment, reused across invocations
 
+const MAX_NAME = 100;
+const MAX_EMAIL = 254;
+const MAX_MESSAGE = 5000;
+
+const badRequest = (error) => ({ statusCode: 400, body: JSON.stringify({ error }) });
+
 export const handler = async (event) => {
   let data;
   try {
     data = JSON.parse(event.body ?? '{}');
   } catch {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
+    return badRequest('Invalid JSON');
+  }
+  // JSON.parse('null') or '[]' succeeds, so reject anything that is not a plain object
+  if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+    return badRequest('Body must be a JSON object');
   }
 
-  const { name, email, message } = data;
-  if (!email || !message) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'email and message are required' }) };
+  const { name = '', email, message, website } = data;
+
+  // Honeypot: a hidden "website" input that humans leave empty. Bots fill it in.
+  // Return 200 so the bot sees success, but send nothing.
+  if (website) {
+    return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+  }
+
+  if (typeof name !== 'string' || name.length > MAX_NAME) {
+    return badRequest(`name must be a string of at most ${MAX_NAME} characters`);
+  }
+  if (typeof message !== 'string' || message.trim() === '' || message.length > MAX_MESSAGE) {
+    return badRequest(`message is required, at most ${MAX_MESSAGE} characters`);
   }
   // Basic format check before the address goes into a mail header
-  if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid email address' }) };
+  if (typeof email !== 'string' || email.length > MAX_EMAIL || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return badRequest('Invalid email address');
   }
+
+  const safeName = name.replace(/[\r\n]+/g, ' ').trim() || 'anonymous';
 
   try {
     await ses.send(new SendEmailCommand({
@@ -394,8 +416,8 @@ export const handler = async (event) => {
       ReplyToAddresses: [email],                    // replies go to the visitor
       Content: {
         Simple: {
-          Subject: { Data: `Contact form: ${name ?? 'anonymous'}` },
-          Body: { Text: { Data: String(message) } },
+          Subject: { Data: `Contact form: ${safeName}` },
+          Body: { Text: { Data: message } },
         },
       },
     }));
@@ -411,6 +433,29 @@ export const handler = async (event) => {
 - Never put the visitor's address in `FromEmailAddress`. It is not a verified identity, so SES rejects the send. Use `ReplyToAddresses` instead.
 - The handler returns no CORS headers on purpose; the HTTP API or function URL config adds them (see the CORS section).
 - The Node.js runtimes include the AWS SDK for JavaScript v3, but AWS recommends bundling the clients you use so runtime updates cannot change them under you: run `npm install @aws-sdk/client-sesv2` inside `lambda/`.
+
+### Abuse controls
+
+The endpoint is public and unauthenticated, so a script can flood your inbox and burn SES quota and spend. Layer these:
+
+- **HTTP API stage throttling.** `HttpApi` does not accept throttle settings for the default stage it creates, so disable it and add the `$default` stage yourself. The limit applies to all callers combined, not per IP.
+
+```typescript
+const httpApi = new apigwv2.HttpApi(this, 'HttpApi', {
+  createDefaultStage: false,
+  corsPreflight: { /* same config as the minimal stack */ },
+});
+
+httpApi.addStage('DefaultStage', {
+  stageName: '$default',
+  autoDeploy: true,
+  throttle: { rateLimit: 5, burstLimit: 10 },   // steady requests per second, short burst
+});
+```
+
+- **Reserved concurrency (function URL path).** Add `reservedConcurrentExecutions: 2` to the `lambda.Function` props as a hard cap; a function URL then accepts at most 10 times that many requests per second. It costs nothing, but you can only reserve up to your unreserved account concurrency minus 100, and new accounts start with reduced concurrency quotas, so check Service Quotas > AWS Lambda > Concurrent executions first or the deploy fails.
+- **Honeypot field.** The handler above silently drops any submission with a non-empty `website` field. Add that input to the form, hide it off-screen with CSS (not `type="hidden"`, which bots skip), and give it `tabIndex={-1}`, `autoComplete="off"`, and `aria-hidden="true"` so people and assistive tech never fill it.
+- **AWS WAF rate-based rules** (per-IP limits) cannot attach to an HTTP API or a function URL directly. WAF protects CloudFront distributions, API Gateway REST APIs, and Amplify apps, among others, so per-IP limiting means putting CloudFront in front of the API or using a REST API.
 
 ### SES sandbox
 
