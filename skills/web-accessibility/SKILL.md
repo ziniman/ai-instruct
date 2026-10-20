@@ -1,11 +1,11 @@
 ---
 name: web-accessibility
-description: 'Use this skill whenever the user is building or reviewing any web UI. Accessibility is a baseline requirement, not a niche concern. Covers WCAG 2.2 AA, semantic HTML, ARIA patterns, keyboard navigation, focus management, color contrast, touch targets, forms, and testing with axe / screen readers. Trigger when generating any interactive component or page (forms, modals, menus, tables, navigation, layouts), before any "launch" or "go live", during pre-launch checklists, and whenever producing new HTML/JSX markup, even if the user does not explicitly mention a11y or WCAG. Skip for backend-only changes, CLI tools, or non-UI code.'
+description: 'Use this skill whenever the user is building or reviewing any web UI. Accessibility is a baseline requirement, not a niche concern. Covers WCAG 2.2 AA (including Focus Not Obscured, Target Size, Accessible Authentication), semantic HTML and native interactive elements (dialog, popover, details, invoker commands), ARIA patterns, keyboard navigation, focus management, color contrast, touch targets, forms, testing with axe / Lighthouse / screen readers, and legal context (ADA Title II and III, European Accessibility Act, EN 301 549). Trigger when generating any interactive component or page (forms, modals, menus, tooltips, tables, navigation, layouts), before any "launch" or "go live", during pre-launch checklists, when a user asks about accessibility overlays or compliance deadlines, and whenever producing new HTML/JSX markup, even if the user does not explicitly mention a11y or WCAG. Skip for backend-only changes, CLI tools, or non-UI code.'
 ---
 
 # Web Accessibility Guide
 
-> Applies to: Any website or web app | Updated: March 2026
+> Applies to: Any website or web app | Updated: October 2026
 
 A practical reference for building accessible websites  -  covering WCAG 2.2 criteria, semantic HTML, ARIA, forms, touch, and testing.
 
@@ -17,7 +17,7 @@ Answer these questions before generating accessibility code. Each answer changes
 
 **Q: Where are your users?**
 Default: worldwide  -  EU/UK requirements (EAA, PSBAR) will be flagged as applicable throughout this guide.
-Options: US only | Europe/EU | UK | Worldwide
+Options: US only | US state or local government | Europe/EU | UK | Worldwide
 
 **Q: What kind of product is this?**
 Default: company/marketing website
@@ -34,7 +34,7 @@ Options: Radix UI | shadcn/ui | MUI | Chakra UI | Other | None  -  if a library 
 Default: WCAG 2.2 AA  -  current best-practice baseline.
 Options: WCAG 2.1 AA | WCAG 2.2 AA | Section 508 | EN 301 549 | Not sure
 
-> **AI assistant:** Use these answers to prioritize. For EU products: apply EAA compliance notes. For mobile: apply touch target and pointer sections. If a known accessible component library is detected, note which patterns it handles so you don't duplicate effort.
+> **AI assistant:** Use these answers to prioritize: apply EAA notes for EU products, ADA Title II notes for US state or local government (WCAG 2.1 AA is the legal floor; still build to 2.2 AA), and the touch target and pointer sections for mobile. If a known accessible component library is detected, note which patterns it handles so you don't duplicate effort.
 
 ---
 
@@ -42,7 +42,7 @@ Options: WCAG 2.1 AA | WCAG 2.2 AA | Section 508 | EN 301 549 | Not sure
 
 1. [Legal & Compliance](#legal--compliance)
 2. [WCAG Standards Overview](#wcag-standards-overview)
-3. [WCAG 2.2  -  What's New](#wcag-22--whats-new)
+3. [WCAG 2.2: What's New](#wcag-22-whats-new)
 4. [Semantic HTML](#semantic-html)
 5. [Keyboard Navigation](#keyboard-navigation)
 6. [ARIA](#aria)
@@ -60,16 +60,17 @@ Options: WCAG 2.1 AA | WCAG 2.2 AA | Section 508 | EN 301 549 | Not sure
 
 ## Legal & Compliance
 
-Accessibility is a legal requirement across most major markets. Non-compliance carries real risk  -  fines, market access restrictions, and litigation.
+Accessibility is a legal requirement across most major markets. Non-compliance carries real risk  -  fines, market access restrictions, and litigation. This table summarizes obligations to help prioritize engineering work (as of October 2026); it is not legal advice, so have the user confirm their obligations with counsel.
 
 | Jurisdiction | Law / Standard | Scope | Notes |
 |---|---|---|---|
-| **EU** | European Accessibility Act (EAA) | Private-sector e-commerce, banking, transport, streaming. Enforceable since June 28, 2025. | Standard: EN 301 549 v3.2.1, which references WCAG 2.1 AA; WCAG 2.2 strongly recommended. Non-compliance = market access restrictions. |
-| **US** | ADA Title III | Private-sector websites and apps | ~4,000 - 4,500 lawsuits/year; e-commerce and hospitality are primary targets. Overlay-only solutions have been named in lawsuits as insufficient. |
+| **EU** | European Accessibility Act (EAA), Directive (EU) 2019/882 | Listed products and services, including e-commerce, consumer banking, e-books, passenger transport services, telephony, and audiovisual media access. National laws apply from June 28, 2025. | Microenterprises providing services (fewer than 10 staff and turnover or balance sheet of EUR 2 million or less) are exempt. Services may keep using products already in use before June 28, 2025 until June 28, 2030. The reference standard remains EN 301 549 v3.2.1 (WCAG 2.1 AA) until the European Commission cites v4.1.1 (published September 2026, incorporates WCAG 2.2) in the Official Journal. Build to WCAG 2.2 AA now. |
+| **US** | ADA Title III | Websites and apps of businesses open to the public; US courts are split on whether website-only businesses are covered | The Department of Justice (DOJ) has no regulation setting a technical standard for businesses; its guidance names WCAG as helpful guidance. Thousands of website accessibility lawsuits are filed each year; e-commerce sites are frequent targets. |
+| **US state and local government** | ADA Title II web rule (2024) | State and local government websites and mobile apps | Standard: WCAG 2.1 AA. Compliance dates, as extended by an April 2026 interim final rule: April 26, 2027 for entities serving a population of 50,000 or more; April 26, 2028 for smaller entities and special district governments. Check [ada.gov](https://www.ada.gov/resources/web-rule-first-steps/) for later changes. |
 | **US Federal** | Section 508 | Federal agencies and contractors | References WCAG 2.0 AA. Agencies procuring software must meet this baseline. |
-| **UK** | Web Accessibility Regulations 2018 + Equality Act 2010 | Public sector: WCAG 2.2 AA required. Private sector: Equality Act applies. | PSBAR (Public Sector Bodies Accessibility Regulations) requires a published accessibility statement. |
+| **UK** | Public Sector Bodies Accessibility Regulations 2018 (PSBAR) + Equality Act 2010 | Public sector: WCAG 2.2 AA required. Private sector: Equality Act applies. | PSBAR requires a published accessibility statement. |
 
-**Overlay warning:** Single-script accessibility overlays (AccessiBe, UserWay, etc.) do not achieve WCAG conformance and have been directly challenged in ADA litigation. Flag this clearly if a user asks about "automatic" or "one-line" accessibility fixes.
+**Overlay warning:** Single-script accessibility overlays (accessiBe, UserWay, etc.) do not achieve WCAG conformance and have been directly challenged in ADA litigation. In April 2025 the US Federal Trade Commission (FTC) finalized an order requiring accessiBe to pay $1 million and barring it from claiming its automated product makes websites WCAG-compliant without evidence. Flag this clearly if a user asks about "automatic" or "one-line" accessibility fixes.
 
 ---
 
@@ -81,34 +82,49 @@ WCAG (Web Content Accessibility Guidelines) uses three conformance levels:
 - **Level AA**  -  standard legal requirement across most jurisdictions (e.g. 4.5:1 contrast)
 - **Level AAA**  -  enhanced; not required site-wide but worth targeting for specific features
 
-**Target WCAG 2.2 Level AA** as your default baseline.
+**Target WCAG 2.2 Level AA** as your default baseline. WCAG 2.2 is also an international standard (ISO/IEC 40500:2025, announced by W3C in October 2025), which makes it easier for governments to adopt. W3C intends that content conforming to WCAG 2.2 also conforms to 2.1 and 2.0, so building to 2.2 AA covers laws and contracts that cite the older versions.
 
-**On WCAG 3.0:** It is a research-stage Working Draft with no published adoption timeline. It uses a different scoring model and will not replace WCAG 2.x for the foreseeable future. Do not use it as a current compliance target.
+**On WCAG 3.0 (as of October 2026):** It is still a Working Draft (latest: September 10, 2026). W3C states it is "inappropriate to cite this document as other than a work in progress" and that it has several years of work left. It does not deprecate WCAG 2. Do not use it as a compliance target or cite its requirements in audits.
 
 ---
 
-## WCAG 2.2  -  What's New
+## WCAG 2.2: What's New
 
-WCAG 2.2 was published October 2023. These criteria are not in most existing guides or tools. They represent the highest-value additions to implement.
+WCAG 2.2 was published October 2023 (republished with corrections December 2024). Older checklists and AI training data often stop at WCAG 2.1, and many still mislabel these criteria, so use the numbers and levels below. The AA criteria are the highest-value additions to implement.
 
-### 2.4.11 Focus Appearance (AA)
+### 2.4.11 Focus Not Obscured (Minimum) (AA)
 
-The focus indicator must meet two conditions simultaneously:
-
-1. **Area:** The focus indicator area must be at least as large as a 2px perimeter outline around the unfocused component.
-2. **Contrast:** The color change between focused and unfocused states must have a contrast ratio of at least 3:1.
-
-A 1px dotted border fails both. This goes beyond "don't remove `outline`."
+When an element receives keyboard focus, it must not be entirely hidden by author-created content. The usual failures are sticky headers and footers, cookie banners, and chat widgets that cover the focused element as the user tabs down the page.
 
 ```css
-/* Fails 2.4.11  -  thin, low-contrast */
+/* Reserve space for a 64px sticky header and a 48px sticky footer
+   so focused elements scroll into view clear of them */
+html {
+  scroll-padding-top: 64px;    /* match your sticky header height */
+  scroll-padding-bottom: 48px; /* match your sticky footer or banner height */
+}
+```
+
+For cookie banners and non-modal overlays, either make them modal (focus moves into them and stays until dismissed) or close them when focus leaves. 2.4.12 Focus Not Obscured (Enhanced) is the AAA version: no part of the focused element may be hidden.
+
+### 2.4.13 Focus Appearance (AAA, recommended)
+
+Focus Appearance is **Level AAA**, even though many articles still list it as "2.4.11 (AA)". At AA, you need 2.4.7 Focus Visible (an indicator is visible) and 1.4.11 Non-text Contrast (visual information that identifies a focused state needs 3:1 against adjacent colors). 2.4.13 is still the best measurable target for a focus style:
+
+1. **Area:** The focus indicator area must be at least as large as a 2 CSS pixel thick perimeter around the unfocused component.
+2. **Contrast:** The change between focused and unfocused states must have a contrast ratio of at least 3:1.
+
+A 1px dotted grey outline fails both.
+
+```css
+/* Fails 2.4.13  -  thin, low-contrast */
 :focus {
   outline: 1px dotted #999;
 }
 
-/* Passes 2.4.11  -  thick, high-contrast */
+/* Passes 2.4.13  -  thick, high-contrast */
 :focus-visible {
-  outline: 3px solid #005fcc;  /* Check #005fcc vs background meets 3:1 */
+  outline: 3px solid #005fcc;  /* 5.98:1 on white; check every background it appears on */
   outline-offset: 2px;
 }
 ```
@@ -129,9 +145,15 @@ Any interaction that uses drag-and-drop, slider, or map pan must have a single-p
 
 ### 2.5.8 Target Size Minimum (AA)
 
-Interactive targets must be at least **24×24 CSS pixels**, or have spacing such that the total clickable zone (target + surrounding space) reaches 24×24.
+Interactive targets must be at least **24×24 CSS pixels**, unless an exception applies:
 
-Best practice: 44×44px (Apple HIG), 48×48px (Material Design).
+- **Spacing:** an undersized target passes if a 24px-diameter circle centered on it does not overlap another target or another undersized target's circle.
+- **Inline:** links inside a sentence or paragraph are exempt.
+- **Equivalent:** another control on the same page does the same thing and meets the size.
+- **User agent control:** the browser draws the control and you have not restyled it (for example a default checkbox).
+- **Essential:** the size is essential or legally required (for example pins on a map).
+
+Do not flag inline text links for target size. Best practice: 44×44px (WCAG 2.5.5 Target Size (Enhanced), Level AAA, and the Apple Human Interface Guidelines (HIG)), 48×48px (Material Design).
 
 ```css
 /* Minimum compliant  -  24×24px */
@@ -152,9 +174,14 @@ Best practice: 44×44px (Apple HIG), 48×48px (Material Design).
 
 ### 3.3.8 Accessible Authentication (AA)
 
-Login and signup flows cannot rely solely on a cognitive test (e.g. image CAPTCHA with no alternative). Acceptable alternatives: passkeys, magic link via email, CAPTCHA with an audio alternative, or copy-paste support in the password field.
+No step of a login or signup flow may require a cognitive function test (remembering a password, transcribing characters, solving a puzzle) unless the step offers an alternative method or a mechanism that helps. Ways to pass:
 
-Do not block clipboard paste in password fields  -  this breaks password managers and fails this criterion.
+- **Let password managers work:** use `autocomplete="username"` and `autocomplete="current-password"`, and allow paste. Paste and password manager support count as an assisting mechanism.
+- **Offer a non-cognitive method:** passkeys or other WebAuthn (Web Authentication API) sign-in (device biometrics or PIN), or an email magic link.
+- **One-time codes:** allow paste, and add `autocomplete="one-time-code"` so the browser can fill SMS codes.
+- **CAPTCHAs:** text transcription CAPTCHAs fail, and an audio CAPTCHA that requires typing what you hear is still transcription, so it does not count as the alternative. Object-recognition CAPTCHAs ("select the images with buses") are allowed at AA, but not at AAA (3.3.9). Prefer non-interactive bot detection.
+
+Do not block clipboard paste in password or code fields  -  this breaks password managers and fails this criterion.
 
 ### 3.3.7 Redundant Entry (AA)
 
@@ -174,7 +201,7 @@ If a help mechanism (chat widget, phone number, help link, contact form) appears
 
 ### 4.1.1 Parsing  -  Removed in WCAG 2.2
 
-WCAG 2.2 removed criterion 4.1.1 Parsing. Modern browsers reliably handle malformed HTML; it no longer represents an accessibility barrier. Automated tools that still report 4.1.1 violations are reporting against a deprecated criterion. Remove it from test baselines if you're targeting WCAG 2.2.
+WCAG 2.2 removed criterion 4.1.1 Parsing. Browsers handle malformed HTML in a standardized way and assistive technology no longer parses HTML directly, so it no longer represents an accessibility barrier. W3C also added a note to WCAG 2.1 that 4.1.1 "should be considered as always satisfied" for HTML or XML content, so this applies even when a law cites WCAG 2.1. Automated tools that still report 4.1.1 violations are reporting against an obsolete criterion; remove it from test baselines. Duplicate IDs still matter when they break `aria-labelledby`, `for`, or `aria-describedby` references, because a broken reference can fail 1.3.1 Info and Relationships or 4.1.2 Name, Role, Value.
 
 ---
 
@@ -215,6 +242,34 @@ For inline content in a different language, add the `lang` attribute on the elem
 Native HTML elements carry built-in keyboard support, roles, and states. Prefer them over custom implementations. Use `<button>` for anything that triggers an action, `<a href>` for navigation  -  never a `<div onclick>`.
 
 One `<h1>` per page; don't skip heading levels. Use headings to convey document structure, not visual size.
+
+### Native interactive elements (Baseline status as of October 2026)
+
+Newer HTML features now handle focus, Escape, and state announcements that used to need custom JavaScript and ARIA. Baseline is the web-features project's cross-browser status: "widely available" means supported in all major browsers for 30+ months; "newly available" means supported in all of them now, so older browser versions may lack it.
+
+| Feature | Use it for | Baseline | Recommendation |
+|---|---|---|---|
+| `<dialog>` + `showModal()` | Modal dialogs | Widely available | Default for modals. See [Dialogs and modals](#dialogs-and-modals). |
+| `inert` attribute | Making background content unfocusable and hidden from assistive technology | Widely available | Use for custom overlays and off-screen panels. |
+| `<details>` / `<summary>` | Disclosure widgets, accordions | Widely available | Default for show/hide content. |
+| `<details name="group">` | Exclusive accordion (opening one closes the others) | Newly available (Sept 2024) | Use only when one-open-at-a-time helps; the HTML spec warns it can frustrate users who want to compare sections. |
+| `popover` attribute + `popovertarget` | Non-modal menus, toggletips, pickers | Newly available (Jan 2025) | Use for non-modal overlays. The browser exposes `aria-expanded` on the invoking button and handles Escape and light dismiss. It adds no role, so add the semantics the content needs. Never use it for modals. |
+| `command` / `commandfor` (invoker commands) | Opening a dialog or popover from a button without JavaScript | Newly available (Dec 2025) | Use with a small JavaScript fallback for older browsers. |
+| `<dialog closedby>` | Light dismiss for dialogs | Not Baseline (no Safari) | Optional enhancement only. Escape already closes a modal opened with `showModal()`. |
+| `interestfor` (interest invokers) | Hover/focus tooltips | Not Baseline (Chromium only) | Do not rely on it; use the pattern in [Touch & Pointer](#touch--pointer). |
+| Customizable `<select>` (`appearance: base-select`) | Styling native selects | Not Baseline (no Firefox) | Progressive enhancement only; unsupported browsers show a normal `<select>`, which is still accessible. |
+
+```html
+<!-- Exclusive accordion: only one section open at a time -->
+<details name="faq">
+  <summary>How do I reset my password?</summary>
+  <p>YOUR_ANSWER</p>
+</details>
+<details name="faq">
+  <summary>Can I change my email address?</summary>
+  <p>YOUR_ANSWER</p>
+</details>
+```
 
 ---
 
@@ -264,9 +319,9 @@ Focus must follow a logical order  -  top-to-bottom, left-to-right, matching vis
 | Checkbox | Space to toggle |
 | Radio group | Arrow keys to move between options |
 | Dropdown/Select | Arrow keys to navigate, Enter to select, Escape to close |
-| Dialog/Modal | Escape to close; focus trapped inside while open |
+| Dialog/Modal | Escape to close; focus stays inside while open (native `<dialog>` opened with `showModal()` does both) |
 | Tabs | Arrow keys to switch tabs |
-| Accordion | Enter/Space to expand/collapse |
+| Accordion | Enter/Space to expand/collapse (native `<details>`/`<summary>` does this) |
 
 ---
 
@@ -288,7 +343,7 @@ Use `aria-label` when there is no visible text label:
 <nav aria-label="Breadcrumb">...</nav>
 ```
 
-`aria-label` text must match or begin with the visible button text (WCAG 2.5.3 Label in Name)  -  otherwise voice control users who say "click Close" cannot activate it.
+When a control has visible text, its accessible name must contain that text, and should start with it (WCAG 2.5.3 Label in Name)  -  otherwise voice control users who say "click Close" cannot activate it. As of axe-core 4.14 (October 2026), the `label-content-name-mismatch` rule that checks this is enabled by default, so expect new findings after upgrading.
 
 Use `aria-labelledby` to reference existing visible text, which avoids duplication:
 
@@ -342,7 +397,7 @@ Announces dynamic content updates. Use `polite` for the vast majority of cases  
 
 ```html
 <div role="alert">Error: email is required.</div>      <!-- Implies aria-live="assertive" -->
-<div role="status">3 results found.</div               <!-- Implies aria-live="polite" -->
+<div role="status">3 results found.</div>              <!-- Implies aria-live="polite" -->
 <div role="dialog" aria-modal="true" aria-labelledby="dialog-title">
   <h2 id="dialog-title">Confirm Delete</h2>
 </div>
@@ -501,22 +556,57 @@ Interactive targets must be at least 24×24 CSS pixels. Best practice is 44×44p
 
 Tooltips, sub-menus, and dropdowns that appear on hover or focus must meet three conditions:
 
-1. **Dismissable**  -  the user can dismiss the tooltip without moving pointer or focus (Escape key closes it)
+1. **Dismissible**  -  the user can dismiss the tooltip without moving pointer or focus (Escape key closes it)
 2. **Hoverable**  -  the mouse can move from the trigger into the tooltip without it disappearing
 3. **Persistent**  -  the tooltip stays visible until the user dismisses it, moves focus, or removes the pointer
 
-```css
-/* Wrong: tooltip disappears when pointer leaves trigger */
-.trigger:hover .tooltip { display: block; }
+```html
+<!-- aria-describedby makes screen readers announce the tooltip text with the button -->
+<span class="tooltip-wrap">
+  <button type="button" aria-describedby="save-tip">Save</button>
+  <span id="save-tip" role="tooltip" class="tooltip">Saves a draft without publishing</span>
+</span>
+```
 
-/* Correct: tooltip stays open when pointer moves into it */
-.trigger:hover .tooltip,
-.tooltip:hover {
+```css
+.tooltip-wrap {
+  position: relative;
+}
+.tooltip {
+  display: none;      /* hidden by default */
+  position: absolute; /* place it directly against the trigger, with no gap */
+}
+
+/* Wrong: tooltip is a sibling of the trigger, so it closes as soon as the
+   pointer leaves the trigger, and keyboard users never see it */
+.trigger:hover + .tooltip { display: block; }
+
+/* Correct: a shared wrapper keeps the tooltip open while the pointer is over
+   the trigger or the tooltip, and also shows it on keyboard focus */
+.tooltip-wrap:hover .tooltip,
+.tooltip-wrap:focus-within .tooltip {
   display: block;
+}
+.tooltip-wrap.is-dismissed .tooltip {
+  display: none; /* set by the Escape handler below. Same specificity as the
+                   show rule above, so it wins only because it comes later */
 }
 ```
 
-Also expose tooltip content via keyboard/focus  -  not hover alone.
+```javascript
+// Escape hides the tooltip without moving focus or the pointer
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  document.querySelectorAll('.tooltip-wrap').forEach((wrap) => wrap.classList.add('is-dismissed'));
+});
+// Re-arm the tooltip the next time the user hovers or focuses the trigger
+document.querySelectorAll('.tooltip-wrap').forEach((wrap) => {
+  wrap.addEventListener('pointerenter', () => wrap.classList.remove('is-dismissed'));
+  wrap.addEventListener('focusin', () => wrap.classList.remove('is-dismissed'));
+});
+```
+
+Keep the tooltip adjacent to its trigger with no gap, so the pointer can cross into it. The `interestfor` attribute will eventually handle this natively, but it is Chromium-only as of October 2026.
 
 ---
 
@@ -535,18 +625,20 @@ Color alone must never be the only way to convey information  -  always pair col
 
 ```html
 <!-- Wrong: color alone marks the error -->
-<input style="border-color: red" />
+<label for="email-1">Email</label>
+<input type="email" id="email-1" style="border-color: red" />
 
 <!-- Correct: color + icon + text -->
-<input style="border-color: red" aria-describedby="err" />
-<p id="err">Email is required.</p>
+<label for="email-2">Email</label>
+<input type="email" id="email-2" style="border-color: red" aria-invalid="true" aria-describedby="err" />
+<p id="err"><span aria-hidden="true">⚠</span> Email is required.</p>
 ```
 
 ### Warning: semi-transparent rgba() text
 
 Semi-transparent colors for text are unreliable for contrast compliance. The effective contrast of `rgba(R,G,B,0.5)` depends on every background layer beneath it, including parent elements, stacked components, and page backgrounds. You cannot evaluate the contrast of a semi-transparent color in isolation.
 
-**The problem:** `rgba(16,185,129,0.5)` (50% emerald-500) on white resolves to approximately `#87DCCA`, which has a contrast ratio around 1.9:1 against white. On a dark background the same token may pass. The color looks "present" visually but fails silently.
+**The problem:** `rgba(16,185,129,0.5)` (50% emerald-500) on white resolves to approximately `#88DCC0`, which has a contrast ratio of about 1.6:1 against white. On a dark background the same token may pass. The color looks "present" visually but fails silently.
 
 **Rule:** Never use semi-transparent rgba() values for text content. Use fully opaque color tokens instead. If you need a "muted" appearance, pick a specific opaque value and measure its contrast directly.
 
@@ -556,8 +648,8 @@ color: rgba(16, 185, 129, 0.5);
 color: rgba(239, 68, 68, 0.5);
 
 /* Correct: fully opaque, measurable value */
-color: #059669;   /* emerald-600, 4.5:1 on white */
-color: #dc2626;   /* red-600, 5.9:1 on white */
+color: #047857;   /* emerald-700, 5.48:1 on white */
+color: #dc2626;   /* red-600, 4.83:1 on white */
 ```
 
 ### Context-dependent contrast: the same color token can pass or fail
@@ -565,37 +657,39 @@ color: #dc2626;   /* red-600, 5.9:1 on white */
 A color that passes contrast on one background will fail on another. This is the most common real-world failure pattern in multi-section layouts where sections use different background colors.
 
 **Example:** `slate-500` (#64748B)
-- On white (#FFFFFF): 4.48:1  -  passes AA (barely)
-- On slate-50 (#F8FAFC): 4.17:1  -  fails AA for normal text
-- On slate-100 (#F1F5F9): 3.86:1  -  fails AA for normal text
+- On white (#FFFFFF): 4.76:1  -  passes AA
+- On slate-50 (#F8FAFC): 4.55:1  -  passes AA (barely)
+- On slate-100 (#F1F5F9): 4.34:1  -  fails AA for normal text
 
 **Rule:** When a color token is used in more than one context, verify contrast against each background it appears on. Do not assume a token that passes on white will pass on tinted section backgrounds.
 
 ### Tailwind slate palette contrast reference
 
-Measured contrast ratios for slate shades against common backgrounds. AA requires 4.5:1 for normal text, 3:1 for large text and UI components.
+Contrast ratios for slate shades against common backgrounds, calculated with the WCAG 2 relative luminance formula. AA requires 4.5:1 for normal text, 3:1 for large text and UI components. Hex values are Tailwind v3; Tailwind v4 defines the palette in OKLCH, and its rendered values give ratios within about 0.1 of these.
 
 | Slate shade | Hex value | On white #FFFFFF | On slate-50 #F8FAFC | On slate-100 #F1F5F9 |
 |---|---|---|---|---|
-| slate-400 | #94A3B8 | 2.85:1  -  FAIL | 2.65:1  -  FAIL | 2.45:1  -  FAIL |
-| slate-500 | #64748B | 4.48:1  -  FAIL (AA) | 4.17:1  -  FAIL | 3.86:1  -  FAIL |
-| slate-600 | #475569 | 6.32:1  -  PASS | 5.88:1  -  PASS | 5.45:1  -  PASS |
-| slate-700 | #334155 | 9.52:1  -  PASS | 8.86:1  -  PASS | 8.20:1  -  PASS |
-| slate-800 | #1E293B | 13.3:1  -  PASS | 12.4:1  -  PASS | 11.5:1  -  PASS |
-| slate-900 | #0F172A | 17.4:1  -  PASS | 16.2:1  -  PASS | 15.0:1  -  PASS |
+| slate-400 | #94A3B8 | 2.56:1  -  FAIL | 2.45:1  -  FAIL | 2.34:1  -  FAIL |
+| slate-500 | #64748B | 4.76:1  -  PASS | 4.55:1  -  PASS (barely) | 4.34:1  -  FAIL |
+| slate-600 | #475569 | 7.58:1  -  PASS | 7.24:1  -  PASS | 6.92:1  -  PASS |
+| slate-700 | #334155 | 10.35:1  -  PASS | 9.90:1  -  PASS | 9.45:1  -  PASS |
+| slate-800 | #1E293B | 14.63:1  -  PASS | 13.98:1  -  PASS | 13.35:1  -  PASS |
+| slate-900 | #0F172A | 17.85:1  -  PASS | 17.06:1  -  PASS | 16.30:1  -  PASS |
 
 **Key takeaways:**
-- `slate-400` and `slate-500` fail AA for normal text on all common backgrounds. Use them only for decorative, non-informational content or large text (3:1 threshold).
-- `slate-600` is the minimum safe value for normal text on white and light tinted backgrounds.
-- On slate-50 or slate-100 section backgrounds, be especially careful: the effective contrast is lower than on white by about 15-20%.
+- `slate-400` fails AA for normal text on every common background, and even fails the 3:1 large-text threshold. Use it only for decorative, non-informational content.
+- `slate-500` passes on white but has almost no margin: it fails on slate-100, and any tinted or semi-transparent background can push it under 4.5:1. Treat it as "verify every use".
+- `slate-600` is the safe default for secondary text on white and light tinted backgrounds.
+- Each step from white to slate-50 to slate-100 costs about 5% of contrast, which is enough to flip a borderline color from pass to fail.
 
 ### Brand color accessibility: decorative vs. text tokens
 
 Bright brand colors are optimized for visual identity, not readability. Saturated greens, teals, and ambers that look bold and confident often fail AA contrast for normal-sized text, particularly on light backgrounds.
 
 **Example:** `emerald-500` (#10B981)
-- On white: 3.8:1  -  FAIL for normal text (passes only for large text/UI components at 3:1)
-- On slate-100: approximately 3.5:1  -  FAIL
+- On white: 2.54:1  -  FAIL for normal text, large text, and UI components
+- On slate-100: 2.32:1  -  FAIL
+- Even `emerald-600` (#059669) is only 3.77:1 on white: fine for large text and UI components, not for normal text. `emerald-700` (#047857, 5.48:1) is the first shade that passes for body text.
 
 **Pattern: two tokens for one brand color**
 
@@ -603,19 +697,19 @@ Define separate tokens for text use and decorative use. Never use the decorative
 
 ```css
 /* Token pair for a brand green */
---color-brand-decorative: #10B981;  /* emerald-500: icons, borders, backgrounds, large headings */
---color-brand-text:       #059669;  /* emerald-600: inline text, small labels  -  4.5:1 on white */
+--color-brand-decorative: #10B981;  /* emerald-500: decorative fills and illustrations only (2.54:1 on white) */
+--color-brand-text:       #047857;  /* emerald-700: inline text, small labels  -  5.48:1 on white */
 ```
 
 ```tsx
 // Wrong: brand green on small text
-<span className="text-emerald-500">Status: Active</span>   {/* 3.8:1 on white  -  FAIL */}
+<span className="text-emerald-500">Status: Active</span>   {/* 2.54:1 on white  -  FAIL */}
 
 // Correct: darker shade for text use
-<span className="text-emerald-600">Status: Active</span>   {/* 4.5:1 on white  -  PASS */}
+<span className="text-emerald-700">Status: Active</span>   {/* 5.48:1 on white  -  PASS */}
 
-// Decorative use (icon, badge background)  -  emerald-500 is fine here
-<span className="bg-emerald-500 text-white rounded px-2">Active</span>
+// Badge: white text on emerald-500 is only 2.54:1, so use a darker fill
+<span className="bg-emerald-700 text-white rounded px-2">Active</span>   {/* 5.48:1  -  PASS */}
 ```
 
 Check every brand color at the size and background where it actually appears. "It looks bold" is not a contrast measurement.
@@ -632,13 +726,13 @@ Check every brand color at the size and background where it actually appears. "I
 
 ### Visible focus indicator
 
-Never remove focus outlines without a replacement. WCAG 2.4.11 (new in 2.2) requires a minimum 2px perimeter area and 3:1 contrast between focused and unfocused states:
+Never remove focus outlines without a replacement. WCAG 2.4.7 Focus Visible (AA) requires a visible indicator, 1.4.11 Non-text Contrast (AA) requires a custom indicator to reach 3:1 against adjacent colors, and 2.4.11 Focus Not Obscured (AA) requires that sticky content never covers it completely. Aim for 2.4.13 Focus Appearance (AAA): a 2px-thick perimeter with 3:1 contrast between focused and unfocused states.
 
 ```css
 /* Wrong: removes indicator for everyone */
 * { outline: none; }
 
-/* Correct: styled focus that meets 2.4.11 */
+/* Correct: styled focus that meets 2.4.7 and 1.4.11, and the 2.4.13 target */
 :focus-visible {
   outline: 3px solid #005fcc;
   outline-offset: 2px;
@@ -650,23 +744,51 @@ Use `:focus-visible` rather than `:focus`  -  it shows the indicator for keyboar
 
 ### Dialogs and modals
 
-When a dialog opens, move focus into it. When it closes, return focus to the trigger element. Trap focus within the dialog while it is open:
+A modal dialog must move focus into itself when it opens, keep focus and the screen reader inside while open, close on Escape, and return focus to the trigger when it closes. Use the native `<dialog>` element opened with `showModal()` (Baseline widely available): the browser makes the rest of the page inert, closes on Escape, exposes `aria-modal="true"`, and the HTML spec restores focus to the previously focused element on close.
+
+```html
+<button type="button" id="delete-btn" commandfor="confirm-dialog" command="show-modal">
+  Delete project
+</button>
+
+<dialog id="confirm-dialog" aria-labelledby="confirm-title">
+  <h2 id="confirm-title">Delete this project?</h2>
+  <p>This cannot be undone.</p>
+  <form method="dialog">
+    <!-- autofocus sets initial focus; put it on the least destructive action -->
+    <button value="cancel" autofocus>Cancel</button>
+    <button value="delete">Delete</button>
+  </form>
+</dialog>
+```
 
 ```javascript
-const trigger = document.getElementById('open-dialog-btn');
-const dialog = document.getElementById('dialog');
-const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const trigger = document.getElementById('delete-btn');
+const dialog = document.getElementById('confirm-dialog');
 
-function openDialog() {
-  dialog.removeAttribute('hidden');
-  dialog.querySelector(focusableSelectors).focus();
+// Invoker commands (command/commandfor) became Baseline in December 2025.
+// Fall back to showModal() for older browsers.
+if (!('command' in HTMLButtonElement.prototype)) {
+  trigger.addEventListener('click', () => dialog.showModal());
 }
 
-function closeDialog() {
-  dialog.setAttribute('hidden', '');
-  trigger.focus();  // Return focus to what opened the dialog
-}
+dialog.addEventListener('close', () => {
+  const result = dialog.returnValue;
+  // showModal() does not reset returnValue and Escape leaves it unchanged,
+  // so reset it or a later Escape would repeat the last action
+  dialog.returnValue = '';
+  // Safari does not focus buttons on click, so the browser may have nothing
+  // to restore focus to; send it back to the trigger
+  if (document.activeElement === document.body) trigger.focus();
+  if (result === 'delete') {
+    // YOUR_DELETE_ACTION
+  }
+});
 ```
+
+Always include a visible close or cancel button; do not rely on Escape alone. Opening a `<dialog>` with `show()` or the `open` attribute makes it non-modal, with no inert background.
+
+If you cannot use `<dialog>` (for example, a legacy component library), replicate the behavior: `role="dialog"`, `aria-modal="true"`, an accessible name, `inert` on the rest of the page, an Escape handler, and focus returned to the trigger on close.
 
 ### Dynamic content
 
@@ -687,7 +809,10 @@ resultsContainer.focus();
 
 Some users experience vestibular disorders triggered by motion. Always respect the OS-level reduced-motion preference.
 
-The `prefers-reduced-motion` media query and the 5-second animation threshold in WCAG 2.2.2 apply specifically to auto-playing, blinking, or scrolling content that runs in parallel with other content (carousels, looping animations, auto-advancing banners). Short CSS transitions (button hover states, accordion expand) are not subject to the 5-second rule.
+Two different criteria apply:
+
+- **2.2.2 Pause, Stop, Hide (A):** moving, blinking, or scrolling content that starts automatically, lasts more than 5 seconds, and runs in parallel with other content (carousels, looping animations, auto-advancing banners) needs a pause, stop, or hide control. Short CSS transitions (button hover states, accordion expand) are not subject to this 5-second rule.
+- **2.3.3 Animation from Interactions (AAA):** motion triggered by user interaction (parallax, zoom-in page transitions, scroll-linked effects) can be disabled. Honoring `prefers-reduced-motion` is the standard way to meet it, and it costs a few lines of CSS, so do it on every project.
 
 ```css
 /* Apply animations by default */
@@ -716,7 +841,7 @@ No single tool catches everything. Use this order  -  each layer catches what th
 Run first  -  fast and catches obvious violations. Automated tools catch approximately 30 - 40% of WCAG issues.
 
 - **axe DevTools** (browser extension)  -  WCAG violations, ARIA errors
-- **Lighthouse** (Chrome DevTools > Lighthouse tab)  -  accessibility score, summary of issues
+- **Lighthouse** (Chrome DevTools > Lighthouse tab)  -  accessibility score from a subset of axe-core rules. A score of 100 does not mean the page conforms to WCAG; Lighthouse itself says automatic detection finds only a subset of issues.
 - **WAVE** (browser extension)  -  visual overlay showing errors, warnings, and structural info
 - **IBM Equal Access** (browser extension)  -  WCAG 2.2 coverage
 
@@ -732,15 +857,18 @@ Tab through every interactive flow without a mouse:
 
 ### 3. Screen reader
 
-Updated pairings (as of 2026):
+Pairings to test, based on the WebAIM Screen Reader User Survey #11 (published September 2026). The most common combinations were JAWS with Chrome (31%), NVDA with Chrome (17%), JAWS with Edge (17%), and NVDA with Firefox (9%). On mobile, VoiceOver on iOS dominates (about 73% of respondents' primary mobile platform is Apple).
 
 | Screen reader | Platform | Browser | Free? |
 |---|---|---|---|
 | NVDA | Windows | Chrome (primary), Firefox | Yes |
-| JAWS | Windows | Chrome | No  -  most common enterprise SR |
-| Narrator | Windows | Edge | Yes (built-in) |
-| VoiceOver | macOS / iOS | Safari | Yes (built-in) |
+| JAWS | Windows | Chrome, Edge | No  -  most common primary desktop screen reader |
+| VoiceOver | iOS / iPadOS | Safari | Yes (built-in)  -  most important mobile test |
+| VoiceOver | macOS | Safari | Yes (built-in) |
 | TalkBack | Android | Chrome | Yes (built-in) |
+| Narrator | Windows | Edge | Yes (built-in)  -  rarely a primary screen reader; optional |
+
+Minimum for most projects: NVDA + Chrome on Windows and VoiceOver + Safari on iOS. Add JAWS for enterprise or government audiences.
 
 Basic test: navigate by headings (H in NVDA/JAWS), by landmarks (D), and by form elements (F). Verify every announcement makes sense without visual context.
 
@@ -751,7 +879,7 @@ Basic test: navigate by headings (H in NVDA/JAWS), by landmarks (D), and by form
 
 ### 5. Text spacing
 
-Apply the WCAG 1.4.12 text spacing bookmarklet (sets `line-height: 1.5`, `letter-spacing: 0.12em`, `word-spacing: 0.16em`, `paragraph-spacing: 2em`). No content should overlap or be clipped.
+Apply the WCAG 1.4.12 text spacing bookmarklet (sets `line-height: 1.5`, `letter-spacing: 0.12em`, `word-spacing: 0.16em`, and spacing after paragraphs of 2 times the font size). No content should overlap or be clipped.
 
 Bookmarklet source: [stevefaulkner's text spacing bookmarklet](https://www.html5accessibility.com/tests/tsbookmarklet.html)
 
@@ -768,8 +896,8 @@ Bookmarklet source: [stevefaulkner's text spacing bookmarklet](https://www.html5
 Flag these actively when encountered in code review or generation:
 
 - **Accessibility overlay scripts as sole compliance strategy**  -  overlays do not achieve WCAG conformance and have been challenged in ADA litigation. Mention this explicitly.
-- **`aria-label` that doesn't match visible button text**  -  breaks voice control (WCAG 2.5.3). The label must match or begin with the visible text so "click Submit" works.
-- **`aria-hidden="true"` on focusable elements**  -  creates a keyboard trap: the element receives focus but is invisible to screen readers.
+- **`aria-label` that doesn't match visible button text**  -  breaks voice control (WCAG 2.5.3). The accessible name must contain the visible text, ideally at the start, so "click Submit" works.
+- **`aria-hidden="true"` on focusable elements**  -  the element still receives keyboard focus but is invisible to screen readers, so users land on a silent, unnamed stop. Remove `aria-hidden`, or make the content unfocusable (`inert` does both for a whole region).
 - **`tabindex` values greater than 0**  -  overrides the natural tab order and becomes unmanageable.
 - **Hover-only content with no keyboard/focus equivalent**  -  fails WCAG 2.1.1 and 1.4.13.
 - **Infinite scroll with no keyboard access to footer content**  -  users cannot reach content below the scroll boundary. Provide a "Load more" button or pagination.
@@ -778,7 +906,8 @@ Flag these actively when encountered in code review or generation:
 - **Placeholder text as the only label**  -  disappears when the user types; fails 1.3.1 and 2.4.6.
 - **Blocking clipboard paste in password fields**  -  breaks password managers and fails WCAG 3.3.8.
 - **Semi-transparent rgba() colors for text**  -  the effective contrast depends on all stacked backgrounds and cannot be measured from the color value alone. Use fully opaque tokens for any text content and measure the resulting rendered color against its background.
-- **Mid-gray palette values (slate-400, slate-500) on light section backgrounds**  -  slate-500 (#64748B) achieves only 4.48:1 on white (barely failing AA) and drops further on tinted backgrounds such as slate-50 (4.17:1) or slate-100 (3.86:1). Use slate-600 or darker for normal text on any light background. Flag all uses of slate-400 and slate-500 on text content for contrast verification.
+- **Mid-gray palette values (slate-400, slate-500) on light section backgrounds**  -  slate-400 (#94A3B8) fails everywhere at 2.56:1 on white. slate-500 (#64748B) passes on white (4.76:1) and barely on slate-50 (4.55:1), but fails on slate-100 (4.34:1). Use slate-600 or darker for normal text on any light background. Flag all uses of slate-400 and slate-500 on text content for contrast verification.
+- **Bright brand colors on small text or as badge fills behind white text**  -  emerald-500 is 2.54:1 against white either way. Check the darker shade (emerald-700 for Tailwind greens) before shipping.
 
 ---
 
@@ -794,7 +923,8 @@ Flag these actively when encountered in code review or generation:
 - [ ] SVGs have `aria-label` or `aria-hidden`
 - [ ] Skip navigation link present and functional
 - [ ] All interactive elements reachable and operable by keyboard
-- [ ] Focus indicator visible and meets WCAG 2.4.11 (3px+ stroke, 3:1 contrast)
+- [ ] Focus indicator always visible (2.4.7) with 3:1 contrast (1.4.11); 2px+ outline recommended (2.4.13)
+- [ ] Focused elements never fully hidden by sticky headers, footers, or banners (2.4.11)
 - [ ] No `tabindex` values greater than 0
 - [ ] `prefers-reduced-motion` respected
 - [ ] Normal text 4.5:1 contrast; large text and UI components 3:1
@@ -808,13 +938,13 @@ Flag these actively when encountered in code review or generation:
 - [ ] All product images have descriptive alt text
 - [ ] Form fields have `autocomplete` tokens (name, email, address, card details)
 - [ ] Multi-step checkout does not ask for repeated information (WCAG 3.3.7)
-- [ ] No CAPTCHA-only authentication  -  provide an accessible alternative (WCAG 3.3.8)
-- [ ] Touch targets on product cards and CTAs are at least 44×44px
+- [ ] Login and checkout allow paste and password managers; no transcription CAPTCHA without a non-cognitive alternative (WCAG 3.3.8)
+- [ ] Touch targets on product cards and CTAs are at least 44×44px (best practice; 24×24 is the AA minimum)
 - [ ] Error recovery: clear error messages linked to specific fields
 
 ### Web app / SaaS (add)
 
-- [ ] Dialogs trap focus and return it on close
+- [ ] Modals use `<dialog>` with `showModal()` (or replicate it): focus moves in, background inert, Escape closes, focus returns on close
 - [ ] Dynamic content updates announced via `aria-live` or focus management
 - [ ] Help/support link in consistent location across all pages (WCAG 3.2.6)
 - [ ] Drag-and-drop interactions have a single-pointer alternative (WCAG 2.5.7)
@@ -830,7 +960,7 @@ Flag these actively when encountered in code review or generation:
 
 ### Mobile / touch (add when mobile applies)
 
-- [ ] All touch targets at least 44×44px
+- [ ] All touch targets at least 44×44px (best practice; 24×24 is the AA minimum)
 - [ ] `@media (pointer: coarse)` rules for touchscreen spacing
 - [ ] Hover-dependent content has keyboard/focus equivalent
 - [ ] Tested with TalkBack (Android) and VoiceOver (iOS)

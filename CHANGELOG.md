@@ -4,6 +4,22 @@ All notable content and feature changes to ai-instruct. Ordered newest to oldest
 
 ---
 
+## v2.1.0 &nbsp;·&nbsp; 2026-10-21
+
+**`aws-spa-deploy`** - Fixed a build cache that never worked (`npm ci` deletes `node_modules`), wrong CORS guidance for HTTP API, and stale SES/ACM/Free Tier costs; moved to Node.js 24 (CDK 2.224.0+), added the function URL 403 permission change, SESv2 contact-form handler, security headers, and corrected SES sandbox and production-access facts
+
+**`google-analytics-4`** - Fixed SPA advice that double-counted page views (history-based page views stay on even with `send_page_view: false`); conversions renamed to key events with current Admin paths; corrected internal traffic filter steps and added hostname filters; Consent Mode now covers Switzerland, basic vs advanced, and the June 2026 Google Ads change; removed false BigQuery backfill and attribution claims; added Google tag gateway and the GTM `gtag.config` change
+
+**`seo-llmo`** - Rebuilt AI crawler guidance (GPTBot and ClaudeBot are training crawlers; AI search uses OAI-SearchBot, Claude-SearchBot and others; Google-Extended does not control AI Overviews); FAQ rich results retired and llms.txt not used by Google Search; A2A Agent Card v1.0, Agent Skills index v0.2.0, and MCP discovery via SEP-2127 Server Card and AI Catalog; ORA moved to ora.ai; "explicit absence" now declares missing A2A/MCP in llms.txt with Markdown 404s instead of spec-invalid stub files
+
+**`web-accessibility`** - Fixed Focus Appearance mislabelled as 2.4.11 AA (it is 2.4.13 AAA) and added Focus Not Obscured; audio CAPTCHA no longer presented as passing Accessible Authentication; recalculated contrast ratios; added ADA Title II deadlines, precise EAA scope and EN 301 549 status; native `<dialog>` pattern and Baseline table for new HTML features; WebAIM 2026 screen reader data
+
+**`web-performance`** - Next.js 16 APIs (`fetchPriority`/`preload`, `proxy.ts`, `'use cache'`); fixed a GTM snippet that broke page view triggers, a backwards `font-display: swap` description, and an invented Vite flag; Lighthouse 13 insights and weights; `fetchpriority` vs preload rule; `no-cache` without `no-store` for bfcache; AVIF Baseline and JPEG XL status; added zstd compression and bfcache/Speculation Rules
+
+**`all skills`** - Rewrote skill descriptions to match the refreshed content; `seo-llmo` description now under the 1024-character Agent Skills limit; added a marketplace description
+
+---
+
 ## v2.0.5 &nbsp;·&nbsp; 2026-04-28
 
 **`web-performance`** — Added four new sections: preconnect/dns-prefetch decision rule for third-party origins (2-second threshold, crossorigin requirement, over-hinting cost); script loading strategy decision table with tag manager before/after and requestIdleCallback pattern; fetchpriority vs loading="eager" clarification with 5-point LCP diagnostic checklist; CSP interaction with inlined critical CSS (three approaches: unsafe-inline, nonce, hash). Added corresponding pre-deploy checklist items for all four.

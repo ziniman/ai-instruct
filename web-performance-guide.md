@@ -1,8 +1,8 @@
 # Web Performance Guide
 
-> Applies to: Any website or web app | Updated: March 2026
+> Applies to: Any website or web app | Updated: October 2026
 
-A practical reference for measuring and improving web performance - covering Core Web Vitals, image and font optimization, JavaScript bundle size, CSS build size, CDN caching, third-party JavaScript impact, and validation tools.
+A practical reference for measuring and improving web performance - covering Core Web Vitals, image and font optimization, JavaScript bundle size, CSS build size, CDN caching, instant navigations, third-party JavaScript impact, and validation tools.
 
 ---
 
@@ -12,32 +12,26 @@ Answer these questions before making any performance changes. Each has a default
 
 **Q: Which pages are the priority targets?**
 (landing page, dashboard, auth-gated app pages, all pages)
-Default: public-facing pages first - these are indexed by search engines and directly affect user experience. Auth-gated pages matter less for Core Web Vitals field data because CrUX only collects data from logged-in users on those routes.
+Default: public-facing pages first - these are indexed by search engines and directly affect user experience. Auth-gated pages matter less for search: the Chrome User Experience Report (CrUX) only publishes page-level data for publicly discoverable (indexable) URLs, although visits to those pages still count toward the origin-level score.
 
 **Q: What is the current performance baseline?**
-Default: unknown - run PageSpeed Insights on the target URL before making any changes, so you have a before/after comparison. Note the LCP element type (image or text), TTFB, and the specific audits flagged as failing.
+Default: unknown - run PageSpeed Insights on the target URL before making any changes, so you have a before/after comparison. Note the LCP (Largest Contentful Paint) element type (image or text), TTFB (Time to First Byte), and the specific insights and diagnostics flagged.
 
 **Q: Are you optimizing for lab scores (Lighthouse) or field data (real users)?**
 Default: both - but prioritize fixing field data issues flagged in Google Search Console > Core Web Vitals first. Lab scores are easier to game; field data reflects real users on real devices and networks.
 
 **Q: What framework or rendering model is the site using?**
-(plain HTML, SPA/Vite, Next.js App Router, Astro, Nuxt, WordPress)
+(plain HTML, single-page app (SPA) with Vite, Next.js App Router, Astro, Nuxt, WordPress)
 Default: detect from config files (`next.config.*`, `vite.config.*`, `astro.config.*`) if visible; otherwise assume plain HTML. Framework-specific advice is in clearly labeled subsections throughout this guide.
 
-**Q: What image formats are currently in use?**
-Default: JPEG/PNG - check the `public/` or `assets/` directory and any image references in source before assuming.
-
-**Q: How are web fonts loaded?**
-(Google Fonts via `<link>`, `@import` in CSS, self-hosted, framework font utility)
-Default: check the HTML `<head>` and any global CSS files before assuming.
+**Q: How are images and web fonts currently served?**
+(JPEG/PNG vs WebP/AVIF; Google Fonts via `<link>`, `@import` in CSS, self-hosted, framework font utility)
+Default: JPEG/PNG images and Google Fonts via `<link>` - check the `public/` or `assets/` directory, the HTML `<head>`, and global CSS files before assuming.
 
 **Q: Is a CDN or hosting platform configured with custom cache headers?**
-Default: no - most platforms (AWS Amplify, plain S3, some shared hosts) do not set long-lived cache on static assets by default. Check the hosting config before assuming.
+Default: no - many platforms (plain S3, some shared hosts) do not send long-lived browser cache headers on static assets by default. Check the hosting config and run `curl -I` on a deployed asset before assuming.
 
-**Q: Is a `browserslist` target configured?**
-Default: no - without it, many transpilers and bundlers use a conservative target and ship legacy polyfills for features that modern browsers have supported for years.
-
-> **AI assistant:** Read the user's answers (or use the defaults above) before generating any code. Run PageSpeed Insights first if no baseline exists. Identify the LCP element type before optimizing images - if the LCP element is a `<p>` or `<h1>`, TTFB and render-blocking CSS reduction matter more than image optimization. Skip framework-specific subsections that don't match the user's stack.
+> **AI assistant:** Read the user's answers (or use the defaults above) before generating any code, and run PageSpeed Insights first if no baseline exists. Identify the LCP element type before optimizing images - if it is a `<p>` or `<h1>`, TTFB and render-blocking CSS matter more than image work. Also check `package.json` for a `browserslist` entry and the framework version (Next.js 16 renamed several APIs used in this guide), and skip framework-specific subsections that don't match the stack.
 
 ---
 
@@ -54,7 +48,8 @@ Default: no - without it, many transpilers and bundlers use a conservative targe
 9. [Third-Party JavaScript](#third-party-javascript)
 10. [CSS Build Size](#css-build-size)
 11. [CDN and Caching](#cdn-and-caching)
-12. [Measurement and Validation](#measurement-and-validation)
+12. [Instant Navigations: bfcache and Speculation Rules](#instant-navigations-bfcache-and-speculation-rules)
+13. [Measurement and Validation](#measurement-and-validation)
 
 ---
 
@@ -62,7 +57,7 @@ Default: no - without it, many transpilers and bundlers use a conservative targe
 
 Applies when: any public-facing page.
 
-Core Web Vitals are Google's user-experience metrics, measured in the field via the Chrome User Experience Report (CrUX). They are ranking signals. The three metrics as of 2026:
+Core Web Vitals are Google's user-experience metrics, measured in the field via the Chrome User Experience Report (CrUX). They are ranking signals. A page passes when at least 75% of page visits (the 75th percentile) meet the "Good" threshold. The three metrics and thresholds as of 2026 (unchanged since INP arrived):
 
 | Metric | Measures | Good | Needs improvement | Poor |
 |---|---|---|---|---|
@@ -72,7 +67,11 @@ Core Web Vitals are Google's user-experience metrics, measured in the field via 
 
 INP replaced FID (First Input Delay) in March 2024. FID only measured the first interaction; INP measures every interaction throughout the visit. A page that passes INP must remain responsive throughout the entire session, not just at initial load.
 
-Field data appears in Google Search Console after a URL accumulates enough traffic. Until then, use PageSpeed Insights lab data (Lighthouse) as a proxy.
+Field data appears in Google Search Console after a URL accumulates enough traffic. Until then, use PageSpeed Insights lab data (Lighthouse) as a proxy. Lighthouse cannot measure INP during a page-load test; it reports Total Blocking Time (TBT) as the lab stand-in for responsiveness.
+
+**Which browsers count (as of 2026):** CrUX, and therefore Search Console and the ranking signal, uses data from eligible Chrome users only. Since Safari 26.2 (December 2025) the LCP and INP measurement APIs are Baseline Newly available in all major engines, so your own real-user monitoring (RUM) can now see Safari and Firefox users too. CLS is still measurable only in Chromium-based browsers.
+
+**Single-page apps (SPAs):** CrUX traditionally counts only full page loads, so client-side route changes ("soft navigations") were invisible. In October 2026 CrUX began publishing experimental soft-navigation variants of LCP, INP, and CLS (built on the Soft Navigations API shipped in Chrome 151). Google's stable Core Web Vitals scores and Search Console are unchanged while these are experimental; graduation is targeted for May 2027. Heavy main-thread work during route transitions still shows up as poor INP.
 
 ---
 
@@ -104,13 +103,15 @@ Render-blocking resources delay the LCP element from painting. CSS files loaded 
 
 #### Next.js App Router
 
-Next.js 15 generates separate CSS chunks for `globals.css` and component styles. Two experimental options reduce or eliminate the render-blocking effect:
+Next.js (15 and 16) generates separate CSS chunks for `globals.css` and component styles. Two experimental options reduce or eliminate the render-blocking effect:
 
 **Option 1: Enable CSS inlining.**
 The `experimental.inlineCss` flag embeds CSS directly into the HTML `<head>` instead of linking external files, eliminating separate CSS download requests:
 
 ```ts
 // next.config.ts
+import type { NextConfig } from 'next';
+
 const nextConfig: NextConfig = {
   experimental: {
     inlineCss: true,
@@ -118,13 +119,15 @@ const nextConfig: NextConfig = {
 };
 ```
 
-This is experimental as of Next.js 15. Test in staging before deploying. Real-world reports show Lighthouse scores improving from 94 to 100 after enabling this flag.
+This is still experimental as of Next.js 16 (2026): it applies globally, works only in production builds, and cannot be configured per page. It suits small atomic CSS (Tailwind); with large component-library CSS it bloats every HTML response and returning visitors lose the separately cached stylesheet. Test in staging before deploying. Real-world reports show Lighthouse scores improving from 94 to 100 after enabling this flag.
 
 **Option 2: Use `cssChunking: 'strict'`.**
 Loads CSS in exact import order, which can reduce out-of-order loading penalties:
 
 ```ts
 // next.config.ts
+import type { NextConfig } from 'next';
+
 const nextConfig: NextConfig = {
   experimental: {
     cssChunking: 'strict',
@@ -132,7 +135,7 @@ const nextConfig: NextConfig = {
 };
 ```
 
-`inlineCss` is the stronger fix for LCP. Neither fully resolves render-blocking CSS in Next.js 15; this is a known framework-level issue tracked in the Next.js repository.
+`inlineCss` is the stronger fix for LCP. Without it, Next.js still emits render-blocking stylesheet links; this is a known framework-level issue tracked in the Next.js repository.
 
 ### CSP interaction with inlined critical CSS
 
@@ -164,7 +167,7 @@ Content-Security-Policy: style-src 'self' 'nonce-rAnd0mN0nce';
 </style>
 ```
 
-The nonce must change on every request - a static nonce is functionally equivalent to `'unsafe-inline'`. This approach requires server-side nonce injection (available in Next.js middleware and most edge runtimes).
+The nonce must change on every request - a static nonce is functionally equivalent to `'unsafe-inline'`. This approach requires server-side nonce injection (available in Next.js `proxy.ts`, named `middleware.ts` before Next.js 16, and in most edge runtimes).
 
 **Option (c): hash-based allowlisting (works for static content)**
 
@@ -197,7 +200,7 @@ Server Components that await slow database queries block initial HTML delivery:
 
 - Move non-critical data fetching into child Server Components so the page shell renders immediately
 - Use `loading.tsx` (React Suspense boundaries) to stream the shell while data loads
-- Add `unstable_cache` or `cache()` to repeated queries that don't need to be fresh on every request
+- Cache repeated queries that don't need to be fresh on every request: the `'use cache'` directive in Next.js 16 (it replaces `unstable_cache`, which Next.js 15 projects still use, and requires `cacheComponents: true` in `next.config.ts`), or React `cache()` to dedupe within a single request
 
 ```tsx
 import { Suspense } from 'react';
@@ -215,19 +218,19 @@ export default function Page() {
 }
 ```
 
-### Preload the LCP image
+### Preload the LCP image (only when it is discovered late)
 
-When the LCP element is an image, add an explicit preload hint so the browser fetches it as early as possible:
+If the LCP `<img>` is already in the server-rendered HTML, the browser's preload scanner finds it early on its own; mark it with `fetchpriority="high"` (next subsection) and skip the preload. Add a preload hint only when the image is discovered late: a CSS `background-image`, an image whose `src` is set by JavaScript, or an `<img>` far down a large HTML document:
 
 ```html
-<link rel="preload" as="image" href="/images/hero.webp" />
+<link rel="preload" as="image" href="/images/hero.webp" fetchpriority="high" />
 ```
 
-Only preload the LCP element. Adding preload hints to multiple images creates competing requests and can worsen LCP.
+Only preload the LCP image. Preloading several images creates competing requests and can worsen LCP. Lighthouse 13's "LCP request discovery" insight tells you whether the LCP image is discoverable in the initial document, has `fetchpriority="high"`, and avoids `loading="lazy"`.
 
 #### Next.js App Router
 
-For images rendered via `next/image`, use the `priority` prop - it generates the preload link automatically and disables lazy loading:
+In Next.js 16, the `priority` prop on `next/image` is deprecated. For an LCP image, set both `fetchPriority="high"` and `loading="eager"`: `next/image` lazy-loads by default and only drops `loading="lazy"` when `loading`, `preload`, or `priority` is set, so `fetchPriority` alone renders a lazy, high-priority image. The Next.js docs recommend these attributes over the new `preload` prop in most cases, and say not to combine `preload` with either. Use `preload` only when the image would otherwise be discovered late. On Next.js 15 and earlier, `priority` is still the API.
 
 ```tsx
 import Image from 'next/image';
@@ -237,7 +240,8 @@ import Image from 'next/image';
   alt="Hero image"
   width={1200}
   height={630}
-  priority
+  fetchPriority="high"
+  loading="eager"
 />
 ```
 
@@ -245,27 +249,22 @@ import Image from 'next/image';
 
 Two attributes are often confused when optimizing the LCP image - they are complementary, not alternatives:
 
-- `loading="eager"` tells the browser to fetch this image immediately without deferring it. It is the default for images in the initial viewport; it only matters when overriding `loading="lazy"` on an above-the-fold image.
-- `fetchpriority="high"` tells the browser's resource scheduler to deprioritize other in-flight requests relative to this one. The image is fetched eagerly AND jumps the network queue ahead of competing CSS and font downloads.
+- `loading="eager"` tells the browser not to defer the fetch. It is already the default for every `<img>`; it only matters when you are removing a `loading="lazy"` that was applied to an above-the-fold image. Never lazy-load the LCP image.
+- `fetchpriority="high"` raises the request's network priority. Browsers start images at low priority and only boost in-viewport images after layout (Chrome 117+ gives the first five large images medium priority). With `fetchpriority="high"` the LCP image starts at high priority immediately instead of waiting for layout.
 
-An image can be fetched eagerly but still lose the priority race against render-blocking stylesheets. Use both attributes together on the LCP image and its preload hint:
+An image can be fetched eagerly but still lose the priority race against stylesheets, fonts, and other images. Put `fetchpriority="high"` on the LCP `<img>`, and on its preload hint if you use one:
 
 ```html
-<!-- Preload link in <head>: fetchpriority on the hint is the higher-impact attribute -->
-<link rel="preload" as="image" href="/images/hero.webp" fetchpriority="high" />
-
-<!-- The img element: both attributes reinforce each other -->
 <img
   src="/images/hero.webp"
   alt="Hero image"
-  loading="eager"
   fetchpriority="high"
   width="1200"
   height="630"
 />
 ```
 
-The `fetchpriority="high"` on the `<link rel="preload">` is the more impactful placement: the browser's preload scanner runs before the DOM is parsed, so it can begin fetching the image while HTML is still streaming in. Without it, the browser may classify the preload as low priority and delay it behind CSS.
+Use `fetchpriority="high"` on one or two images at most; marking many images high makes the hint meaningless. `fetchpriority` is Baseline Newly available (all major engines since October 2024, as of 2026); older browsers ignore it harmlessly.
 
 **Diagnostic checklist: PageSpeed still reports slow LCP despite the image appearing in the initial HTML**
 
@@ -273,13 +272,13 @@ Work through these in order:
 
 1. **Render-blocking wrapper.** A `'use client'` component wrapping the LCP image in Next.js App Router delays its render until JS hydration completes. The `<img>` tag must appear in the raw HTML response - confirm with `curl -s https://yourdomain.com/ | grep 'hero'`. If the tag is absent from the curl output, it is being injected by JavaScript.
 
-2. **Preload hint in `<body>` instead of `<head>`.** The preload scanner only processes hints found in `<head>`. Check: `curl -s https://yourdomain.com/ | grep -B5 'preload.*image'` - confirm the `<link>` appears before `</head>`.
+2. **Preload hint in `<body>` instead of `<head>`.** A hint that arrives late in the document is discovered late, which defeats its purpose. This is common when a streamed client component emits the hint. Check: `curl -s https://yourdomain.com/ | grep -B5 'preload.*image'` - confirm the `<link>` appears before `</head>`.
 
-3. **Missing `fetchpriority="high"` on the preload link.** Check: `curl -s https://yourdomain.com/ | grep 'fetchpriority'` - if this returns nothing, the attribute is absent.
+3. **Missing `fetchpriority="high"` on the LCP image or its preload.** Check: `curl -s https://yourdomain.com/ | grep 'fetchpriority'` - if this returns nothing, the attribute is absent.
 
 4. **Late-hydrating client component.** In Next.js App Router, an image inside a `'use client'` component that renders after a Suspense boundary will have its `src` set by JavaScript, not the initial HTML. The preload hint exists but the browser cannot match it to a real `<img>` element until hydration, defeating the optimization.
 
-5. **TTFB above 200 ms.** If the server is slow, no preload optimization can compensate. Fix TTFB first - resource hints only recover time that the network is the bottleneck.
+5. **Slow TTFB.** web.dev rates TTFB of 0.8 s or less as good and over 1.8 s as poor. If the server is slow, no preload optimization can compensate. Check the "LCP breakdown" insight in PageSpeed Insights: as a rough guide, TTFB and the image download should each be about 40% of LCP, with resource load delay and element render delay each under 10%. Fix TTFB first if it dominates - resource hints only recover time when the network is the bottleneck.
 
 ---
 
@@ -333,7 +332,16 @@ INP measures how quickly the browser responds to every tap, click, or key press.
 
 ### DOM size and INP
 
-Larger DOM trees slow down style recalculation, layout, and paint operations that happen during every interaction. Google recommends fewer than 1,500 DOM nodes, a maximum depth of 32, and no more than 60 children per parent node.
+Larger DOM trees slow down style recalculation, layout, and paint operations that happen during every interaction. As of Lighthouse 13 the old fixed node-count audit is gone; the "Optimize DOM size" insight reports total elements, maximum depth, and most children, and flags the page only when a style recalculation touching more than 300 elements or a layout of more than 100 objects takes over 40 ms. Treat roughly 800 nodes in `<body>` (the old warning level) as a point to start watching, and around 1,400 as large.
+
+For long pages with many off-screen sections (feeds, long articles, documentation), `content-visibility: auto` lets the browser skip rendering work for sections outside the viewport. Pair it with `contain-intrinsic-size` so the scrollbar and layout stay stable. It is Baseline Newly available as of 2026; browsers without support simply render normally:
+
+```css
+.feed-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px; /* placeholder height until first render */
+}
+```
 
 > **Real-world example:** PageSpeed Insights measured 366 DOM nodes and a maximum depth of 13 on a marketing home page. At this scale the impact is minor, but it establishes a baseline to watch as the page grows. For pages with deeply nested component trees or large data tables, DOM size becomes a meaningful INP contributor.
 
@@ -384,7 +392,7 @@ input.addEventListener('input', debounce(handleSearch, 150));
 
 ### Break up long synchronous tasks
 
-Use `scheduler.yield()` (or `setTimeout(fn, 0)` as a fallback) to yield control back to the browser between chunks of work:
+Use `scheduler.yield()` (or `setTimeout(fn, 0)` as a fallback) to yield control back to the browser between chunks of work. `scheduler.yield()` is not Baseline: as of 2026 it ships in Chromium 129+ and Firefox 142+ but not Safari, so always feature-detect as below:
 
 ```js
 async function processInChunks(items) {
@@ -446,7 +454,7 @@ Framework image components and build-time tools handle format conversion, respon
 
 | Approach | Tools |
 |---|---|
-| Next.js | `next/image` - converts to WebP/AVIF, lazy loads, generates `srcset` |
+| Next.js | `next/image` - converts to WebP by default (add AVIF via `images.formats`), lazy loads, generates `srcset` |
 | Vite / SPA | `vite-imagetools`, `@unpic/react`, or manual pre-conversion |
 | Astro | `<Image>` component built into Astro core |
 | Plain HTML | Pre-convert images to WebP/AVIF using `sharp`, `squoosh`, or `sips` |
@@ -474,6 +482,8 @@ For images loaded from external sources (S3, a CDN, a third-party service), conf
 
 ```ts
 // next.config.ts
+import type { NextConfig } from 'next';
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -491,25 +501,36 @@ const nextConfig: NextConfig = {
 
 | Source material | Recommended format | Notes |
 |---|---|---|
-| Photographs | WebP or AVIF | AVIF achieves 90-95% size reduction over JPEG at equivalent quality |
+| Photographs | AVIF with WebP fallback, or WebP | AVIF is often more than 50% smaller than JPEG; it encodes more slowly than WebP |
 | Logos, icons | SVG | Inline SVG or `<img src="*.svg">` - bypass image processing for SVG |
 | Screenshots | WebP | PNG source is fine; let the image tool convert |
 | Animated content | WebP or AVIF (animated) | Avoid GIF; file sizes are 5-10x larger than equivalent WebP |
 
 Keep the highest-quality source and let the image tool handle conversion. Pre-converting lossy-to-lossy degrades quality unnecessarily.
 
-### Lazy loading and above-the-fold images
-
-Lazy load all images below the fold. For images visible in the initial viewport without scrolling, disable lazy loading and add a preload hint:
+**Browser support (as of October 2026):** WebP and AVIF are both Baseline Widely available (AVIF reached that status in July 2026), so they are safe defaults. JPEG XL is not Baseline: Chrome 155 (October 2026), Firefox 158 (October 2026), and Safari 17+ support it, but Edge does not, so serve it only inside `<picture>` with an AVIF or WebP fallback, and only if you have measured a win over AVIF.
 
 ```html
-<!-- Above-the-fold LCP image: eager loading + preload -->
-<link rel="preload" as="image" href="/images/hero.webp" />
-<img src="/images/hero.webp" alt="..." loading="eager" width="1200" height="630" />
+<picture>
+  <source srcset="/images/hero.jxl" type="image/jxl" />
+  <source srcset="/images/hero.avif" type="image/avif" />
+  <img src="/images/hero.webp" alt="..." width="1200" height="630" fetchpriority="high" />
+</picture>
+```
 
-<!-- Below-the-fold images: lazy loading (default in modern browsers) -->
+### Lazy loading and above-the-fold images
+
+Lazy load all images below the fold. Never lazy-load images visible in the initial viewport, and give the LCP image `fetchpriority="high"` (see [LCP](#lcp-largest-contentful-paint) for when a preload hint is also needed):
+
+```html
+<!-- Above-the-fold LCP image: not lazy, high priority -->
+<img src="/images/hero.webp" alt="..." fetchpriority="high" width="1200" height="630" />
+
+<!-- Below-the-fold images: opt in to lazy loading (the default is eager) -->
 <img src="/images/product.webp" alt="..." loading="lazy" width="400" height="300" />
 ```
+
+Native `loading="lazy"` on images is Baseline Widely available as of 2026, so a JavaScript lazy-loading library is no longer needed for images.
 
 ---
 
@@ -570,11 +591,30 @@ Self-host font files in your static directory and reference them with `@font-fac
 
 | Value | Behavior | Use when |
 |---|---|---|
-| `swap` | Invisible text until font loads, then swap | Headlines; FOUT is acceptable |
-| `optional` | Browser uses fallback if font doesn't load in ~100 ms | Body text; eliminates CLS |
-| `block` | Invisible text for up to 3 seconds | Never, for performance |
+| `swap` | Fallback text shows almost immediately; the web font swaps in whenever it loads | Branding-critical fonts; FOUT is acceptable |
+| `fallback` | Fallback text almost immediately; swaps only if the font arrives within a short window | Compromise between `swap` and `optional` |
+| `optional` | Fallback text almost immediately; no swap later, so the font is used only if it is ready almost at once (often from cache on repeat views) | Body text; eliminates font-swap CLS |
+| `block` | Invisible text for a short block period, then fallback | Never, for performance (invisible text delays FCP and LCP) |
 
-For body text that spans multiple lines, `optional` eliminates CLS entirely but means the custom font may not render on slow connections. `swap` is the better choice for branding-critical fonts.
+For body text that spans multiple lines, `optional` eliminates font-swap CLS but means the custom font may not render on a first visit over a slow connection. `swap` is the better choice for branding-critical fonts; pair it with a metric-matched fallback (below) to keep the swap from shifting layout.
+
+### Match fallback font metrics to reduce swap CLS
+
+When a web font swaps in, text reflows if the fallback font has different glyph widths and line heights. Define a fallback `@font-face` over a local system font and scale it with `size-adjust` (supported in all major engines since Safari 17, September 2023) so the swap barely moves anything:
+
+```css
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  size-adjust: 107%; /* tune per font until the swap stops shifting text */
+}
+
+body {
+  font-family: 'Inter', 'Inter Fallback', sans-serif;
+}
+```
+
+`ascent-override`, `descent-override`, and `line-gap-override` allow finer tuning but are not supported in Safari as of 2026. `next/font` generates a metric-matched fallback automatically (`adjustFontFallback` defaults to on), so Next.js projects using it need no manual fallback.
 
 ### Avoid @import in CSS
 
@@ -605,6 +645,15 @@ Use your bundler's analysis tools to identify what is in each bundle before maki
 
 #### Next.js App Router
 
+Next.js 16 builds with Turbopack by default. On Next.js 16.1+ use the built-in Turbopack analyzer, which shows client and server modules with full import chains:
+
+```bash
+npx next analyze            # interactive treemap in the browser
+npx next analyze --output   # write to .next/diagnostics/analyze for before/after diffs
+```
+
+For webpack builds (Next.js 15, or 16 with webpack), use `@next/bundle-analyzer`:
+
 ```bash
 npm install --save-dev @next/bundle-analyzer
 ```
@@ -624,11 +673,7 @@ ANALYZE=true npm run build
 
 #### Vite / SPA
 
-```bash
-npm run build -- --reporter treemap
-```
-
-Or use `rollup-plugin-visualizer`:
+Use `rollup-plugin-visualizer`:
 
 ```bash
 npm install --save-dev rollup-plugin-visualizer
@@ -653,7 +698,8 @@ const { heavyFunction } = await import('./heavy-module.js');
 ```
 
 ```tsx
-// React with Next.js
+// React with Next.js: ssr: false is only allowed inside a Client Component
+'use client';
 import dynamic from 'next/dynamic';
 
 const HeavyChart = dynamic(() => import('@/components/heavy-chart'), {
@@ -736,16 +782,20 @@ These are Baseline Widely Available features with full support in Chrome 109+, F
 
 ### Vite / esbuild
 
-Vite's `build.target` option sets the transpile target directly. For consistency across all tools, set `browserslist` in `package.json` and use `browserslist:defaults` as the Vite target:
+Vite's `build.target` option sets the JavaScript transpile target directly; it does not read `browserslist`. Current Vite (v8 as of 2026) defaults to `'baseline-widely-available'`, which resolves to the browsers that were Baseline Widely available on a date fixed per major version (for Vite 8: Chrome/Edge 111, Firefox 114, Safari 16.4). That default already avoids most legacy output, so only set `build.target` if your analytics justify a different range:
 
 ```ts
 // vite.config.ts
 export default {
   build: {
-    target: 'es2022', // Or use browserslist query: 'browserslist:modern'
+    // Default: 'baseline-widely-available'. Custom targets are ES versions
+    // or browser versions, e.g. 'es2022' or ['chrome111', 'safari16.4'].
+    target: 'es2022',
   },
 };
 ```
+
+Keep `browserslist` in `package.json` anyway: PostCSS/Autoprefixer, Babel, and ESLint plugins in the same project still read it.
 
 ### Babel
 
@@ -774,7 +824,7 @@ Third-party scripts are one of the most common performance problems on real-worl
 
 Before optimizing, measure which third-party scripts are loading and what they cost:
 
-- PageSpeed Insights "Reduce the impact of third-party code" audit lists each script and its transfer size and main-thread blocking time
+- PageSpeed Insights "3rd parties" insight (it replaced the "Reduce the impact of third-party code" audit in Lighthouse 13) lists each third-party entity with its transfer size and main-thread time
 - Chrome DevTools > Network tab filtered by "third-party" (enable the "domain" column)
 - WebPageTest > "Third-party summary" view
 
@@ -837,12 +887,12 @@ Analytics, tag managers, and chat widgets are the most common cause of unused Ja
 - **`defer`:** downloads in parallel with HTML parsing; executes after parsing completes, in source order. Use for scripts that depend on the DOM or on each other.
 - **`async`:** downloads in parallel; executes as soon as downloaded, interrupting HTML parsing. Use for fully independent scripts with no ordering dependency.
 
-**Before/after: Google Tag Manager moved from blocking to deferred**
+**Before/after: Google Tag Manager moved from injected async to declarative defer**
 
-GTM's default vendor install snippet places an inline blocking script in `<head>`. This is the documented baseline; it is not the optimal placement:
+Google's install instructions place an inline snippet as high in `<head>` as possible. The inline part is tiny, and it injects `gtm.js` with `async`, so it does not block the download. The cost is that the preload scanner cannot see the injected URL, and an `async` script can execute in the middle of HTML parsing:
 
 ```html
-<!-- Before: inline script in <head>, pauses HTML parsing -->
+<!-- Before: official snippet; gtm.js is injected by script, invisible to the preload scanner -->
 <head>
   <script>
     (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -855,14 +905,17 @@ GTM's default vendor install snippet places an inline blocking script in `<head>
 ```
 
 ```html
-<!-- After: declarative defer; dataLayer initialized synchronously so queued events are preserved -->
+<!-- After: declarative defer; keep the gtm.js push or Page View triggers never fire -->
 <head>
-  <script>window.dataLayer = window.dataLayer || [];</script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+  </script>
   <script defer src="https://www.googletagmanager.com/gtm.js?id=GTM-XXXXXXX"></script>
 </head>
 ```
 
-The synchronous `dataLayer` initialization ensures that any events pushed before GTM finishes loading are queued and replayed when GTM initializes. The declarative `defer` attribute is also picked up by the browser's preload scanner, so the GTM file downloads in parallel with HTML parsing - only its execution is deferred.
+The inline push is required, not optional: the `gtm.js` event it queues is the "Page View" event that fires tags on Page View and All Pages triggers. Loading `gtm.js` without it silently breaks those tags. Any events pushed before GTM finishes loading are queued in `dataLayer` and processed when it initializes. The declarative `defer` attribute is picked up by the preload scanner, so the file downloads in parallel with HTML parsing and only its execution waits until parsing finishes. Verify in GTM Preview mode that the `gtm.js` (Page View) event still appears after the change.
 
 For scripts with no time requirement (heatmaps, session replay), delay loading until the browser is genuinely idle:
 
@@ -923,7 +976,7 @@ When the browser first contacts a new origin, it must complete three steps befor
 Two resource hints reduce this cost:
 
 - `preconnect` - opens the full DNS + TCP + TLS connection proactively, before the browser encounters the first request to that origin. Use for origins that load within the first 2 seconds of the page.
-- `dns-prefetch` - resolves only DNS. Much lower resource cost. Use for origins that load after the initial render, or as a fallback for browsers that don't support `preconnect`.
+- `dns-prefetch` - resolves only DNS. Much lower resource cost. Use for origins that load after the initial render. (`preconnect` itself is Baseline Widely available, so a `dns-prefetch` fallback for it is no longer needed.)
 
 **Decision rule:** origins that fire within the first 2 seconds (fonts, analytics, auth CDN, hero image CDN) get `preconnect`. Origins that load later (chat widget on scroll, video player on click) get `dns-prefetch`.
 
@@ -949,7 +1002,7 @@ Two resource hints reduce this cost:
 <link rel="preconnect" href="https://api.analytics.example.com" />
 ```
 
-**The cost of over-hinting:** each `preconnect` opens a TCP + TLS handshake immediately. Chrome keeps the connection warm for 10 seconds before dropping it if unused. Preconnecting to 6+ origins simultaneously creates competing handshakes that can interfere with the connections that actually matter. Limit `preconnect` to your 2-4 most critical origins and use `dns-prefetch` for the rest.
+**The cost of over-hinting:** each `preconnect` opens a TCP + TLS handshake immediately. Chrome keeps the connection warm for 10 seconds before dropping it if unused. Preconnecting to 6+ origins simultaneously creates competing handshakes that can interfere with the connections that actually matter. Limit `preconnect` to your 2-4 most critical origins and use `dns-prefetch` for the rest. Lighthouse 13's "Network dependency tree" insight enforces the same rule: it warns when more than 4 preconnects are found, flags preconnects the page never uses (including ones broken by a wrong `crossorigin` value), and lists origins worth preconnecting.
 
 ---
 
@@ -1008,12 +1061,12 @@ Tailwind CSS 4 scans all project files automatically - there is no `content` arr
   }
 }
 
-/* Correct in v4: purged when unused */
+/* Correct in v4: purged when unused. Use theme CSS variables; theme() is deprecated in v4 */
 @utility btn-primary {
-  background-color: theme(colors.blue.600);
-  color: white;
-  padding: theme(spacing.2) theme(spacing.4);
-  border-radius: theme(borderRadius.md);
+  background-color: var(--color-blue-600);
+  color: var(--color-white);
+  padding: --spacing(2) --spacing(4);
+  border-radius: var(--radius-md);
 }
 ```
 
@@ -1072,15 +1125,26 @@ Assets with content-hash filenames (generated by most modern bundlers) are safe 
 | Images (with hash) | `public, max-age=31536000, immutable` | Same: new file = new URL |
 | Images (no hash) | `public, max-age=86400, stale-while-revalidate=604800` | Shorter TTL; no deployment guarantee |
 | Fonts | `public, max-age=31536000, immutable` | Fonts rarely change |
-| HTML pages | `no-cache, no-store, must-revalidate` | Must always be fresh |
+| HTML pages | `no-cache` | Always revalidated (cheap 304 with an `ETag`), but still eligible for the back/forward cache |
+| HTML with sensitive data | `no-store` | Account, banking, or health pages only; `no-store` can block the back/forward cache |
 | API routes | `no-store` | Never cache dynamic API responses |
+
+Do not default HTML to `no-cache, no-store, must-revalidate`. `no-cache` alone already forces revalidation on every request; adding `no-store` can also exclude the page from the back/forward cache (bfcache), which turns instant Back/Forward navigations into full reloads. See [Instant Navigations](#instant-navigations-bfcache-and-speculation-rules).
+
+### Compress text responses
+
+Serve HTML, CSS, JavaScript, JSON, and SVG compressed. Brotli (`br`) is Baseline Widely available and should be the default. Zstandard (`zstd`) became Baseline Newly available in February 2026 when Safari 26.3 added it (Chrome 123+ and Firefox 126+ already supported it); it is often faster than Brotli with comparable or better compression. Safari's support depends on the operating system (iOS 26.3 or macOS Tahoe 26.3 and later), so always negotiate on the request's `Accept-Encoding` header and keep Brotli and gzip as fallbacks. Most CDNs handle this negotiation for you once compression is enabled; confirm with:
+
+```bash
+curl -sI -H 'Accept-Encoding: zstd, br, gzip' https://yourdomain.com/ | grep -i content-encoding
+```
 
 ### AWS Amplify
 
-Amplify sets `Cache-Control: no-cache` on all responses by default. Add custom cache headers in `amplify.yml`:
+Since its August 2024 caching update, Amplify's CloudFront layer caches static assets at the edge for up to a year and clears the CDN cache on every deployment. That is edge caching; the `Cache-Control` header your visitors' browsers receive still depends on your configuration, so confirm it with `curl -I` and set it explicitly. Define custom headers in a `customHttp.yml` file in the project root (or in the Amplify console). Headers in the build spec / `amplify.yml` are the legacy location; AWS recommends migrating them out. Cache-Control values you set take precedence over Amplify's defaults:
 
 ```yaml
-# amplify.yml
+# customHttp.yml
 customHeaders:
   - pattern: '/_next/static/**/*'
     headers:
@@ -1101,10 +1165,8 @@ customHeaders:
   - pattern: '**/*.html'
     headers:
       - key: 'Cache-Control'
-        value: 'no-cache, no-store, must-revalidate'
+        value: 'no-cache'
 ```
-
-AWS Amplify released CDN caching improvements in February 2025, offering optimized cache key rules and increased cache hit ratios. These improvements must be explicitly enabled - they do not apply automatically to existing apps.
 
 Note: AWS Amplify does not support Server-Sent Events (SSE) or HTTP streaming in serverless route handlers. Use polling or WebSockets via a separate service if real-time updates are required.
 
@@ -1112,10 +1174,11 @@ Note: AWS Amplify does not support Server-Sent Events (SSE) or HTTP streaming in
 
 Both platforms set appropriate cache headers for content-hashed assets automatically when using their native build integrations (Vercel for Next.js, Netlify for most frameworks). Verify with `curl -I` on a deployed static asset to confirm the `Cache-Control` header is set correctly.
 
-For custom headers, use `vercel.json` or `netlify.toml`:
+For custom headers, use `vercel.json` or `netlify.toml`.
+
+`vercel.json`:
 
 ```json
-// vercel.json
 {
   "headers": [
     {
@@ -1142,19 +1205,76 @@ Verify cache hits using the `X-Cache` response header (present on most CDNs). `H
 
 ---
 
+## Instant Navigations: bfcache and Speculation Rules
+
+Applies when: any multi-page site (marketing sites, blogs, e-commerce, docs). SPAs that handle routing client-side benefit less from speculation rules.
+
+The fastest page load is one that is already done before the user clicks. Two browser features get there: the back/forward cache restores pages instantly on Back/Forward, and the Speculation Rules API prefetches or prerenders the likely next page.
+
+### Keep pages eligible for the back/forward cache (bfcache)
+
+The bfcache keeps a full snapshot of the page in memory, so Back and Forward navigations render instantly with near-zero LCP and no layout shift. It works in all major browsers, but pages opt out without realizing it:
+
+- **Never add an `unload` listener.** Use `pagehide` instead. `unload` makes pages ineligible in desktop Firefox, and Chrome has deprecated it. Third-party scripts are a common source; `Permissions-Policy: unload=()` blocks them in Chromium browsers.
+- **Avoid `Cache-Control: no-store` on HTML** unless the page holds sensitive data (see [CDN and Caching](#cdn-and-caching)). Chrome measured it as the largest single reason pages miss the bfcache. Chrome has been rolling out bfcache for some `no-store` pages under safeguards ([bfcache-ccns](https://developer.chrome.com/docs/web-platform/bfcache-ccns)), but web.dev still describes this as in progress and other browsers have historically excluded such pages, so do not rely on it.
+- **Add `beforeunload` only while there are unsaved changes**, and remove it once they are saved.
+- **Refresh stale data on restore** instead of opting out:
+
+```js
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    // Page was restored from bfcache: refresh cart count, auth state, etc.
+    refreshUserSpecificData();
+  }
+});
+```
+
+Test with Chrome DevTools > Application > Back/forward cache, which lists the exact blocking reasons, or the Lighthouse `bf-cache` diagnostic.
+
+### Prefetch or prerender likely next pages with Speculation Rules
+
+The Speculation Rules API tells the browser which links to prefetch (download the HTML) or prerender (load and render the whole page in a hidden tab, so the navigation is near-instant). Support as of 2026: Chromium only. Basic URL-list rules work in Chrome and Edge 109+, but document rules (`where`) and `eagerness`, as used below, need Chrome and Edge 121+. It is not Baseline: Safari has it behind a flag and Firefox does not support it. Unsupporting browsers ignore the `<script type="speculationrules">` block, so it is a safe progressive enhancement.
+
+A safe starting point prerenders same-site links when the user shows intent (on desktop, hovering a link for 200 ms; on mobile, viewport heuristics):
+
+```html
+<script type="speculationrules">
+{
+  "prerender": [{
+    "where": {
+      "and": [
+        { "href_matches": "/*" },
+        { "not": { "href_matches": "/logout" } },
+        { "not": { "href_matches": "/cart/*" } },
+        { "not": { "selector_matches": ".no-prerender" } }
+      ]
+    },
+    "eagerness": "moderate"
+  }]
+}
+</script>
+```
+
+- **Exclude links with side effects** (logout, add-to-cart, one-time tokens): a prerender runs the page's JavaScript before the user commits to the navigation.
+- **Start with `moderate` or `conservative` eagerness.** Chrome holds at most 2 speculations at a time for those levels and discards the oldest, which caps wasted bandwidth. `immediate` speculates as soon as the rules are seen.
+- **Prefer prefetch over prerender for low-confidence links**; prerender costs roughly as much as rendering an iframe.
+- **Check analytics and ad scripts** before enabling prerender, so that a prerendered page is not counted as a page view until the user actually visits it. Chrome's prerender documentation covers how to detect prerendering.
+
+---
+
 ## Measurement and Validation
 
 Run these after deploying changes. One tool per concern.
 
 ### Before making changes
 
-- [PageSpeed Insights](https://pagespeed.web.dev/) - run on the target URL first to establish a baseline. Note the LCP element type, TTFB, specific audits flagged as failing, and whether field data is available. Run both mobile and desktop tabs.
+- [PageSpeed Insights](https://pagespeed.web.dev/) - run on the target URL first to establish a baseline. Note the LCP element type, TTFB, the insights and diagnostics flagged, and whether field data is available. Run both mobile and desktop tabs.
 
 ### Lab data (synthetic, instant results)
 
-- [PageSpeed Insights](https://pagespeed.web.dev/) - Lighthouse score, Core Web Vitals, specific opportunities and diagnostics
+- [PageSpeed Insights](https://pagespeed.web.dev/) - Lighthouse score, lab metrics, insights, and diagnostics. As of 2026 it runs Lighthouse 13, which replaced the older "opportunity" audits with insight audits shared with the DevTools Performance panel (for example "LCP request discovery", "Render-blocking requests", "Legacy JavaScript", "3rd parties", "Use efficient cache lifetimes"). If a tutorial or CI script references an old audit ID such as `render-blocking-resources` or `uses-rel-preconnect`, it no longer exists. The performance score is weighted TBT 30%, LCP 25%, CLS 25%, First Contentful Paint (FCP) 10%, Speed Index 10%; INP is not part of the lab score.
 - [WebPageTest](https://www.webpagetest.org/) - waterfall view of all requests, shows what is blocking, filmstrip view of visual loading. More diagnostic than PageSpeed Insights for root-cause analysis. Use the "Redirect Chains" view to confirm redirect consolidation.
-- Bundler analysis (`ANALYZE=true npm run build` or `rollup-plugin-visualizer`) - treemap of what is in each JavaScript bundle
+- Bundler analysis (`npx next analyze`, `ANALYZE=true npm run build`, or `rollup-plugin-visualizer`) - treemap of what is in each JavaScript bundle
 
 ### Field data (real users, requires traffic)
 
@@ -1183,14 +1303,14 @@ curl -I "https://yourdomain.com/_next/image?url=%2Fimages%2Fhero.png&w=1200&q=75
 ### In-browser tools
 
 - Chrome DevTools > Network tab: filter by JS, CSS, or Font to see sizes and cache status. The "Size" column shows the transferred size vs. the decoded size - a large gap indicates good compression.
-- Chrome DevTools > Performance tab: record a page load or interaction to see long tasks (red bars) and their stack traces. Long tasks above 50 ms contribute to INP.
+- Chrome DevTools > Performance tab: shows your local LCP and CLS live as soon as it opens, and INP once you interact with the page. Under "Field data", connect it to CrUX to compare your local numbers with real-user data for the URL. Record a page load or interaction to see long tasks (red bars), their stack traces, and the same insights PageSpeed Insights reports. Long tasks above 50 ms contribute to INP.
 - Chrome DevTools > Lighthouse tab: run locally against `localhost` during development for instant feedback without deploying.
 
 ### Continuous monitoring
 
 Set up alerts in Google Search Console for Core Web Vitals regressions. Search Console sends email notifications when a URL group drops from "Good" to "Needs improvement."
 
-For real-user measurement when CrUX data is insufficient (low traffic), use the `web-vitals` npm package:
+For real-user measurement when CrUX data is insufficient (low traffic), or to see non-Chrome users that CrUX excludes, use the `web-vitals` npm package (v5 as of 2026). `onLCP` and `onINP` report in Chromium, Firefox, and Safari 26.2+; `onCLS` reports in Chromium only. Expect RUM numbers to differ from CrUX because the browser mix differs:
 
 ```js
 // Works in any framework - wire to your analytics endpoint
@@ -1215,23 +1335,27 @@ onINP(({ name, value, rating }) => {
 
 - [ ] LCP element identified (image or text) before optimizing
 - [ ] Images have explicit `width` and `height` attributes; `sizes` attribute set for responsive images
-- [ ] Above-the-fold (LCP) image has a preload hint or `priority` prop; lazy loading disabled for it
+- [ ] Above-the-fold (LCP) image is in the server-rendered HTML, is not lazy-loaded, and has `fetchpriority="high"` (`fetchPriority="high"` plus `loading="eager"` on `next/image`; `priority` only on Next.js 15 and earlier)
 - [ ] Web fonts loaded via self-hosting or preconnect hints, not `@import` in CSS
 - [ ] Heavy dependencies checked in the bundle analyzer - dynamic import if they add > 20 KB gzipped
 - [ ] Third-party scripts scoped to the routes that need them, not the root layout
 - [ ] `browserslist` set in `package.json` if not already present
 - [ ] Dynamic class name assembly avoided (full class name literals in source)
 - [ ] `preconnect` hints added in `<head>` for third-party origins that load within 2 seconds; `dns-prefetch` for later-loading origins; `crossorigin` attribute present on font origin preconnects
-- [ ] Analytics and tag managers load with `defer` (not blocking); chat widgets, video players, and heatmaps deferred to user interaction or `requestIdleCallback`
-- [ ] LCP image preload link has `fetchpriority="high"` and is in `<head>`; `<img>` tag carries both `loading="eager"` and `fetchpriority="high"`
+- [ ] Analytics and tag managers load with `defer` or `async` (not blocking), and a self-written GTM loader keeps the `gtm.js` dataLayer push; chat widgets, video players, and heatmaps deferred to user interaction or `requestIdleCallback`
+- [ ] LCP image preload used only when the image is discovered late (CSS background, JS-set `src`); if used, it is in `<head>` and has `fetchpriority="high"`
 - [ ] If critical CSS is inlined, CSP `style-src` directive allows it via `'unsafe-inline'`, per-request nonce, or SHA-256 hash
+- [ ] No `unload` listeners; HTML not served with `no-store` unless it holds sensitive data (bfcache eligible)
+- [ ] For multi-page sites: speculation rules added with `moderate` or `conservative` eagerness, excluding logout, cart, and other side-effect URLs
 
 ### After deploying to production
 
 - [ ] PageSpeed Insights run on the changed URL - mobile and desktop
 - [ ] LCP, CLS, INP in "Good" range (or no regression from baseline)
 - [ ] Cache headers confirmed on static assets: `public, max-age=31536000, immutable`
-- [ ] Cache headers confirmed on HTML pages: `no-cache, no-store, must-revalidate`
+- [ ] Cache headers confirmed on HTML pages: `no-cache` (`no-store` only on sensitive pages)
+- [ ] Text responses served with Brotli or zstd (`content-encoding` header checked with `curl`)
+- [ ] Back/forward cache verified in Chrome DevTools > Application > Back/forward cache
 - [ ] Redirect chain verified: one redirect maximum before 200 (`curl -IL https://yourdomain.com/`)
 - [ ] Third-party scripts not loading on pages that don't require them
 - [ ] No console errors related to image sizing or missing `alt` attributes
