@@ -37,33 +37,25 @@ The repo also publishes itself as a Claude Code plugin. The plugin bundles all 5
 
 ## Release process
 
-The `npm version` and `npm publish` lifecycle hooks handle build and version sync automatically. The full release flow:
+All changes reach `main` through a pull request. Never push to `main` directly and never run `npm publish` locally. Publishing to npm, tagging, and the GitHub release all happen in CI when a PR that bumps the version is merged.
 
-1. **Edit content** - update one or more `*-guide.md` files (or add a new guide, see below).
-2. **Run the build to verify locally:**
+1. **Branch:** `git checkout -b <type>/<short-description>` (e.g. `docs/seo-llmo-mcp`, `fix/cli-windows-paths`).
+2. **Edit content** - update one or more `*-guide.md` files (or add a new guide, see below), then rebuild:
    ```sh
    npm run build:skills          # regenerates skills/<name>/SKILL.md
    ```
-   Inspect the diff in `skills/` to make sure the changes look right.
-3. **Bump version and sync everything:**
+   Commit the guide and the regenerated `skills/` files together.
+3. **Bump the version in the same PR** (skip this for changes that should not ship a release, e.g. README or CI tweaks):
    ```sh
    npm version patch             # or minor / major
    ```
-   The `version` lifecycle hook runs `sync-versions.js` (writes new version to `.claude-plugin/plugin.json` and `marketplace.json`) and `build-skills.js`, then `git add`s the updated files. `npm version` itself creates the version bump commit and a git tag.
-4. **Push to GitHub:**
-   ```sh
-   git push && git push --tags
-   ```
-   This is what `/plugin marketplace add ziniman/ai-instruct` reads from.
-5. **Publish to npm:**
-   ```sh
-   npm publish
-   ```
-   The `prepublishOnly` hook runs `build-skills.js` again as a safety net.
+   The repo `.npmrc` sets `git-tag-version=false`, so this only edits files: the `version` hook runs `sync-versions.js` (writes the new version to `.claude-plugin/plugin.json` and `marketplace.json`) and `build-skills.js`, then stages them. Add a matching `## vX.Y.Z` entry to `CHANGELOG.md` and commit everything.
+4. **Open the PR.** `.github/workflows/ci.yml` checks that `skills/` matches the guides, that plugin versions match `package.json`, and, if the version changed, that it is not already on npm and has a CHANGELOG entry. The job summary says whether merging will publish.
+5. **Merge.** `.github/workflows/release.yml` runs on every push to `main`. If the `package.json` version is not on npm yet, it runs `npm publish` (the `prepublishOnly` hook rebuilds skills as a safety net), then creates the `vX.Y.Z` tag and a GitHub release titled `vX.Y.Z - <PR title>` with the CHANGELOG entry as notes. If the version is already published, it does nothing. The plugin marketplace (`/plugin marketplace add ziniman/ai-instruct`) reads `main` directly, so it updates on merge either way.
 
-**Never commit a version bump without running `npm version`** - hand-editing `package.json` skips the sync hook and leaves the plugin/marketplace JSON files out of date.
+npm auth uses [trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC), so there is no `NPM_TOKEN` secret to rotate and no 2FA prompt. The trusted publisher is configured on npmjs.com under the package settings: GitHub Actions, repo `ziniman/ai-instruct`, workflow `release.yml`. Renaming the workflow file breaks publishing until that setting is updated.
 
-If you only edit a guide and want to ship a patch without bumping the version (e.g. typo fix on already-released content), just commit the source edit and the regenerated `skills/<name>/SKILL.md` together.
+**Never bump the version by hand-editing `package.json`** - it skips the sync hook and CI will fail on mismatched plugin versions.
 
 ## Guide format (enforced by CONTRIBUTING.md)
 
