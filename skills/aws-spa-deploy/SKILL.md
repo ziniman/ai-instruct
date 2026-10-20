@@ -186,6 +186,16 @@ customHeaders:
 
 Add your API origin to the CSP (Content Security Policy) `connect-src` directive; a bare `default-src 'self'` blocks the SPA's `fetch` calls to API Gateway or a function URL.
 
+Tailor the CSP to every third-party script the site loads; `default-src 'self'` blocks all of them. For Google Analytics 4 without Ads features, Google's [CSP guide](https://developers.google.com/tag-platform/security/guides/csp) (as of 2026) adds these sources, and the inline gtag snippet also needs a hash of its contents (or a server-generated nonce) in `script-src`:
+
+```text
+script-src 'self' 'sha256-HASH_OF_INLINE_GTAG_SNIPPET' https://www.googletagmanager.com;
+img-src 'self' https://www.googletagmanager.com https://*.google-analytics.com;
+connect-src 'self' https://your-api-url.amazonaws.com https://www.googletagmanager.com https://*.google-analytics.com https://*.google.com
+```
+
+A static Amplify site cannot generate per-request nonces, so use the hash: Chrome DevTools prints the exact `sha256-...` value in the console error for the blocked inline script. Recompute it whenever the snippet changes. Google Ads, Tag Manager, and GTM Preview Mode need further hosts listed in Google's guide; check Tag Assistant for anything still blocked.
+
 ---
 
 ## CDK Backend
@@ -205,7 +215,13 @@ const handler = new lambda.Function(this, 'Handler', {
   code: lambda.Code.fromAsset('lambda'),
   memorySize: 256,
   timeout: cdk.Duration.seconds(10),
+  environment: {
+    FROM_ADDRESS: 'no-reply@yourdomain.com',
+    TO_ADDRESS: 'you@yourdomain.com',
+  },
 });
+// Grant SES access as shown in "Scope IAM permissions to specific identities" below;
+// without it every send fails with AccessDenied.
 
 const fnUrl = handler.addFunctionUrl({
   authType: lambda.FunctionUrlAuthType.NONE,

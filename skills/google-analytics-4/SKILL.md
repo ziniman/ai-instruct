@@ -474,12 +474,13 @@ Fire `page_view` on each route change:
 // Call this on every route change, including the initial load.
 // Pass an explicit title when you have one; otherwise wait a frame so
 // frameworks that set document.title in an effect have updated it.
+// Hidden tabs pause animation frames, so send at once there.
 function trackPageView(title) {
   const send = () => gtag('event', 'page_view', {
     page_location: window.location.href,  // Full URL; GA4 derives page path and other page dimensions from it
     page_title: title || document.title,
   });
-  if (title) send();
+  if (title || document.hidden) send();
   else requestAnimationFrame(send);
 }
 ```

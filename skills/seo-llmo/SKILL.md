@@ -645,7 +645,9 @@ Attach this as a `viewer-request` CloudFront Function. Then:
 - Upload every `.md` object with `Content-Type: text/markdown; charset=utf-8` metadata (for example `aws s3 cp dist/ s3://your-bucket/ --recursive --exclude "*" --include "*.md" --content-type "text/markdown; charset=utf-8"`). S3 serves whatever type the object was stored with, and guesses wrong for `.md`. A Response Headers Policy is the wrong tool here: CloudFront picks the cache behavior from the original path (`/`), before the function rewrites it to `/index.md`.
 - Add a Response Headers Policy with a custom header `Vary: Accept` to the cache behavior that serves your pages.
 
-**Produce the .md files** by converting your built HTML at build time. The `turndown` package has no CLI, so use a short Node script (`npm install --save-dev turndown`):
+**Produce the .md files** by converting your built HTML at build time. This only works when the built HTML already contains each page's content: static site generators, server-rendered or prerendered builds. A client-rendered SPA's `index.html` is an empty shell, so converting it yields empty Markdown. For those, prerender each public route first (your framework's static export, or a headless-browser prerender step in the build), or generate the Markdown from the same content source (CMS, MDX, JSON) the app renders from. Check that a generated `.md` file contains real text before you turn on negotiation.
+
+The `turndown` package has no CLI, so use a short Node script (`npm install --save-dev turndown`):
 
 ```javascript
 // scripts/html-to-md.mjs - run after your build: node scripts/html-to-md.mjs dist
