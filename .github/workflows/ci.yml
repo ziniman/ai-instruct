@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Syntax-check CLI and scripts
+        run: |
+          for f in bin/*.js bin/lib/*.js scripts/*.js; do node --check "$f"; done
+
+      - name: Skills match guides
+        run: |
+          node scripts/build-skills.js
+          git diff --exit-code skills/ || {
+            echo "::error::skills/ is out of date. Run 'npm run build:skills' and commit the result."
+            exit 1
+          }
+
+      - name: Plugin versions match package.json
+        run: |
+          node scripts/sync-versions.js
+          git diff --exit-code .claude-plugin/ || {
+            echo "::error::.claude-plugin/ versions differ from package.json. Bump with 'npm version', not by hand."
+            exit 1
+          }
+
+      - name: Release preview
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          BASE_VERSION=$(git show "origin/${{ github.base_ref }}:package.json" | node -p "JSON.parse(require('fs').readFileSync(0)).version")
+          if [ "$VERSION" = "$BASE_VERSION" ]; then
+            echo "Version unchanged ($VERSION). Merging will not publish." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "::error::$NAME@$VERSION is already on npm. Bump to a new version."
+            exit 1
+          fi
+          if ! grep -q "^## v$VERSION " CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## v$VERSION' entry."
+            exit 1
+          fi
+          echo "Merging will publish **$NAME@$VERSION** to npm and create release **v$VERSION**." >> "$GITHUB_STEP_SUMMARY"
