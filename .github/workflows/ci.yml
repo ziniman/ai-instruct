@@ -48,8 +48,12 @@ jobs:
             echo "Version unchanged ($VERSION). Merging will not publish." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+          if out=$(npm view "$NAME@$VERSION" version 2>&1); then
             echo "::error::$NAME@$VERSION is already on npm. Bump to a new version."
+            exit 1
+          elif ! grep -q E404 <<< "$out"; then
+            echo "$out"
+            echo "::error::Could not check npm for $NAME@$VERSION."
             exit 1
           fi
           if ! grep -q "^## v$VERSION " CHANGELOG.md; then
