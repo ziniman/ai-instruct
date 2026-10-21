@@ -447,7 +447,7 @@ export const handler = async (event) => {
 ```
 
 - Never put the visitor's address in `FromEmailAddress`. It is not a verified identity, so SES rejects the send. Use `ReplyToAddresses` instead.
-- The handler returns no CORS headers on purpose; the HTTP API or function URL config adds them (see the CORS section).
+- The handler returns no CORS headers on purpose; the HTTP API or function URL config adds them (see [CORS: configure it at the edge, not in Lambda](#cors-configure-it-at-the-edge-not-in-lambda)).
 - The Node.js runtimes include the AWS SDK for JavaScript v3, but AWS recommends bundling the clients you use so runtime updates cannot change them under you: run `npm install @aws-sdk/client-sesv2` inside `lambda/`.
 
 ### Abuse controls

@@ -12,7 +12,7 @@ Agents fetch your page, parse it, and often take action on it. Three signals mak
 
 > **Agentic search discoverability.** Agent-readiness scanners like ORA also test whether agents can find your site when searching for your brand name, your use case, or your developer resources - three checks worth about 12 of ORA's 100 points combined (as of October 2026). It's primarily a content strategy concern: building topical authority through tutorials, comparison pages, and use-case landing pages. The technical baseline: make sure your product name is in your `<h1>` and page title, and list all developer resources (API docs, OpenAPI spec, SDKs) in `llms.txt` so they're findable by name.
 
-Cloudflare runs a free scanner at [isitagentready.com](https://isitagentready.com/) that scores these (plus robots.txt, sitemap, Content-Signal from the sections above). Use it as your acceptance test. It offers **All Checks**, **Content Site**, and **API / Application** scan types; use Content Site for sites without an API.
+Cloudflare runs a free scanner at [isitagentready.com](https://isitagentready.com/) that scores these (plus [robots.txt](robots-txt-for-ai-and-search-crawlers.md), [sitemap](sitemap.md), and [Content-Signal](robots-txt-for-ai-and-search-crawlers.md#content-signal-directive)). Use it as your acceptance test. It offers **All Checks**, **Content Site**, and **API / Application** scan types; use Content Site for sites without an API.
 
 ### Markdown content negotiation
 

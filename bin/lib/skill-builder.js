@@ -142,8 +142,9 @@ function rewriteLinks(lines, fromFile, anchors, problems) {
 }
 
 // Returns [{ path, content }] relative to the skill directory. With strict,
-// throws on anything that would ship a broken or oversized skill.
-function buildSkillFiles(guide, body, { strict = true } = {}) {
+// throws on anything that would ship a broken or oversized skill; otherwise
+// passes each problem to onProblem and returns the files anyway.
+function buildSkillFiles(guide, body, { strict = true, onProblem = () => {} } = {}) {
   const frontmatter = buildSkillFrontmatter(guide);
   const single = frontmatter + body;
   if (lineCount(single) <= MAX_SKILL_LINES) {
@@ -230,6 +231,7 @@ function buildSkillFiles(guide, body, { strict = true } = {}) {
   }
 
   if (problems.length && strict) throw new Error(problems.join('\n'));
+  problems.forEach(onProblem);
   return files;
 }
 

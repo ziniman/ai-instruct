@@ -75,10 +75,35 @@ async function loadSkillFiles(guide) {
         files.push({ path: `${REFERENCES_DIR}/${name}`, content: fs.readFileSync(path.join(refDir, name), 'utf8') });
       }
     }
-    return files;
+    return { files, problems: [] };
   }
   const body = await fetchText(`${REPO_RAW}/${guide.file}`);
-  return buildSkillFiles(guide, body, { strict: false });
+  const problems = [];
+  const files = buildSkillFiles(guide, body, { strict: false, onProblem: p => problems.push(p) });
+  return { files, problems };
+}
+
+// Writes the skill into a sibling temp folder and swaps it in only once every
+// file is written, so a failure never leaves a SKILL.md pointing at missing
+// references. Replacing the folder also drops files from an older install.
+function writeSkillDir(skillDir, files) {
+  const tmpDir = `${skillDir}.tmp-${process.pid}`;
+  const oldDir = `${skillDir}.old-${process.pid}`;
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+  try {
+    for (const file of files) {
+      const dest = path.join(tmpDir, file.path);
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.writeFileSync(dest, file.content);
+    }
+    if (fs.existsSync(skillDir)) fs.renameSync(skillDir, oldDir);
+    fs.renameSync(tmpDir, skillDir);
+  } catch (err) {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    if (!fs.existsSync(skillDir) && fs.existsSync(oldDir)) fs.renameSync(oldDir, skillDir);
+    throw err;
+  }
+  fs.rmSync(oldDir, { recursive: true, force: true });
 }
 
 async function runSkillsFlow(rl, userScope) {
@@ -110,28 +135,25 @@ async function runSkillsFlow(rl, userScope) {
   }
 
   console.log('');
+  let installed = 0;
   for (const guide of selected) {
     const skillDir = path.join(baseDir, guide.skillName);
-    if (!fs.existsSync(skillDir)) fs.mkdirSync(skillDir, { recursive: true });
 
     process.stdout.write(`  Installing ${guide.skillName}... `);
     try {
-      const files = await loadSkillFiles(guide);
-      // Replace references/ wholesale so files from an older install don't linger.
-      fs.rmSync(path.join(skillDir, REFERENCES_DIR), { recursive: true, force: true });
-      for (const file of files) {
-        const dest = path.join(skillDir, file.path);
-        fs.mkdirSync(path.dirname(dest), { recursive: true });
-        fs.writeFileSync(dest, file.content);
-      }
+      const { files, problems } = await loadSkillFiles(guide);
+      writeSkillDir(skillDir, files);
+      installed++;
       console.log('✓');
+      problems.forEach(p => console.log(`    warning: ${p}`));
     } catch (err) {
       console.log(`✗  ${err.message}`);
     }
   }
 
+  const failed = selected.length - installed;
   console.log('\n--------------------------------------------------');
-  console.log(`Done! ${selected.length} skill(s) installed in ${baseDir}/`);
+  console.log(`Done! ${installed} skill(s) installed in ${baseDir}/${failed ? ` (${failed} failed, see above)` : ''}`);
   console.log('Claude Code will auto-discover them on next session.');
   if (!userScope) {
     console.log('Commit .claude/skills/ if you want your team to share these.\n');
