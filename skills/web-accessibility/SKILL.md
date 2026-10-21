@@ -42,7 +42,7 @@ Options: WCAG 2.1 AA | WCAG 2.2 AA | Section 508 | EN 301 549 | Not sure
 
 This guide is split into reference files. Use the Section 0 answers to decide which apply, then read only those; skip the rest.
 
-- [Legal & Compliance](references/legal-compliance.md): The user asks about legal obligations or deadlines (ADA Title II and III, European Accessibility Act, EN 301 549, Section 508) or accessibility overlays.
+- [Legal & Compliance](references/legal-compliance.md): The product serves EU users (European Accessibility Act, EN 301 549), US state or local government (ADA Title II), US businesses (ADA Title III), or US federal agencies (Section 508), or the user asks about legal deadlines or accessibility overlays.
 - [WCAG Standards Overview](references/wcag-standards-overview.md): Choosing a conformance target (A, AA, AAA) or explaining why 2.2 AA is the default.
 - [WCAG 2.2: What's New](references/wcag-2-2-whats-new.md): Checking against criteria added in WCAG 2.2: focus not obscured, dragging, target size, accessible authentication, redundant entry, consistent help.
 - [Semantic HTML](references/semantic-html.md): Generating any markup: page landmarks, choosing the right element, and native interactive elements (dialog, popover, details, invoker commands).

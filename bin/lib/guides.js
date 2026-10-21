@@ -82,7 +82,7 @@ const GUIDES = [
     skillDescription: 'Use this skill whenever the user is building or reviewing any web UI. Accessibility is a baseline requirement, not a niche concern. Covers WCAG 2.2 AA (including Focus Not Obscured, Target Size, Accessible Authentication), semantic HTML and native interactive elements (dialog, popover, details, invoker commands), ARIA patterns, keyboard navigation, focus management, color contrast, touch targets, forms, testing with axe / Lighthouse / screen readers, and legal context (ADA Title II and III, European Accessibility Act, EN 301 549). Trigger when generating any interactive component or page (forms, modals, menus, tooltips, tables, navigation, layouts), before any "launch" or "go live", during pre-launch checklists, when a user asks about accessibility overlays or compliance deadlines, and whenever producing new HTML/JSX markup, even if the user does not explicitly mention a11y or WCAG. Skip for backend-only changes, CLI tools, or non-UI code.',
     sectionSummaries: {
       'Legal & Compliance':
-        'the user asks about legal obligations or deadlines (ADA Title II and III, European Accessibility Act, EN 301 549, Section 508) or accessibility overlays.',
+        'the product serves EU users (European Accessibility Act, EN 301 549), US state or local government (ADA Title II), US businesses (ADA Title III), or US federal agencies (Section 508), or the user asks about legal deadlines or accessibility overlays.',
       'WCAG Standards Overview':
         'choosing a conformance target (A, AA, AAA) or explaining why 2.2 AA is the default.',
       'WCAG 2.2: What\'s New':
