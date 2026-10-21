@@ -31,7 +31,7 @@ Default: no  -  skip the SES section entirely.
 Default: no (existing account). If new: SES starts in sandbox mode in every region (it can only send to verified addresses), CDK bootstrap is required before any deploy, and accounts created on or after July 15, 2025 use the credit-based Free Tier (see cost table).
 
 **Q: What is the expected traffic?**
-Default: low (a few visitors per day)  -  this typically costs $0 to a few cents per month. See cost table below.
+Default: low (a few visitors per day)  -  this typically costs $0 to a few cents per month. See [Costs at a glance](references/costs-at-a-glance.md).
 
 > **AI assistant:** If the user only needs static hosting, generate only the Amplify Hosting section. Only include CDK/Lambda/SES content if they confirm they need a backend. For new Lambda functions use `lambda.Runtime.NODEJS_24_X` with an async handler.
 

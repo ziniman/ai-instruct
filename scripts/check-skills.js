@@ -9,8 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { GUIDES } = require('../bin/lib/guides');
-const { MAX_SKILL_LINES, REFERENCES_DIR, githubSlug, scanLines } = require('../bin/lib/skill-builder');
+const { GUIDES, MAX_SKILL_LINES, REFERENCES_DIR, githubSlug, scanLines } = require('../bin/lib/guides');
 
 const SKILLS_DIR = path.resolve(__dirname, '..', 'skills');
 

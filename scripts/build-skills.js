@@ -5,8 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { GUIDES } = require('../bin/lib/guides');
-const { REFERENCES_DIR, buildSkillFiles } = require('../bin/lib/skill-builder');
+const { GUIDES, REFERENCES_DIR, buildSkillFiles } = require('../bin/lib/guides');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const SKILLS_DIR = path.join(REPO_ROOT, 'skills');

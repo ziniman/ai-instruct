@@ -24,14 +24,14 @@ npx ai-instruct init
 
 The CLI has no dependencies  -  it uses only Node.js built-ins (`fs`, `os`, `path`, `readline`) plus the global `fetch` (Node 18+). Do not add external packages.
 
-`bin/lib/guides.js` is the single source of truth for the guide list (filenames, descriptions, skill names, skill descriptions). Both the CLI and the build script import from it.
+`bin/lib/guides.js` is the single source of truth for the guide list (filenames, descriptions, skill names, skill descriptions, section summaries) and for the skill builder that turns a guide into skill files. Both the CLI and the build script import from it.
 
 ## Plugin and skills (Claude Code)
 
 The repo also publishes itself as a Claude Code plugin. The plugin bundles all 5 guides as skills under `skills/<skill-name>/SKILL.md`.
 
 - `skills/` is **generated** by `scripts/build-skills.js` from the canonical `*-guide.md` files plus the metadata in `bin/lib/guides.js`. Do not edit anything under `skills/` by hand  -  edit the source guide and rebuild.
-- The splitting logic lives in `bin/lib/skill-builder.js` (shared by the build script and the CLI). Skills use progressive disclosure: if a guide's single-file skill would exceed 500 lines, the build writes `skills/<name>/SKILL.md` with the frontmatter, the guide header, Section 0 in full, and a linked index, plus one `skills/<name>/references/<slug>.md` per remaining H2 section. The guide's own "Contents" section is replaced by that index. Intra-guide `#anchor` links are rewritten to point at the right reference file. Shorter guides stay a single `SKILL.md`. The guides themselves stay single files because they are also used outside Claude Code.
+- The splitting logic (`buildSkillFiles`) lives in `bin/lib/guides.js`, shared by the build script and the CLI. Skills use progressive disclosure: if a guide's single-file skill would exceed 500 lines, the build writes `skills/<name>/SKILL.md` with the frontmatter, the guide header, Section 0 in full, and a linked index, plus one `skills/<name>/references/<slug>.md` per remaining H2 section. The guide's own "Contents" section is replaced by that index. Intra-guide `#anchor` links are rewritten to point at the right reference file. Shorter guides stay a single `SKILL.md`. The guides themselves stay single files because they are also used outside Claude Code.
 - Each index entry needs a one-line "when to read this" summary: the section's `Applies when:` line, or an entry in that guide's `sectionSummaries` map in `bin/lib/guides.js`. The build fails on a missing summary, a stale `sectionSummaries` key, or a link to an unknown anchor.
 - The build deletes and rewrites each `references/` directory, so renamed sections never leave orphans. `npm run check:skills` (`scripts/check-skills.js`) verifies line limits, that every relative link and anchor resolves, and that every reference file is linked from its `SKILL.md`. CI runs both and fails on any diff or untracked file under `skills/`.
 - `skills/` is committed to the repo (not gitignored) so users installing via `/plugin install` get the files without running a build.

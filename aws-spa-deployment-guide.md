@@ -26,7 +26,7 @@ Default: no  -  skip the SES section entirely.
 Default: no (existing account). If new: SES starts in sandbox mode in every region (it can only send to verified addresses), CDK bootstrap is required before any deploy, and accounts created on or after July 15, 2025 use the credit-based Free Tier (see cost table).
 
 **Q: What is the expected traffic?**
-Default: low (a few visitors per day)  -  this typically costs $0 to a few cents per month. See cost table below.
+Default: low (a few visitors per day)  -  this typically costs $0 to a few cents per month. See [Costs at a glance](#costs-at-a-glance).
 
 > **AI assistant:** If the user only needs static hosting, generate only the Amplify Hosting section. Only include CDK/Lambda/SES content if they confirm they need a backend. For new Lambda functions use `lambda.Runtime.NODEJS_24_X` with an async handler.
 
@@ -55,7 +55,7 @@ Static Site (Amplify = S3 + CloudFront)
 - Backend in a separate **CDK stack** deployed independently
 - `VITE_*` environment variables bridge frontend to backend (baked into the JS bundle at build time, not available at runtime)
 
-**This guide uses Amplify Hosting only, with no Amplify-managed backend.** You connect a git repo in the Amplify console, Amplify builds and serves the static site, and the backend lives in a separate CDK app. Amplify Gen 1 (the `amplify` CLI backend workflow) entered maintenance mode on May 1, 2026 and reaches end of life on May 1, 2027 (as of 2026), so do not start new projects on it. If the repo has an `amplify/` directory, it uses a Gen 2 code-first backend: the hosting, rewrite, and header steps below still apply, but the CDK backend sections of this guide describe a different setup.
+**This guide uses Amplify Hosting only, with no Amplify-managed backend.** You connect a git repo in the Amplify console, Amplify builds and serves the static site, and the backend lives in a separate CDK app. Amplify Gen 1 (the `amplify` CLI backend workflow) entered maintenance mode on May 1, 2026 and reaches end of life on May 1, 2027 (as of 2026), so do not start new projects on it. If the repo has an `amplify/` directory, it uses a Gen 2 code-first backend: the hosting, rewrite, and header steps in [Amplify Hosting](#amplify-hosting) still apply, but [CDK Backend](#cdk-backend) and [SES Email](#ses-email) describe a different setup.
 
 ---
 
@@ -215,7 +215,7 @@ const handler = new lambda.Function(this, 'Handler', {
     TO_ADDRESS: 'you@yourdomain.com',
   },
 });
-// Grant SES access as shown in "Scope IAM permissions to specific identities" below;
+// Grant SES access as shown in "Scope IAM permissions to specific identities" (SES Email section);
 // without it every send fails with AccessDenied.
 
 const fnUrl = handler.addFunctionUrl({

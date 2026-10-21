@@ -24,7 +24,7 @@
 ]
 ```
 
-Amplify's docs describe the `404` type as showing the target page for addresses that don't exist, so files you do publish under `/.well-known/` (such as `agent-skills/index.json`) should still be served. After deploying, re-run the curl check above and confirm a file you do publish still returns 200.
+Amplify's docs describe the `404` type as showing the target page for addresses that don't exist, so files you do publish under `/.well-known/` (such as `agent-skills/index.json`) should still be served. After deploying, re-run the curl check from [MCP server discovery](agent-readiness.md#mcp-server-discovery) and confirm a file you do publish still returns 200.
 
 ### CloudFront + S3
 

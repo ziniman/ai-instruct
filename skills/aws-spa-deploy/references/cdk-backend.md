@@ -20,7 +20,7 @@ const handler = new lambda.Function(this, 'Handler', {
     TO_ADDRESS: 'you@yourdomain.com',
   },
 });
-// Grant SES access as shown in "Scope IAM permissions to specific identities" below;
+// Grant SES access as shown in "Scope IAM permissions to specific identities" (SES Email section);
 // without it every send fails with AccessDenied.
 
 const fnUrl = handler.addFunctionUrl({

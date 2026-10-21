@@ -340,7 +340,7 @@ This site does not run an A2A agent or an MCP server.
 See https://yourdomain.com/llms.txt for what is available.
 ```
 
-SPA hosting turns these into soft 200s by default, because the fallback rule serves `index.html` with status 200 for every missing path. See "Static Hosting Notes" below for the Amplify and CloudFront fixes, then confirm the status:
+SPA hosting turns these into soft 200s by default, because the fallback rule serves `index.html` with status 200 for every missing path. See [Static Hosting Notes](static-hosting-notes.md) for the Amplify and CloudFront fixes, then confirm the status:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://yourdomain.com/.well-known/agent-card.json

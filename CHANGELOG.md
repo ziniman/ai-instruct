@@ -4,13 +4,12 @@ All notable content and feature changes to ai-instruct. Ordered newest to oldest
 
 ---
 
-## v3.0.0 &nbsp;·&nbsp; 2026-10-21
+## v3.0.0 · 2026-10-21
 
-**`all skills`** - Skills now use progressive disclosure: `SKILL.md` keeps the guide header, Section 0, and an index with a one-line "when to read" summary per section, and every other section moves to `references/<slug>.md`. A triggered skill loads about 50 lines instead of up to 1,370, in line with the Agent Skills 500-line guidance. Cross-section links are rewritten to the right reference file. The guides themselves are unchanged and still single files
-
-**`CLI`** - `init --skills` installs the whole skill folder, including `references/`, swapping it in only once every file is written so a failed install never leaves a half-updated skill; the Done message reports failures, and the GitHub fallback prints build warnings
-
-**`CI`** - Fails on untracked files under `skills/` (not only modified ones) and runs a new `check:skills` validator for line limits, broken links or anchors, and orphaned reference files
+- **`all skills`:** Skills now use progressive disclosure: `SKILL.md` keeps the guide header, Section 0, and an index with a one-line "when to read" summary per section, and every other section moves to `references/<slug>.md`. A triggered skill loads about 50 lines instead of up to 1,370, in line with the Agent Skills 500-line guidance. Cross-section links are rewritten to the right reference file
+- **`aws-spa-deploy`, `seo-llmo`:** "See above/below" pointers that now cross reference files are links, so they still work when a section is read on its own. Guide content is otherwise unchanged and the guides remain single files
+- **`CLI`:** `init --skills` installs the whole skill, including `references/`, and swaps the generated files in only once every file is written, so a failed install never leaves a half-updated skill; other files in the skill folder are kept. The Done message reports failures, and the GitHub fallback prints build warnings
+- **`CI`:** Fails on untracked files under `skills/` (not only modified ones) and runs a new `check:skills` validator for line limits, broken links or anchors, and orphaned reference files
 
 ---
 

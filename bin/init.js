@@ -8,8 +8,7 @@ const path = require('path');
 const readline = require('readline');
 
 const { version } = require('../package.json');
-const { GUIDES } = require('./lib/guides');
-const { REFERENCES_DIR, buildSkillFiles } = require('./lib/skill-builder');
+const { GUIDES, REFERENCES_DIR, buildSkillFiles } = require('./lib/guides');
 const REPO_RAW = 'https://raw.githubusercontent.com/ziniman/ai-instruct/main';
 const DOCS_DIR = 'ai-docs';
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
@@ -83,27 +82,50 @@ async function loadSkillFiles(guide) {
   return { files, problems };
 }
 
-// Writes the skill into a sibling temp folder and swaps it in only once every
-// file is written, so a failure never leaves a SKILL.md pointing at missing
-// references. Replacing the folder also drops files from an older install.
+// Stages the generated files in a sibling temp folder, then swaps in SKILL.md
+// and references/ only once every file is written, so a failure never leaves a
+// SKILL.md pointing at missing references. references/ is replaced wholesale to
+// drop files from an older install; anything else in the skill folder is kept.
 function writeSkillDir(skillDir, files) {
-  const tmpDir = `${skillDir}.tmp-${process.pid}`;
-  const oldDir = `${skillDir}.old-${process.pid}`;
-  fs.rmSync(tmpDir, { recursive: true, force: true });
+  const tag = `.tmp-${process.pid}`;
+  const staged = `${skillDir}${tag}`;
+  const refDir = path.join(skillDir, REFERENCES_DIR);
+  const oldRefs = `${refDir}${tag}`;
+  const removeQuietly = dir => {
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort cleanup */ }
+  };
+
+  fs.rmSync(staged, { recursive: true, force: true });
   try {
     for (const file of files) {
-      const dest = path.join(tmpDir, file.path);
+      const dest = path.join(staged, file.path);
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       fs.writeFileSync(dest, file.content);
     }
-    if (fs.existsSync(skillDir)) fs.renameSync(skillDir, oldDir);
-    fs.renameSync(tmpDir, skillDir);
   } catch (err) {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-    if (!fs.existsSync(skillDir) && fs.existsSync(oldDir)) fs.renameSync(oldDir, skillDir);
+    removeQuietly(staged);
     throw err;
   }
-  fs.rmSync(oldDir, { recursive: true, force: true });
+
+  fs.mkdirSync(skillDir, { recursive: true });
+  const hadRefs = fs.existsSync(refDir);
+  let newRefs = false;
+  try {
+    if (hadRefs) fs.renameSync(refDir, oldRefs);
+    if (fs.existsSync(path.join(staged, REFERENCES_DIR))) {
+      fs.renameSync(path.join(staged, REFERENCES_DIR), refDir);
+      newRefs = true;
+    }
+    fs.renameSync(path.join(staged, 'SKILL.md'), path.join(skillDir, 'SKILL.md'));
+  } catch (err) {
+    if (newRefs) removeQuietly(refDir);
+    if (hadRefs && fs.existsSync(oldRefs) && !fs.existsSync(refDir)) fs.renameSync(oldRefs, refDir);
+    removeQuietly(staged);
+    throw err;
+  }
+  // The new skill is in place; a failed cleanup must not report the install as failed.
+  removeQuietly(oldRefs);
+  removeQuietly(staged);
 }
 
 async function runSkillsFlow(rl, userScope) {
