@@ -607,7 +607,7 @@ Agents fetch your page, parse it, and often take action on it. Three signals mak
 
 > **Agentic search discoverability.** Agent-readiness scanners like ORA also test whether agents can find your site when searching for your brand name, your use case, or your developer resources - three checks worth about 12 of ORA's 100 points combined (as of October 2026). It's primarily a content strategy concern: building topical authority through tutorials, comparison pages, and use-case landing pages. The technical baseline: make sure your product name is in your `<h1>` and page title, and list all developer resources (API docs, OpenAPI spec, SDKs) in `llms.txt` so they're findable by name.
 
-Cloudflare runs a free scanner at [isitagentready.com](https://isitagentready.com/) that scores these (plus robots.txt, sitemap, Content-Signal from the sections above). Use it as your acceptance test. It offers **All Checks**, **Content Site**, and **API / Application** scan types; use Content Site for sites without an API.
+Cloudflare runs a free scanner at [isitagentready.com](https://isitagentready.com/) that scores these (plus [robots.txt](#robotstxt-for-ai-and-search-crawlers), [sitemap](#sitemap), and [Content-Signal](#content-signal-directive)). Use it as your acceptance test. It offers **All Checks**, **Content Site**, and **API / Application** scan types; use Content Site for sites without an API.
 
 ### Markdown content negotiation
 
@@ -935,7 +935,7 @@ This site does not run an A2A agent or an MCP server.
 See https://yourdomain.com/llms.txt for what is available.
 ```
 
-SPA hosting turns these into soft 200s by default, because the fallback rule serves `index.html` with status 200 for every missing path. See "Static Hosting Notes" below for the Amplify and CloudFront fixes, then confirm the status:
+SPA hosting turns these into soft 200s by default, because the fallback rule serves `index.html` with status 200 for every missing path. See [Static Hosting Notes](#static-hosting-notes) for the Amplify and CloudFront fixes, then confirm the status:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://yourdomain.com/.well-known/agent-card.json
@@ -1142,7 +1142,7 @@ These generate actual HTML files that all crawlers read without JavaScript.
 ]
 ```
 
-Amplify's docs describe the `404` type as showing the target page for addresses that don't exist, so files you do publish under `/.well-known/` (such as `agent-skills/index.json`) should still be served. After deploying, re-run the curl check above and confirm a file you do publish still returns 200.
+Amplify's docs describe the `404` type as showing the target page for addresses that don't exist, so files you do publish under `/.well-known/` (such as `agent-skills/index.json`) should still be served. After deploying, re-run the curl check from [MCP server discovery](#mcp-server-discovery) and confirm a file you do publish still returns 200.
 
 ### CloudFront + S3
 

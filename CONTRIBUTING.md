@@ -65,6 +65,8 @@ Include a table of contents for any guide longer than ~150 lines. Use anchor lin
 - One concept per section  -  don't mix unrelated topics under one heading
 - Keep sections self-contained so they can be quoted or used in isolation
 - Use `###` for subsections, `####` sparingly and only when genuinely needed
+- Each `##` section becomes its own reference file in the Claude Code skill (see below), so link to other sections with `#anchor` links rather than "see above" or "below"
+- Start a section with an `Applies when: ...` line where it fits. It doubles as the one-line summary in the skill's index; sections without one need a `sectionSummaries` entry in `bin/lib/guides.js` (the build fails otherwise)
 
 ## Writing style
 

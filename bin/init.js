@@ -8,7 +8,7 @@ const path = require('path');
 const readline = require('readline');
 
 const { version } = require('../package.json');
-const { GUIDES, buildSkillFrontmatter } = require('./lib/guides');
+const { GUIDES, REFERENCES_DIR, buildSkillFiles } = require('./lib/guides');
 const REPO_RAW = 'https://raw.githubusercontent.com/ziniman/ai-instruct/main';
 const DOCS_DIR = 'ai-docs';
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
@@ -62,6 +62,72 @@ async function fetchText(url) {
   return res.text();
 }
 
+// Returns [{ path, content }] for one skill: the prebuilt files shipped in the
+// package, or (if they are missing) built from the guide on GitHub.
+async function loadSkillFiles(guide) {
+  const localDir = path.join(PACKAGE_SKILLS_DIR, guide.skillName);
+  if (fs.existsSync(path.join(localDir, 'SKILL.md'))) {
+    const files = [{ path: 'SKILL.md', content: fs.readFileSync(path.join(localDir, 'SKILL.md'), 'utf8') }];
+    const refDir = path.join(localDir, REFERENCES_DIR);
+    if (fs.existsSync(refDir)) {
+      for (const name of fs.readdirSync(refDir).sort()) {
+        files.push({ path: `${REFERENCES_DIR}/${name}`, content: fs.readFileSync(path.join(refDir, name), 'utf8') });
+      }
+    }
+    return { files, problems: [] };
+  }
+  const body = await fetchText(`${REPO_RAW}/${guide.file}`);
+  const problems = [];
+  const files = buildSkillFiles(guide, body, { strict: false, onProblem: p => problems.push(p) });
+  return { files, problems };
+}
+
+// Stages the generated files in a sibling temp folder, then swaps in SKILL.md
+// and references/ only once every file is written, so a failure never leaves a
+// SKILL.md pointing at missing references. references/ is replaced wholesale to
+// drop files from an older install; anything else in the skill folder is kept.
+function writeSkillDir(skillDir, files) {
+  const tag = `.tmp-${process.pid}`;
+  const staged = `${skillDir}${tag}`;
+  const refDir = path.join(skillDir, REFERENCES_DIR);
+  const oldRefs = `${refDir}${tag}`;
+  const removeQuietly = dir => {
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort cleanup */ }
+  };
+
+  fs.rmSync(staged, { recursive: true, force: true });
+  try {
+    for (const file of files) {
+      const dest = path.join(staged, file.path);
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.writeFileSync(dest, file.content);
+    }
+  } catch (err) {
+    removeQuietly(staged);
+    throw err;
+  }
+
+  fs.mkdirSync(skillDir, { recursive: true });
+  const hadRefs = fs.existsSync(refDir);
+  let newRefs = false;
+  try {
+    if (hadRefs) fs.renameSync(refDir, oldRefs);
+    if (fs.existsSync(path.join(staged, REFERENCES_DIR))) {
+      fs.renameSync(path.join(staged, REFERENCES_DIR), refDir);
+      newRefs = true;
+    }
+    fs.renameSync(path.join(staged, 'SKILL.md'), path.join(skillDir, 'SKILL.md'));
+  } catch (err) {
+    if (newRefs) removeQuietly(refDir);
+    if (hadRefs && fs.existsSync(oldRefs) && !fs.existsSync(refDir)) fs.renameSync(oldRefs, refDir);
+    removeQuietly(staged);
+    throw err;
+  }
+  // The new skill is in place; a failed cleanup must not report the install as failed.
+  removeQuietly(oldRefs);
+  removeQuietly(staged);
+}
+
 async function runSkillsFlow(rl, userScope) {
   const baseDir = userScope
     ? path.join(os.homedir(), '.claude', 'skills')
@@ -91,30 +157,25 @@ async function runSkillsFlow(rl, userScope) {
   }
 
   console.log('');
+  let installed = 0;
   for (const guide of selected) {
     const skillDir = path.join(baseDir, guide.skillName);
-    if (!fs.existsSync(skillDir)) fs.mkdirSync(skillDir, { recursive: true });
 
-    const dest = path.join(skillDir, 'SKILL.md');
-    const localSkill = path.join(PACKAGE_SKILLS_DIR, guide.skillName, 'SKILL.md');
     process.stdout.write(`  Installing ${guide.skillName}... `);
     try {
-      let content;
-      if (fs.existsSync(localSkill)) {
-        content = fs.readFileSync(localSkill, 'utf8');
-      } else {
-        const body = await fetchText(`${REPO_RAW}/${guide.file}`);
-        content = buildSkillFrontmatter(guide) + body;
-      }
-      fs.writeFileSync(dest, content);
+      const { files, problems } = await loadSkillFiles(guide);
+      writeSkillDir(skillDir, files);
+      installed++;
       console.log('✓');
+      problems.forEach(p => console.log(`    warning: ${p}`));
     } catch (err) {
       console.log(`✗  ${err.message}`);
     }
   }
 
+  const failed = selected.length - installed;
   console.log('\n--------------------------------------------------');
-  console.log(`Done! ${selected.length} skill(s) installed in ${baseDir}/`);
+  console.log(`Done! ${installed} skill(s) installed in ${baseDir}/${failed ? ` (${failed} failed, see above)` : ''}`);
   console.log('Claude Code will auto-discover them on next session.');
   if (!userScope) {
     console.log('Commit .claude/skills/ if you want your team to share these.\n');

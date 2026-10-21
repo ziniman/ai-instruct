@@ -24,13 +24,16 @@ npx ai-instruct init
 
 The CLI has no dependencies  -  it uses only Node.js built-ins (`fs`, `os`, `path`, `readline`) plus the global `fetch` (Node 18+). Do not add external packages.
 
-`bin/lib/guides.js` is the single source of truth for the guide list (filenames, descriptions, skill names, skill descriptions). Both the CLI and the build script import from it.
+`bin/lib/guides.js` is the single source of truth for the guide list (filenames, descriptions, skill names, skill descriptions, section summaries) and for the skill builder that turns a guide into skill files. Both the CLI and the build script import from it.
 
 ## Plugin and skills (Claude Code)
 
 The repo also publishes itself as a Claude Code plugin. The plugin bundles all 5 guides as skills under `skills/<skill-name>/SKILL.md`.
 
-- `skills/` is **generated** by `scripts/build-skills.js` from the canonical `*-guide.md` files plus the metadata in `bin/lib/guides.js`. Do not edit `skills/<name>/SKILL.md` by hand  -  edit the source guide and rebuild.
+- `skills/` is **generated** by `scripts/build-skills.js` from the canonical `*-guide.md` files plus the metadata in `bin/lib/guides.js`. Do not edit anything under `skills/` by hand  -  edit the source guide and rebuild.
+- The splitting logic (`buildSkillFiles`) lives in `bin/lib/guides.js`, shared by the build script and the CLI. Skills use progressive disclosure: if a guide's single-file skill would exceed 500 lines, the build writes `skills/<name>/SKILL.md` with the frontmatter, the guide header, Section 0 in full, and a linked index, plus one `skills/<name>/references/<slug>.md` per remaining H2 section. The guide's own "Contents" section is replaced by that index. Intra-guide `#anchor` links are rewritten to point at the right reference file. Shorter guides stay a single `SKILL.md`. The guides themselves stay single files because they are also used outside Claude Code.
+- Each index entry needs a one-line "when to read this" summary: the section's `Applies when:` line, or an entry in that guide's `sectionSummaries` map in `bin/lib/guides.js`. The build fails on a missing summary, a stale `sectionSummaries` key, or a link to an unknown anchor.
+- The build deletes and rewrites each `references/` directory, so renamed sections never leave orphans. `npm run check:skills` (`scripts/check-skills.js`) verifies line limits, that every relative link and anchor resolves, and that every reference file is linked from its `SKILL.md`. CI runs both and fails on any diff or untracked file under `skills/`.
 - `skills/` is committed to the repo (not gitignored) so users installing via `/plugin install` get the files without running a build.
 - `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` describe the plugin and the marketplace (this repo is its own marketplace, so users can `/plugin marketplace add ziniman/ai-instruct`).
 - Versions in those two JSON files are synced from `package.json` by `scripts/sync-versions.js`, which runs automatically as part of `npm version`.
@@ -42,7 +45,7 @@ All changes reach `main` through a pull request. Never push to `main` directly a
 1. **Branch:** `git checkout -b <type>/<short-description>` (e.g. `docs/seo-llmo-mcp`, `fix/cli-windows-paths`).
 2. **Edit content** - update one or more `*-guide.md` files (or add a new guide, see below), then rebuild:
    ```sh
-   npm run build:skills          # regenerates skills/<name>/SKILL.md
+   npm run build:skills          # regenerates skills/<name>/SKILL.md and references/
    ```
    Commit the guide and the regenerated `skills/` files together.
 3. **Bump the version in the same PR** (skip this for changes that should not ship a release, e.g. README or CI tweaks):
@@ -74,7 +77,7 @@ The Section 0 pattern is the core of the approach: questions replace generic boi
 2. Follow the guide format above (read CONTRIBUTING.md for the full spec)
 3. Add a row to the `## Guides` table in `README.md` (Guide name | filename link | description)
 4. Add the guide to the `GUIDES` array in `bin/lib/guides.js` with `name`, `file`, `desc`, `topic`, `skillName`, and `skillDescription` fields. The `skillDescription` is what triggers the skill in Claude Code  -  write it in the "Use this skill whenever..." style with explicit trigger contexts and skip-for cases (see existing entries).
-5. Run `npm run build:skills` to generate `skills/<skillName>/SKILL.md` and commit it alongside the guide
+5. Run `npm run build:skills` to generate `skills/<skillName>/` (and `npm run check:skills`), then commit it alongside the guide. If the build asks for section summaries, add `Applies when:` lines to the guide or a `sectionSummaries` map to its `GUIDES` entry
 6. Add the guide's raw GitHub URL to `llms.txt`
 
 ## Changelog

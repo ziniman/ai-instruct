@@ -1,12 +1,13 @@
 {
   "name": "ai-instruct",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Practical markdown guides for developers building websites with AI coding assistants",
   "bin": {
     "ai-instruct": "bin/init.js"
   },
   "scripts": {
     "build:skills": "node scripts/build-skills.js",
+    "check:skills": "node scripts/check-skills.js",
     "sync:versions": "node scripts/sync-versions.js",
     "version": "node scripts/sync-versions.js && node scripts/build-skills.js && git add .claude-plugin/ skills/",
     "prepublishOnly": "node scripts/build-skills.js"

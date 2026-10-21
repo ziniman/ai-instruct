@@ -26,10 +26,16 @@ jobs:
       - name: Skills match guides
         run: |
           node scripts/build-skills.js
-          git diff --exit-code skills/ || {
+          # git diff misses new untracked files (e.g. a new references/*.md), so check status too.
+          if [ -n "$(git status --porcelain skills/)" ]; then
+            git status --short skills/
+            git diff skills/
             echo "::error::skills/ is out of date. Run 'npm run build:skills' and commit the result."
             exit 1
-          }
+          fi
+
+      - name: Skills are valid (line limit, links, no orphans)
+        run: node scripts/check-skills.js
 
       - name: Plugin versions match package.json
         run: |
