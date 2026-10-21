@@ -1,6 +1,6 @@
 # SEO & LLMO Implementation Guide
 
-> Applies to: Any website or web app | Updated: April 2026
+> Applies to: Any website or web app | Updated: October 2026
 
 A practical guide for implementing Search Engine Optimization (SEO), Large Language Model Optimization (LLMO), and agent-readiness  -  making your site discoverable and usable by search engines, AI chat tools, and autonomous agents.
 
@@ -54,7 +54,7 @@ Default: no  -  but check for existing files before creating new ones, and merge
 
 Applies when: any site where you want Google rich results or AI citation.
 
-JSON-LD (JavaScript Object Notation for Linked Data) is the highest-impact addition for both SEO and LLMO. Add it in `<head>`:
+JSON-LD (JavaScript Object Notation for Linked Data) is the highest-impact addition for both SEO and LLMO. Add it in `<head>`. Set expectations correctly: Google states that AI Overviews and AI Mode need no special schema.org markup (as of 2026), so the payoff is rich result eligibility in Google plus unambiguous entity data for other AI tools and agents that parse it. Keep every value consistent with the visible page text.
 
 ```html
 <script type="application/ld+json">
@@ -115,7 +115,7 @@ The `"publisher": { "@id": "..." }` pattern replaces duplicating the full Organi
 
 ### FAQPage schema
 
-Use on any page with a Q&A section. FAQPage triggers Google rich results (expandable Q&A in search) and is a reliable citation target for AI tools that answer direct questions:
+Use only on pages with a genuine, visible Q&A section. Google stopped showing FAQ rich results for all sites on May 7, 2026 and removed the documentation in June 2026, so FAQPage no longer changes how you appear in Google Search. The markup is still valid schema.org and harmless to keep; its remaining value is giving other AI tools and agent-readiness scanners a clean question/answer structure. Do not add it to pages just to chase a rich result:
 
 ```json
 {
@@ -198,7 +198,7 @@ Applies when: site type is online shop.
 }
 ```
 
-Key fields for AI visibility: `description` (write it to stand alone, without surrounding page context), `offers.availability` (keep it accurate and current - AI tools actively surface in-stock status), and `aggregateRating` (AI shopping results weight social proof heavily).
+Key fields for AI visibility: `description` (write it to stand alone, without surrounding page context), `offers.availability` (keep it accurate and current - AI tools actively surface in-stock status), and `aggregateRating` (AI shopping results weight social proof heavily). Only mark up ratings that come from real reviews shown on the page: Google's review snippet guidelines (updated July 2026) explicitly cover fake and undisclosed incentivized reviews.
 
 If the product has variants (sizes, colors), add a `hasVariant` array or use `variesBy` - see [schema.org/Product](https://schema.org/Product) for the full spec.
 
@@ -214,7 +214,7 @@ Applies when: site type is a web app, SaaS product, or developer tool.
   "@id": "https://yourdomain.com/#app",
   "name": "App Name",
   "description": "What the app does and who it's for. Write for someone who has never used it.",
-  "applicationCategory": "WebApplication",
+  "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web",
   "url": "https://yourdomain.com",
   "offers": {
@@ -226,9 +226,9 @@ Applies when: site type is a web app, SaaS product, or developer tool.
 }
 ```
 
-`applicationCategory` values: `BusinessApplication`, `DeveloperApplication`, `EducationalApplication`, `WebApplication`. For SaaS tools, `WebApplication` is the usual choice.
+`applicationCategory` describes what the app does, not where it runs. Common values from Google's supported list: `BusinessApplication`, `DeveloperApplication`, `EducationalApplication`, `FinanceApplication`, `UtilitiesApplication`. `WebApplication` is not a category; it is a schema.org subtype. To say "this runs in the browser", set `"@type": "WebApplication"` (or `MobileApplication`), which Google also supports.
 
-For the `offers` block: set `"price": "0"` for free apps; use the actual price for paid tiers; if pricing is contact-based, omit `offers` and point to `/pricing.md` instead.
+For the `offers` block: set `"price": "0"` for free apps; use the actual price for paid tiers; if pricing is contact-based, omit `offers` and point to `/pricing.md` instead. Google's Software App rich result requires `offers.price` plus either `aggregateRating` or `review` (as of 2026). Without real ratings the markup still identifies your product to parsers and agents, but it will not earn a rich result. Never invent ratings to qualify.
 
 ### sameAs entity linking
 
@@ -249,7 +249,7 @@ Wikidata and Wikipedia are the highest-trust signals for AI disambiguation. Even
 
 ### Speakable schema
 
-`Speakable` tells AI assistants and voice interfaces which sections of your page are worth reading aloud. Point it at your key value proposition and main heading:
+`Speakable` marks which sections of a page are suited to being read aloud. Keep expectations low: Google's support is still beta and limited to English-language news content read by Google Assistant on Google Home devices in the US (as of 2026). It is optional for everyone else; add it only if you publish news or it costs you nothing. Point it at your main heading and key summary:
 
 ```json
 {
@@ -263,7 +263,7 @@ Wikidata and Wikipedia are the highest-trust signals for AI disambiguation. Even
 }
 ```
 
-**Other useful types:** `Review`, `AggregateRating`, `Event`, `HowTo`, `BreadcrumbList`
+**Other useful types:** `BreadcrumbList`, `Event`, `Review` / `AggregateRating`, `VideoObject`, `ProfilePage`. All of these still have Google rich result features as of October 2026. `FAQPage` and `HowTo` no longer produce Google rich results; check the [Search Gallery](https://developers.google.com/search/docs/appearance/structured-data/search-gallery) for the current list before promising a rich result.
 
 Verify: [Google Rich Results Test](https://search.google.com/test/rich-results) and [Schema.org Validator](https://validator.schema.org/)
 
@@ -273,7 +273,9 @@ Verify: [Google Rich Results Test](https://search.google.com/test/rich-results) 
 
 Applies when: goal includes AI tool visibility.
 
-`llms.txt` is an emerging convention (not a ratified standard as of 2026) for giving AI tools a structured, Markdown-formatted overview of your site. Place it at your site root so it's served at `https://yourdomain.com/llms.txt`.
+`llms.txt` is an emerging convention (a community proposal at [llmstxt.org](https://llmstxt.org/), not a ratified standard as of 2026) for giving AI tools a structured, Markdown-formatted overview of your site. Place it at your site root so it's served at `https://yourdomain.com/llms.txt`.
+
+Know who reads it. Google stated in June 2026 that Google Search does not use `llms.txt` and that it neither helps nor hurts visibility or rankings. Its audience is AI assistants, coding agents, and agent-readiness scanners (ORA, the agent-readiness scanner at ora.ai by Era Labs, scores its presence, formatting, and whether its links resolve). Never present it to a user as a Google ranking factor.
 
 ### llms.txt format
 
@@ -297,7 +299,7 @@ Applies when: goal includes AI tool visibility.
 ```
 
 Rules:
-- H1 (site name) is required
+- H1 (site name) is the only required element
 - Blockquote summary immediately after H1 is recommended  -  it's the first thing read
 - H2 sections organize links by category
 - `## Optional` marks resources that can be omitted when context window is limited
@@ -305,7 +307,7 @@ Rules:
 
 ### Agent instruction block
 
-Add an `## Agent instructions` section to your `llms.txt` explaining how agents should interact with your site. AI systems use this to understand your site's purpose and how to handle queries about it. This is one of the highest-scoring identity checks in agent-readiness scanners:
+Add an `## Agent instructions` section to your `llms.txt` explaining how agents should interact with your site. AI systems use this to understand your site's purpose and how to handle queries about it. ORA scores this as a required check ("Agent instruction / when-to-use") and wants specific best-fit use cases, not marketing copy:
 
 ```markdown
 ## Agent instructions
@@ -353,62 +355,64 @@ Verify: `curl -s https://yourdomain.com/llms.txt`  -  confirm the file is access
 
 Applies when: any public-facing site.
 
-A complete robots.txt that explicitly handles both search and AI crawlers. Add this to your `public/` directory (or site root):
+A complete robots.txt that explicitly handles search crawlers, AI search crawlers, user-triggered AI fetchers, and AI training crawlers. Add this to your `public/` directory (or site root):
 
 ```
+# Default for any crawler not named below
 User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
-# Search engines
+# Search engines and AI search crawlers (these decide whether you are cited in AI answers)
 User-agent: Googlebot
-Allow: /
-
 User-agent: Bingbot
-Allow: /
-
-# AI retrieval crawlers (these fetch content on demand for AI search products)
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
+User-agent: OAI-SearchBot
+User-agent: Claude-SearchBot
 User-agent: PerplexityBot
+User-agent: Amzn-SearchBot
+User-agent: meta-webindexer
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
+# User-triggered fetchers (a person asked an AI to open this page; some vendors say robots.txt may not apply)
+User-agent: ChatGPT-User
+User-agent: Claude-User
+User-agent: Perplexity-User
+User-agent: Meta-ExternalFetcher
+User-agent: Amzn-User
+User-agent: Google-Agent
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+Allow: /
+
+# AI training crawlers and training control tokens (blocking these does not remove you from AI search answers)
+User-agent: GPTBot
 User-agent: ClaudeBot
-Allow: /
-
-# AI training crawlers (these feed static training datasets  -  blocking does not affect live AI search)
-User-agent: CCBot
-Disallow: /
-
 User-agent: Google-Extended
-Allow: /
-
 User-agent: Applebot-Extended
-Allow: /
-
 User-agent: Meta-ExternalAgent
-Allow: /
-
 User-agent: Amazonbot
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
+User-agent: CCBot
 User-agent: Bytespider
+Content-Signal: search=no, ai-input=no, ai-train=no
 Disallow: /
 
 Sitemap: https://yourdomain.com/sitemap.xml
 ```
 
-### Training crawlers vs. retrieval crawlers
+Under RFC 9309, a crawler that finds a group naming its user agent obeys that group (if several groups name it, their rules are merged) and ignores the `*` group entirely. So repeat `Content-Signal` in every group rather than only under `*`. Multiple `User-agent` lines can share one group, which keeps the file short.
 
-These are different things with different implications for blocking:
+### Training crawlers vs. search crawlers vs. user fetchers
 
-- **Retrieval crawlers** (`GPTBot` when used by ChatGPT Search, `PerplexityBot`, `ChatGPT-User`) fetch your content at query time for AI search products. Blocking these removes your site from those products' answers  -  freshness matters here.
-- **Training crawlers** (`CCBot`, `Bytespider`) collect data for static training datasets with a fixed cutoff date. Blocking them does not affect whether AI tools cite you in live searches.
+Most AI vendors now run three separate agents (as of 2026), and blocking each has a different effect:
 
-`Google-Extended` covers Google's AI features (Gemini, AI Overviews) and is separate from `Googlebot`. Block one without affecting the other.
+- **AI search crawlers** (`OAI-SearchBot`, `Claude-SearchBot`, `PerplexityBot`, `Amzn-SearchBot`, `meta-webindexer`) index your pages for AI search products. Blocking these removes or reduces your site in those products' answers.
+- **User-triggered fetchers** (`ChatGPT-User`, `Claude-User`, `Perplexity-User`, `Meta-ExternalFetcher`, `Amzn-User`, `Google-Agent`) load a page because a person asked an assistant or agent to. OpenAI, Perplexity, Meta, Amazon, and Google each state their fetchers may not follow robots.txt, since a human initiated the request; Anthropic says its bots, including `Claude-User`, honor it. ORA scores whether your robots.txt states a policy for `ChatGPT-User`, `Claude-User`, and `Perplexity-User`, but general rules and the default (`*`) count, so naming each fetcher is optional; do it when you want a policy different from `*`.
+- **Training crawlers** (`GPTBot`, `ClaudeBot`, `Meta-ExternalAgent`, `Amazonbot`, `CCBot`, `Bytespider`) collect data that may be used to train models (Meta says `Meta-ExternalAgent` is also used to improve products by indexing content directly). Blocking them does not affect whether AI tools cite you in live searches. OpenAI states that `GPTBot` and `OAI-SearchBot` are controlled independently; `GPTBot` is not the ChatGPT search crawler.
+
+**Control tokens are not crawlers.** `Google-Extended` and `Applebot-Extended` never fetch pages; they only tell Google and Apple whether content their main crawlers already fetched may be used for AI. `Google-Extended` controls Gemini model training and grounding in Gemini Apps and Vertex AI. It does **not** affect Google Search inclusion or ranking, and it is not the control for AI Overviews or AI Mode, which are part of Search. To limit what Google shows in AI Overviews and AI Mode, use the same controls as regular Search: `nosnippet`, `data-nosnippet`, `max-snippet`, or `noindex`. Blocking `Applebot-Extended` opts out of Apple's foundation model training without affecting Spotlight, Siri, or Safari results.
 
 ### Content-Signal directive
 
@@ -436,43 +440,50 @@ Content-Signal: search=yes, ai-input=yes, ai-train=no
 Allow: /
 ```
 
-A signal you don't list is neither granted nor denied  -  it's just unstated. The isitagentready.com scanner only checks that the directive is present and parses, not the values.
+A signal you don't list is neither granted nor denied  -  it's just unstated. The isitagentready.com scanner only checks that the directive is present and parses, not the values. Cloudflare's Markdown for Agents also sends a `Content-Signal` response header on Markdown responses (your origin's value if set, otherwise all three set to `yes`).
+
+**Standards status (as of October 2026):** `Content-Signal` is a Cloudflare-led convention, not an IETF standard; its individual Internet-Draft (`draft-romm-aipref-contentsignals`) expired in April 2026. Separately, the IETF AIPREF working group is drafting a `Content-Usage` robots.txt rule and HTTP header with different labels (`train-ai`, `ai-use`, `search`, values `y`/`n`), for example `Content-Usage: train-ai=n`. Those drafts (`draft-ietf-aipref-vocab`, `draft-ietf-aipref-attach`) are still in progress and the vocabulary is explicitly marked as lacking consensus. Use `Content-Signal` today because that is what scanners check; watch AIPREF and do not present `Content-Usage` as a finished standard.
 
 ### NLWeb schemamap directive
 
-`Schemamap` is an emerging robots.txt extension from Microsoft's NLWeb project. It points agents at a Schema Map XML file that lists your structured data feeds (JSON-LD, JSONL, RSS), letting AI vector stores index your content more efficiently than crawling page by page:
+`schemamap` is a robots.txt extension from the NLWeb project's Schema Feeds proposal (v0.1 draft, January 2026). It points agents at a Schema Map file that lists your aggregated structured data feeds (JSON Lines of schema.org objects, or RSS), so they can fetch all your structured data without crawling page by page. The spec says it follows the `Sitemap` pattern and its example puts it next to `Sitemap:`, so this guide reads it as a standalone line placed outside `User-agent` groups:
 
 ```
-User-agent: *
-Content-Signal: search=yes, ai-input=yes, ai-train=yes
-Schemamap: https://yourdomain.com/schemamap.xml
-Allow: /
-
 Sitemap: https://yourdomain.com/sitemap.xml
+schemamap: https://yourdomain.com/schemamap.xml
 ```
 
-A minimal `schemamap.xml`:
+The Schema Map reuses the sitemap format. The spec puts the content type in an `sf:contentType` element, while the NLWeb reference crawler reads a `contentType` attribute on `<url>`; include both so either parser finds it:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<schemamap xmlns="https://schema.org/schemamap">
-  <feed type="jsonld" url="https://yourdomain.com/structured-data.jsonl" />
-</schemamap>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:sf="http://schema.org/schemas/schemafeed/0.1">
+  <url contentType="structuredData/schema.org">
+    <loc>https://yourdomain.com/feeds/structured-data.jsonl</loc>
+    <lastmod>2026-10-01</lastmod>
+    <sf:contentType>structuredData/schema.org</sf:contentType>
+  </url>
+</urlset>
 ```
 
-This is early-stage (as of 2026) and primarily scored by ORA. Implement it alongside your other robots.txt changes since it's a two-line addition once the feed exists.
+Each line of the `.jsonl` feed is one complete schema.org JSON-LD object. This is a proposal, not a standard; ORA lists it as an emerging-tier check worth at most 1 point (as of October 2026). Add it only once you can generate the feed from the same source as your on-page JSON-LD.
 
-Known AI crawler user-agents (as of 2026):
-- `GPTBot`  -  OpenAI training + ChatGPT Search retrieval
-- `ChatGPT-User`  -  ChatGPT browsing/retrieval
-- `ClaudeBot`  -  Anthropic
-- `PerplexityBot`  -  Perplexity AI (retrieval)
-- `Google-Extended`  -  Google AI features / Gemini
-- `Applebot-Extended`  -  Apple Intelligence
-- `Meta-ExternalAgent`  -  Meta AI
-- `Amazonbot`  -  Amazon Alexa/AI
-- `CCBot`  -  Common Crawl (used by many training pipelines)
-- `Bytespider`  -  ByteDance/TikTok
+Known AI crawler user-agents (as of October 2026):
+
+| Vendor | Search / indexing | User-triggered | Training |
+|--------|-------------------|----------------|----------|
+| OpenAI | `OAI-SearchBot` | `ChatGPT-User` | `GPTBot` |
+| Anthropic | `Claude-SearchBot` | `Claude-User` | `ClaudeBot` |
+| Perplexity | `PerplexityBot` | `Perplexity-User` | (none) |
+| Google | `Googlebot` (also feeds AI Overviews / AI Mode) | `Google-Agent` | `Google-Extended` (control token, no crawling) |
+| Apple | `Applebot` | (none) | `Applebot-Extended` (control token, no crawling) |
+| Meta | `meta-webindexer` | `Meta-ExternalFetcher` | `Meta-ExternalAgent` (training and product indexing) |
+| Amazon | `Amzn-SearchBot` | `Amzn-User` | `Amazonbot` |
+| Common Crawl | (none) | (none) | `CCBot` (open dataset used by many training pipelines) |
+| ByteDance | (none) | (none) | `Bytespider` |
+
+Older tokens such as `anthropic-ai` and `claude-web` are no longer listed in Anthropic's documentation; you do not need to add them.
 
 Verify: `curl -s https://yourdomain.com/robots.txt`  -  confirm the `Sitemap:` line and your intended Allow/Disallow rules are present.
 
@@ -592,17 +603,17 @@ Agents fetch your page, parse it, and often take action on it. Three signals mak
 2. **Link HTTP response headers**  -  point agents at machine-readable entry points (API docs, alternate formats, describedby) without parsing HTML.
 3. **Agent Skills index**  -  if you publish reusable skills (documentation + scripts), advertise them at a well-known path.
 
-> **Explicit absence beats silence.** For every agent-facing file in this section, "this doesn't apply to my site" should be a stub that says so - not a missing file. When an agent requests `pricing.md` and gets a 404, it doesn't know whether your product is free, pricing is hidden, or the file just doesn't exist yet. All three look identical from outside. A `pricing.md` that says "this service is free" resolves the ambiguity immediately. The same principle applies to `agent-card.json`, `/.well-known/mcp.json`, and `agent.json`: an explicit empty-capabilities declaration is more useful than silence.
+> **Explicit absence beats silence.** For every agent-facing resource in this section, "this doesn't apply to my site" should be stated somewhere an agent will look - not left as silence. For free-form files like `pricing.md`, that means a short file that says so. When an agent requests `pricing.md` and gets a 404, it doesn't know whether your product is free, pricing is hidden, or the file just doesn't exist yet. All three look identical from outside. A `pricing.md` that says "this service is free" resolves the ambiguity immediately. For protocol files with strict schemas (the A2A Agent Card, MCP Server Cards), do not publish an empty stub: their specs make an empty card invalid. Express absence in two spec-clean ways instead: (a) declare it in `llms.txt` (see the `## Agent protocols` block below), and (b) serve a real `404` with a short Markdown body for the missing path, saying what is missing and pointing to `/llms.txt` (SPA hosts return a soft 200 here unless you configure them; see Static Hosting Notes). ORA's "Agent-friendly 404s" check gives partial credit for a real 404 or 410 status and full credit when a Markdown error body is also available.
 
-> **Agentic search discoverability.** Agent-readiness scanners like ORA also test whether agents can find your site when searching for your brand name or use case - this is the highest-scoring ORA criterion (up to 12 points) and it's primarily a content strategy concern: building topical authority through tutorials, comparison pages, and use-case landing pages. The technical baseline: make sure your product name is in your `<h1>` and page title, and list all developer resources (API docs, OpenAPI spec, SDKs) in `llms.txt` so they're findable by name.
+> **Agentic search discoverability.** Agent-readiness scanners like ORA also test whether agents can find your site when searching for your brand name, your use case, or your developer resources - three checks worth about 12 of ORA's 100 points combined (as of October 2026). It's primarily a content strategy concern: building topical authority through tutorials, comparison pages, and use-case landing pages. The technical baseline: make sure your product name is in your `<h1>` and page title, and list all developer resources (API docs, OpenAPI spec, SDKs) in `llms.txt` so they're findable by name.
 
-Cloudflare runs a free scanner at [isitagentready.com](https://isitagentready.com/) that scores these (plus robots.txt, sitemap, Content-Signal from the sections above). Use it as your acceptance test.
+Cloudflare runs a free scanner at [isitagentready.com](https://isitagentready.com/) that scores these (plus robots.txt, sitemap, Content-Signal from the sections above). Use it as your acceptance test. It offers **All Checks**, **Content Site**, and **API / Application** scan types; use Content Site for sites without an API.
 
 ### Markdown content negotiation
 
-Agents ask for Markdown with an `Accept: text/markdown` HTTP header. If the server returns `Content-Type: text/markdown`, the agent uses it; otherwise it falls back to HTML + a full DOM parse.
+Agents ask for Markdown with an `Accept: text/markdown` HTTP header. If the server returns `Content-Type: text/markdown`, the agent uses it; otherwise it falls back to HTML + a full DOM parse. Also return `Vary: Accept`, so shared caches never serve the Markdown version to a browser (or HTML to an agent). ORA checks for `Vary: Accept` on the homepage's Markdown response, and browsers must still get HTML.
 
-**If your site is behind Cloudflare:** enable **Markdown for Agents** in the dashboard (Pro/Business/Enterprise). Cloudflare does the HTML→Markdown conversion at the edge, no code changes. See [developers.cloudflare.com/fundamentals/reference/markdown-for-agents/](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/).
+**If your site is behind Cloudflare:** turn on **Markdown for Agents** under AI Crawl Control in the dashboard (Pro, Business, and Enterprise plans plus SSL for SaaS, as of October 2026). Cloudflare converts HTML to Markdown at the edge and sets `Vary: Accept` for you, no code changes. Only HTML up to 6 MiB is converted. See [developers.cloudflare.com/fundamentals/reference/markdown-for-agents/](https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/).
 
 **Static site (S3/CloudFront, Amplify, Netlify, Vercel) without Cloudflare:** generate a `.md` alongside each `.html` at build time, then branch on the `Accept` header at the edge. The CloudFront Function below is a working example (CloudFront Functions run in ~1ms, no Lambda cold start):
 
@@ -624,18 +635,43 @@ function handler(event) {
 }
 ```
 
-Attach this as a `viewer-request` CloudFront Function. Then add a Response Headers Policy that sets `Content-Type: text/markdown; charset=utf-8` for `*.md` objects (S3 returns `binary/octet-stream` by default for unknown extensions).
+Attach this as a `viewer-request` CloudFront Function. Then:
 
-**Produce the .md files** by piping your rendered HTML through a converter. For a static SPA, at build time:
+- Upload every `.md` object with `Content-Type: text/markdown; charset=utf-8` metadata (for example `aws s3 cp dist/ s3://your-bucket/ --recursive --exclude "*" --include "*.md" --content-type "text/markdown; charset=utf-8"`). S3 serves whatever type the object was stored with, and guesses wrong for `.md`. A Response Headers Policy is the wrong tool here: CloudFront picks the cache behavior from the original path (`/`), before the function rewrites it to `/index.md`.
+- Add a Response Headers Policy with a custom header `Vary: Accept` to the cache behavior that serves your pages.
 
-```sh
-# Astro / Next export / Vite: iterate over every built .html and write a .md sibling
-npx turndown dist/**/*.html --output dist
+**Produce the .md files** by converting your built HTML at build time. This only works when the built HTML already contains each page's content: static site generators, server-rendered or prerendered builds. A client-rendered SPA's `index.html` is an empty shell, so converting it yields empty Markdown. For those, prerender each public route first (your framework's static export, or a headless-browser prerender step in the build), or generate the Markdown from the same content source (CMS, MDX, JSON) the app renders from. Check that a generated `.md` file contains real text before you turn on negotiation.
+
+The `turndown` package has no CLI, so use a short Node script (`npm install --save-dev turndown`):
+
+```javascript
+// scripts/html-to-md.mjs - run after your build: node scripts/html-to-md.mjs dist
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import TurndownService from 'turndown';
+
+const td = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+td.remove(['script', 'style', 'nav', 'footer']); // drop page chrome agents don't need
+
+function walk(dir) {
+  for (const name of readdirSync(dir)) {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) walk(path);
+    else if (path.endsWith('.html')) {
+      const html = readFileSync(path, 'utf8');
+      // Prefer <main> so the Markdown holds content, not layout
+      const main = html.match(/<main[\s\S]*?<\/main>/i)?.[0] ?? html;
+      writeFileSync(path.replace(/\.html$/, '.md'), td.turndown(main));
+    }
+  }
+}
+
+walk(process.argv[2] ?? 'dist');
 ```
 
 For hand-rolled static sites, author the content in Markdown to begin with and render both formats from the same source.
 
-**HTML hint (lightweight fallback):** even without content negotiation, tell agents where the Markdown version lives via a `<link>` tag in `<head>`. Some agents check this; the isitagentready.com scanner does not count it, but it doesn't hurt:
+**HTML hint (lightweight fallback):** even without content negotiation, tell agents where the Markdown version lives via a `<link>` tag in `<head>`. The llms.txt proposal recommends it, and ORA scores it as a separate emerging check; the isitagentready.com scanner does not count it:
 
 ```html
 <link rel="alternate" type="text/markdown" href="/index.md" />
@@ -649,17 +685,20 @@ The agent-useful rel values as of 2026:
 
 | `rel` value | Points to |
 |-------------|-----------|
+| `api-catalog` | Your API catalog at `/.well-known/api-catalog` (RFC 9727), a list of all your APIs |
 | `service-doc` | Human-readable API docs |
 | `service-desc` | Machine-readable API description (OpenAPI) |
-| `describedby` | Metadata about this resource (schema, Dublin Core) |
-| `alternate` | Same content, different format or language |
-| `license` | The license the content is available under |
+| `describedby` | Metadata about this resource (for a whole site, your `/llms.txt`) |
+| `alternate` | Same content, different format or language (add `type="text/markdown"` for the Markdown version) |
+| `sitemap` | Your `sitemap.xml` (not a registered IANA link relation, but ORA recognizes it) |
+
+isitagentready.com passes the check when it finds at least one of `api-catalog`, `service-desc`, `service-doc`, or `describedby`. ORA's version of the check also looks for sitemap and Markdown alternate links.
 
 Example output for a homepage that has an OpenAPI spec at `/api/openapi.json` and HTML API docs at `/api/`:
 
 ```
 HTTP/2 200
-Link: </api/>; rel="service-doc", </api/openapi.json>; rel="service-desc"
+Link: </api/>; rel="service-doc", </api/openapi.json>; rel="service-desc", </index.md>; rel="alternate"; type="text/markdown"
 Content-Type: text/html
 ```
 
@@ -672,13 +711,13 @@ Content-Type: text/html
 - **Vercel**: `headers` array in `vercel.json`
 - **Nginx / Apache**: `add_header Link` / `Header set Link`
 
-The scanner treats the check as "pass" as long as at least one agent-useful rel is present. If you have no API, a `license` link to your Terms of Service is a valid minimum:
+If you have no API, point `describedby` at your `llms.txt` (the llms.txt proposal suggests this relation) and add your sitemap and Markdown alternate:
 
 ```
-Link: </terms>; rel="license"
+Link: </llms.txt>; rel="describedby", </sitemap.xml>; rel="sitemap", </index.md>; rel="alternate"; type="text/markdown"
 ```
 
-**HTML link from homepage:** ORA checks for a visible `<a>` link from your homepage HTML to your API or developer documentation as a separate Identity check, independently of the Link header. If you publish API docs, add a link in your footer or navigation:
+**HTML link from homepage:** ORA checks for a visible `<a>` link from your homepage HTML to your API or developer documentation as a separate check ("Public API/docs linked from homepage"), independently of the Link header. Only docs you own count. If you publish API docs, add a link in your footer or navigation:
 
 ```html
 <a href="/docs">Developer documentation</a>
@@ -692,23 +731,30 @@ Link headers handle machine-readable discovery at the HTTP layer; the HTML link 
 
 Applies when: you publish agent-runnable skills (instructions, scripts, references) that others should be able to discover and install.
 
-The [Agent Skills spec](https://agentskills.io/specification) defines a folder format (`SKILL.md` + bundled resources) originally from Anthropic, now adopted by Claude, Cursor, Copilot, Gemini CLI, Codex, Goose, and others. Sites that host such skills publish a JSON index at a well-known path.
+The [Agent Skills spec](https://agentskills.io/specification) defines a folder format (`SKILL.md` + bundled resources) originally from Anthropic, now adopted by Claude, Cursor, Copilot, Gemini CLI, Codex, Goose, and others. Sites that host such skills publish a JSON index at a well-known path, defined by Cloudflare's [Agent Skills Discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc) (v0.2.0, still a draft as of October 2026).
 
-Serve a file at `/.well-known/agent-skills/index.json` (newer spec) or `/.well-known/skills/index.json` (legacy, still accepted by scanners):
+Serve the index at `/.well-known/agent-skills/index.json`. Version 0.2.0 renamed the path from `/.well-known/skills/` and replaced the old `files` array with one artifact per skill, so update any index that still uses `files`:
 
 ```json
 {
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
   "skills": [
     {
       "name": "my-skill",
+      "type": "skill-md",
       "description": "One sentence description of what the skill does and when to load it.",
-      "files": ["SKILL.md", "references/details.md", "scripts/helper.py"]
+      "url": "/.well-known/agent-skills/my-skill/SKILL.md",
+      "digest": "sha256:REPLACE_WITH_64_HEX_CHARS"
     }
   ]
 }
 ```
 
-Each `files` path is relative to `/.well-known/agent-skills/<name>/`. Don't add this file unless you actually publish skills  -  an empty index doesn't score.
+- `type` is `skill-md` for a single `SKILL.md` file, or `archive` for a bundle (for example `.tar.gz`) when the skill includes scripts or reference files.
+- `digest` is the SHA-256 of the exact bytes served at `url`, as `sha256:` plus 64 lowercase hex characters. Generate it at build time (`shasum -a 256 SKILL.md`) because clients must reject content that doesn't match.
+- `name` must be lowercase letters, digits, and hyphens, and `description` should match the `SKILL.md` frontmatter.
+
+Both isitagentready.com and ORA validate the v0.2.0 format, and ORA's "agent discovery file" check now looks for this index. Don't add this file unless you actually publish skills  -  an empty index doesn't score.
 
 ### Trust anchor pages
 
@@ -767,7 +813,7 @@ We do not have self-serve pricing; agents should direct users to the contact pag
 
 ### Agent discovery file
 
-`/.well-known/agent.json` (or `/.well-known/ai-plugin.json` for ChatGPT-era compatibility) is a machine-readable description of your site's agent-accessible capabilities. Every public site should have one - even content-only sites with no API. The file anchors agent identity for the domain.
+`/.well-known/agent.json` (or the older `/.well-known/ai-plugin.json` format from ChatGPT plugins) is an informal, machine-readable description of your site's agent-accessible capabilities. Treat it as optional: no standard defines it, and as of October 2026 neither isitagentready.com nor ORA checks for it (ORA's "agent discovery file" check now looks for the Agent Skills index instead). The files that scanners and agents actually read are `llms.txt`, `/.well-known/agent-card.json`, and, if you run an MCP server, an AI Catalog (see below). Add `agent.json` only if a specific consumer you care about reads it.
 
 For a content site with no programmatic API:
 
@@ -816,93 +862,131 @@ This repo is [what it does]. When integrating with [product name]:
 
 ### A2A Agent Card
 
-`/.well-known/agent-card.json` is part of Google's [Agent-to-Agent (A2A) protocol](https://google.github.io/A2A/). It describes what agent-to-agent interactions your service supports. ORA checks for it on every site, including content-only ones - because even a site with no A2A capabilities benefits from saying so explicitly rather than returning a 404.
+`/.well-known/agent-card.json` is the discovery document of the [Agent2Agent (A2A) protocol](https://a2a-protocol.org/latest/specification/), originally from Google, donated to the Linux Foundation, and moved into the Linux Foundation's Agentic AI Foundation (AAIF) in August 2026. It describes what agent-to-agent interactions your service supports. Both isitagentready.com and ORA (as a bonus check) probe this path.
 
-**For a content site with no A2A capabilities** (the common case - serve this as your baseline):
+**If you don't run an A2A agent, don't publish a card.** A2A requires `supportedInterfaces` and `skills`, and the spec states that required arrays must contain at least one element, so an "empty capabilities" card is invalid. Declare the absence in `llms.txt` and return a Markdown 404 for `/.well-known/agent-card.json` instead (see "Explicit absence beats silence" above).
 
-```json
-{
-  "name": "Your Site Name",
-  "description": "Content site with no agent API. See /llms.txt for site index.",
-  "url": "https://yourdomain.com",
-  "version": "1.0.0",
-  "capabilities": {},
-  "skills": []
-}
-```
+A2A v1.0 (current as of October 2026) changed the card format. The required fields are `name`, `description`, `supportedInterfaces`, `version`, `capabilities`, `defaultInputModes`, `defaultOutputModes`, and `skills`; each skill requires `id`, `name`, `description`, and `tags`. The old top-level `url` field is gone: endpoints now live in `supportedInterfaces`, each with `url`, `protocolBinding` (`JSONRPC`, `GRPC`, or `HTTP+JSON`), and `protocolVersion`. Update any card written for v0.x.
 
-**For a site that exposes agent-callable skills or services:**
+**For a site that exposes an A2A agent:**
 
 ```json
 {
   "name": "Your Service Name",
   "description": "What your agent does and who should use it.",
-  "url": "https://yourdomain.com",
+  "supportedInterfaces": [
+    {
+      "url": "https://yourdomain.com/a2a/v1",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "provider": {
+    "organization": "Your Company Name",
+    "url": "https://yourdomain.com"
+  },
   "version": "1.0.0",
   "capabilities": {
     "streaming": false,
     "pushNotifications": false
   },
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/plain"],
   "skills": [
     {
       "id": "your-skill-id",
       "name": "Skill Name",
       "description": "What this skill does and when to invoke it.",
-      "inputModes": ["text"],
-      "outputModes": ["text"]
+      "tags": ["your-domain", "your-task"]
     }
   ]
 }
 ```
 
-Serve with `Content-Type: application/json`. The empty `"skills": []` version is intentional and correct for content sites - it closes the discovery loop without implying capabilities you don't have.
+Serve with `Content-Type: application/json`.
 
 ### MCP server discovery
 
-[Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is the standard for AI assistants to call external tools and data sources. If you don't have an MCP server, say so in `llms.txt` rather than letting agents search for one that doesn't exist.
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is the standard for AI assistants to call external tools and data sources. If you don't have an MCP server (or an A2A agent), say so in `llms.txt` rather than letting agents search for one that doesn't exist.
 
-**In your `llms.txt`** - add a section whether or not you have a server:
+**In your `llms.txt`** - add an `## Agent protocols` section whether or not you run anything:
 
 ```markdown
-## MCP
+## Agent protocols
 
-No MCP server available for this site.
+No A2A agent. No MCP server.
 ```
 
-Or if you do have one:
+Or if you do run them:
 
 ```markdown
-## MCP
+## Agent protocols
 
 - [MCP Server](https://yourdomain.com/mcp): What the server provides and what tools it exposes.
+- [A2A Agent Card](https://yourdomain.com/.well-known/agent-card.json): What the agent does.
 ```
 
-**Optional: serve `/.well-known/mcp.json`** for automated agent discovery:
+**For the protocol paths you don't serve** (`/.well-known/agent-card.json`, `/.well-known/ai-catalog.json`, `/.well-known/mcp/server-card.json`), return a real `404` with a short Markdown body rather than an HTML error page or a soft 200:
+
+```markdown
+# Not found
+
+This site does not run an A2A agent or an MCP server.
+See https://yourdomain.com/llms.txt for what is available.
+```
+
+SPA hosting turns these into soft 200s by default, because the fallback rule serves `index.html` with status 200 for every missing path. See "Static Hosting Notes" below for the Amplify and CloudFront fixes, then confirm the status:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://yourdomain.com/.well-known/agent-card.json
+# Expected: 404 (a 200 means the SPA fallback is still catching it)
+```
+
+**If you run a remote MCP server, publish a Server Card and an AI Catalog.** This is MCP's official discovery mechanism: the Server Card extension (SEP-2127, where SEP means MCP Specification Enhancement Proposal; an Extensions Track proposal marked Final in October 2026, whose wire format still lives in the extension repository and may change). It has two parts:
+
+1. A **Server Card** describing the server, served at your MCP endpoint URL plus `/server-card` (for example `https://yourdomain.com/mcp/server-card`). Its `description` must be 100 characters or fewer:
 
 ```json
 {
-  "mcpServers": {}
-}
-```
-
-Or with an actual server:
-
-```json
-{
-  "mcpServers": {
-    "your-server": {
-      "url": "https://yourdomain.com/mcp",
-      "transport": "streamable-http"
+  "$schema": "https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json",
+  "name": "com.yourdomain/your-server",
+  "version": "1.0.0",
+  "description": "Search and manage Your Product projects from any MCP client.",
+  "title": "Your Product MCP Server",
+  "websiteUrl": "https://yourdomain.com",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://yourdomain.com/mcp"
     }
-  }
+  ]
 }
 ```
 
-The `llms.txt` declaration is sufficient for most sites. The `/.well-known/mcp.json` file is useful when you expect automated agent discovery without a prior `llms.txt` fetch.
+2. An **AI Catalog** at `/.well-known/ai-catalog.json` (served as `application/ai-catalog+json`) that lists the card, so clients can discover servers from your domain alone:
+
+```json
+{
+  "specVersion": "1.0",
+  "entries": [
+    {
+      "identifier": "urn:air:yourdomain.com:mcp:your-server",
+      "type": "application/mcp-server-card+json",
+      "url": "https://yourdomain.com/mcp/server-card"
+    }
+  ]
+}
+```
+
+The AI Catalog is a cross-protocol format worked on by MCP, A2A, and other groups at [ai-catalog.io](https://ai-catalog.io/); it is still evolving (as of October 2026). The same catalog also serves Agentic Resource Discovery (ARD): ORA's ARD check reads `/.well-known/ard.json` and falls back to `/.well-known/ai-catalog.json`, and isitagentready.com's ARD manifest check looks for `/.well-known/ai-catalog.json`.
+
+**Scanner compatibility only:** isitagentready.com currently looks for an older-format card at `/.well-known/mcp/server-card.json` (live scans also request `/.well-known/mcp.json`), with `serverInfo.name`, `serverInfo.version`, a transport endpoint, and `capabilities`. The Server Card extension does not recommend that path. ORA accepts the AI Catalog, a card at `<server URL>/server-card`, `/.well-known/mcp/server-card.json`, `/.well-known/mcp.json`, or the server URL in `llms.txt`, and notes that the `.well-known/mcp` paths are conventions no MCP spec defines. If you want both scanners to pass, publish the spec-track AI Catalog and card above, plus a second card in isitagentready's expected shape at `/.well-known/mcp/server-card.json`. Generate both cards from one source (the same name, version, description, and endpoint) at build time so they never drift.
+
+**If you have no MCP server,** the `## Agent protocols` block in `llms.txt` is the explicit declaration, backed by a Markdown 404 on the discovery paths. Do not publish an empty `/.well-known/mcp.json` stub: no MCP spec defines that file or its format.
 
 ### ?mode=agent lightweight view
 
-Adding `?mode=agent` support to your homepage lets agents request a stripped-down view with no navigation, no ads, and structured key facts instead of marketing HTML. This is checked by ORA's "agent mode view" criterion.
+Adding `?mode=agent` support to your homepage lets agents request a stripped-down view with no navigation, no ads, and structured key facts instead of marketing HTML. This is ORA's "agent mode view" criterion, an emerging bonus check (as of October 2026), so do it after the Markdown negotiation above.
 
 Implementation: in your server or edge function, detect `mode=agent` in the query string and return a simplified response:
 
@@ -930,15 +1014,15 @@ For a static site, this is simplest to implement as a CloudFront Function or Net
 
 ### What's out of scope for this guide
 
-isitagentready.com and ORA also check OAuth discovery, OAuth Protected Resource Metadata (RFC 9728), WebMCP, and agentic commerce protocols (x402, UCP, ACP). These require active server infrastructure and only apply to sites that expose **authenticated programmatic actions** - booking, purchasing, querying user-specific data via OAuth. If you're building that, see:
+isitagentready.com and ORA also check API catalogs (RFC 9727), OAuth discovery, OAuth Protected Resource Metadata (RFC 9728), agent auth files (`auth.md`), Web Bot Auth, WebMCP, DNS-based agent discovery, and agentic commerce protocols (x402, MPP, UCP, ACP, AP2). These require active server infrastructure and only apply to sites that expose **authenticated programmatic actions** - booking, purchasing, querying user-specific data via OAuth. If you're building that, see:
 
 - [webmcp.org](https://webmcp.org/) for exposing MCP capabilities from a browser context
 - [RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728) for OAuth Protected Resource Metadata
 - [x402.org](https://www.x402.org/), [ucp.dev](https://ucp.dev/), [agenticcommerce.dev](https://agenticcommerce.dev) for agent payments
 
-MCP server authoring and A2A Agent Card are covered above - even without implementing them, every site should declare their status explicitly.
+MCP server discovery and the A2A Agent Card are covered above - even without implementing them, every site should declare their status explicitly in `llms.txt`.
 
-Verify: scan at [isitagentready.com](https://isitagentready.com/) (aim for level 4+) and [ora.run](https://ora.run/) (aim for grade B or above). Both are free.
+Verify: scan at [isitagentready.com](https://isitagentready.com/) (aim for level 4+) and [ora.ai](https://ora.ai/) (formerly ora.run; aim for grade B or above). Both are free.
 
 ---
 
@@ -986,14 +1070,14 @@ SPAs render content via JavaScript. This creates two distinct problems:
 
 ### Content efficiency
 
-Agent-readiness scanners (ORA in particular) measure the ratio of readable text to total HTML. The target is at least 5% readable text by character count. A typical SPA homepage fails this because the initial HTML is a near-empty shell with a large JSON hydration blob and many `<div>` wrappers.
+Agent-readiness scanners fetch your pages with JavaScript off. ORA's "Content without JavaScript" check (as of October 2026) wants at least 500 characters of meaningful homepage content in the raw HTML, a clear `<h1>`, sequential heading levels, and not too much non-content markup. A typical SPA homepage fails because the initial HTML is a near-empty shell with a large JSON hydration blob and many `<div>` wrappers. At the other extreme, ORA's "Page token budget" check flags pages whose extracted text exceeds about 100K characters (roughly 25K tokens); split very long reference pages into linked per-topic pages.
 
 Quick wins without switching frameworks:
 - Server-render at least your `<h1>` and first 500 characters of body text into the initial HTML
 - Move large JSON hydration blobs to a separate `<script src>` rather than inline
 - Strip unused inline styles from the HTML shell
 
-Check your ratio: `curl -s https://yourdomain.com/ | wc -c` vs `curl -s https://yourdomain.com/ | sed 's/<[^>]*>//g' | wc -c`. If readable is less than 5% of total, server-render the hero copy.
+Check what a non-JS agent sees: `curl -s https://yourdomain.com/ | sed 's/<[^>]*>//g' | tr -s ' \n' | head -c 1000`. If your headline and value proposition are not in that output, server-render the hero copy.
 
 ### Semantic HTML structure
 
@@ -1039,6 +1123,26 @@ These generate actual HTML files that all crawlers read without JavaScript.
 - Files in `public/` (Vite) are copied to `dist/` and served as-is
 - Amplify's SPA rewrite rule (`/<*> -> /index.html` with 404→200) only fires when no matching file exists  -  `robots.txt`, `sitemap.xml`, and `llms.txt` are served directly without triggering the rewrite
 - No additional config needed for new static files placed in `public/`
+- That same SPA rule returns `index.html` with status 200 for missing agent discovery paths. Amplify applies rules from the top of the list down, so add a `404` rule **above** the SPA rule that sends `/.well-known/` misses to a Markdown 404 file (put `404.md` in `public/`):
+
+```json
+[
+  {
+    "source": "/.well-known/<*>",
+    "status": "404",
+    "target": "/404.md",
+    "condition": null
+  },
+  {
+    "source": "/<*>",
+    "status": "404-200",
+    "target": "/index.html",
+    "condition": null
+  }
+]
+```
+
+Amplify's docs describe the `404` type as showing the target page for addresses that don't exist, so files you do publish under `/.well-known/` (such as `agent-skills/index.json`) should still be served. After deploying, re-run the curl check above and confirm a file you do publish still returns 200.
 
 ### CloudFront + S3
 
@@ -1052,10 +1156,32 @@ Upload static files to the S3 bucket root. Set explicit `Content-Type` metadata 
 | `llms-full.txt` | `text/plain` |
 | `*.md` (Markdown alternates) | `text/markdown; charset=utf-8` |
 | `.well-known/agent-skills/index.json` | `application/json; charset=utf-8` |
-| `.well-known/agent-card.json` | `application/json; charset=utf-8` |
-| `.well-known/mcp.json` | `application/json; charset=utf-8` |
+| `.well-known/agent-card.json` (if you publish one) | `application/json; charset=utf-8` |
+| `.well-known/ai-catalog.json` (if you publish one) | `application/ai-catalog+json` |
 
 If `Content-Type` is wrong, crawlers may reject the file even when the content is valid.
+
+**Keep `/.well-known/` misses as real 404s.** SPA setups often add a custom error response that maps 403/404 to `/index.html` with status 200. Custom error responses are set on the distribution, not per cache behavior, so they catch `/.well-known/` too. A CloudFront Function that returns a 400-or-above status bypasses custom error pages for that status, so answer the protocol paths you don't serve directly in your `viewer-request` function, before the Markdown rewrite logic:
+
+```javascript
+// Protocol discovery paths this site does not serve
+var NOT_SERVED = ['/.well-known/agent-card.json', '/.well-known/ai-catalog.json', '/.well-known/mcp/server-card.json'];
+
+function handler(event) {
+  var request = event.request;
+  if (NOT_SERVED.indexOf(request.uri) !== -1) {
+    return {
+      statusCode: 404,
+      statusDescription: 'Not Found',
+      headers: { 'content-type': { value: 'text/markdown; charset=utf-8' } },
+      body: '# Not found\n\nThis site does not run an A2A agent or an MCP server.\nSee https://yourdomain.com/llms.txt for what is available.\n'
+    };
+  }
+  return request; // in production, merge this check into the Markdown handler above (one viewer-request function per behavior)
+}
+```
+
+Remove a path from `NOT_SERVED` when you start publishing that file.
 
 ### Netlify / Vercel
 
@@ -1095,17 +1221,19 @@ curl -s https://yourdomain.com/ | grep 'application/ld+json'
 ### Agent-readiness
 
 ```bash
-# Confirm Markdown content negotiation works end-to-end
-curl -sI -H "Accept: text/markdown" https://yourdomain.com/ | grep -i content-type
-# Expected: content-type: text/markdown; charset=utf-8
+# Confirm Markdown content negotiation works end-to-end (use GET, not HEAD)
+curl -sL -D - -o /dev/null -H "Accept: text/markdown" https://yourdomain.com/ | grep -iE '^(content-type|vary):'
+# Expected: content-type: text/markdown; charset=utf-8  and  vary: Accept
+curl -sL -D - -o /dev/null -H "Accept: text/html" https://yourdomain.com/ | grep -i '^content-type:'
+# Expected: content-type: text/html (browsers must still get HTML)
 
 # Confirm Link response headers are present
 curl -sI https://yourdomain.com/ | grep -i '^link:'
-# Expected at least one rel: service-doc | service-desc | describedby | license
+# Expected at least one rel: api-catalog | service-doc | service-desc | describedby
 ```
 
-- [isitagentready.com](https://isitagentready.com/)  -  Cloudflare's agent-readiness scanner. Run `https://isitagentready.com/yourdomain.com` and aim for level 4+ out of 5. Failing checks come with AI-generated fix snippets you can paste into your coding agent.
-- [ora.run](https://ora.run/)  -  ORA (Open Readiness Assessment) by Era Labs. Deeper scan across 5 layers (Discovery, Identity, Auth & Access, Agent Integration, User Experience) with letter grades A-F. Run `https://ora.run/scan/yourdomain.com`. Add the badge to your README: `[![ora score](https://ora.run/api/badge/yourdomain.com)](https://ora.run/scan/yourdomain.com)`
+- [isitagentready.com](https://isitagentready.com/)  -  Cloudflare's agent-readiness scanner. Run `https://isitagentready.com/yourdomain.com` and aim for level 4+ out of 5. Failing checks come with AI-generated fix snippets you can paste into your coding agent, and `POST https://isitagentready.com/api/scan` with `{"url": "https://yourdomain.com"}` returns the same results as JSON for CI.
+- [ora.ai](https://ora.ai/)  -  ORA by Era Labs (moved from ora.run, which now redirects). Scores 0-100 with letter grades A-F across four layers: Discovery, Access, Usability, and Payments (as of October 2026). Open `https://ora.ai/score/yourdomain.com`, or run `npx ax audit yourdomain.com` from the terminal. Add the badge to your README: `[![ora score](https://ora.ai/api/badge/yourdomain.com)](https://ora.ai/score/yourdomain.com)`
 
 ### Cross-platform consistency
 
@@ -1115,13 +1243,13 @@ curl -sI https://yourdomain.com/ | grep -i '^link:'
 curl -s https://yourdomain.com/ | grep -i 'name="description"'
 # 2. JSON-LD description field
 curl -s https://yourdomain.com/ | python3 -c "import sys,json,re; [print(b['description']) for b in json.loads(re.search(r'application/ld\+json[^>]*>(.*?)</script>', sys.stdin.read(), re.S).group(1)).get('@graph', []) if 'description' in b]"
-# 3. agent.json description_for_model
-curl -s https://yourdomain.com/.well-known/agent.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('description_for_model',''))"
+# 3. A2A Agent Card description (if you publish one)
+curl -s https://yourdomain.com/.well-known/agent-card.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('description',''))"
 # 4. llms.txt opening blockquote
 curl -s https://yourdomain.com/llms.txt | head -5
 ```
 
-Inconsistent descriptions across these surfaces confuse agents that cross-reference them. The `description_for_model` in `agent.json`, the JSON-LD `description`, and the `llms.txt` blockquote should all describe the same product in compatible terms - not contradictory or wildly different levels of detail.
+Inconsistent descriptions across these surfaces confuse agents that cross-reference them. The meta description, the JSON-LD `description`, the Agent Card `description` (if any), and the `llms.txt` blockquote (plus `description_for_model` if you publish `agent.json`) should all describe the same product in compatible terms - not contradictory or wildly different levels of detail.
 
 ### Performance
 

@@ -1,5 +1,6 @@
 {
   "name": "ai-instruct",
+  "description": "Claude Code skills for shipping websites: AWS SPA deployment, Google Analytics 4, SEO/LLMO and agent-readiness, web accessibility, and Core Web Vitals.",
   "owner": {
     "name": "Boaz Ziniman",
     "email": "ziniman@gmail.com",
@@ -9,7 +10,7 @@
     {
       "name": "ai-instruct",
       "source": "./",
-      "version": "2.0.6",
+      "version": "2.1.0",
       "description": "Drop-in skills for Claude Code covering AWS deployment, Google Analytics 4, SEO/LLMO, web accessibility, and Core Web Vitals.",
       "category": "skills",
       "keywords": [
