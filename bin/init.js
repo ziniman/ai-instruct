@@ -8,7 +8,8 @@ const path = require('path');
 const readline = require('readline');
 
 const { version } = require('../package.json');
-const { GUIDES, buildSkillFrontmatter } = require('./lib/guides');
+const { GUIDES } = require('./lib/guides');
+const { REFERENCES_DIR, buildSkillFiles } = require('./lib/skill-builder');
 const REPO_RAW = 'https://raw.githubusercontent.com/ziniman/ai-instruct/main';
 const DOCS_DIR = 'ai-docs';
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
@@ -62,6 +63,24 @@ async function fetchText(url) {
   return res.text();
 }
 
+// Returns [{ path, content }] for one skill: the prebuilt files shipped in the
+// package, or (if they are missing) built from the guide on GitHub.
+async function loadSkillFiles(guide) {
+  const localDir = path.join(PACKAGE_SKILLS_DIR, guide.skillName);
+  if (fs.existsSync(path.join(localDir, 'SKILL.md'))) {
+    const files = [{ path: 'SKILL.md', content: fs.readFileSync(path.join(localDir, 'SKILL.md'), 'utf8') }];
+    const refDir = path.join(localDir, REFERENCES_DIR);
+    if (fs.existsSync(refDir)) {
+      for (const name of fs.readdirSync(refDir).sort()) {
+        files.push({ path: `${REFERENCES_DIR}/${name}`, content: fs.readFileSync(path.join(refDir, name), 'utf8') });
+      }
+    }
+    return files;
+  }
+  const body = await fetchText(`${REPO_RAW}/${guide.file}`);
+  return buildSkillFiles(guide, body, { strict: false });
+}
+
 async function runSkillsFlow(rl, userScope) {
   const baseDir = userScope
     ? path.join(os.homedir(), '.claude', 'skills')
@@ -95,18 +114,16 @@ async function runSkillsFlow(rl, userScope) {
     const skillDir = path.join(baseDir, guide.skillName);
     if (!fs.existsSync(skillDir)) fs.mkdirSync(skillDir, { recursive: true });
 
-    const dest = path.join(skillDir, 'SKILL.md');
-    const localSkill = path.join(PACKAGE_SKILLS_DIR, guide.skillName, 'SKILL.md');
     process.stdout.write(`  Installing ${guide.skillName}... `);
     try {
-      let content;
-      if (fs.existsSync(localSkill)) {
-        content = fs.readFileSync(localSkill, 'utf8');
-      } else {
-        const body = await fetchText(`${REPO_RAW}/${guide.file}`);
-        content = buildSkillFrontmatter(guide) + body;
+      const files = await loadSkillFiles(guide);
+      // Replace references/ wholesale so files from an older install don't linger.
+      fs.rmSync(path.join(skillDir, REFERENCES_DIR), { recursive: true, force: true });
+      for (const file of files) {
+        const dest = path.join(skillDir, file.path);
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.writeFileSync(dest, file.content);
       }
-      fs.writeFileSync(dest, content);
       console.log('✓');
     } catch (err) {
       console.log(`✗  ${err.message}`);

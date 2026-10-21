@@ -46,7 +46,7 @@ Run in your project root. The CLI handles detection, download, and config file u
 
 #### Claude Code: install as skills
 
-If you use Claude Code, you can install the guides as native [skills](https://docs.claude.com/en/docs/claude-code/skills) instead of referencing them from `CLAUDE.md`. Each skill has a description that tells Claude when to load it, so the guide content only enters context when it is actually relevant (a deployment task pulls in the AWS skill, a UI task pulls in the accessibility skill, etc.). This keeps your base `CLAUDE.md` lean and avoids loading every guide on every turn.
+If you use Claude Code, you can install the guides as native [skills](https://docs.claude.com/en/docs/claude-code/skills) instead of referencing them from `CLAUDE.md`. Each skill has a description that tells Claude when to load it, so the guide content only enters context when it is actually relevant (a deployment task pulls in the AWS skill, a UI task pulls in the accessibility skill, etc.). This keeps your base `CLAUDE.md` lean and avoids loading every guide on every turn. Long guides are split further: the skill's `SKILL.md` holds the Section 0 questions and an index, and Claude reads only the `references/` files for the sections that apply.
 
 ```sh
 npx ai-instruct init --skills          # writes to .claude/skills/  (project scope, commit to share)

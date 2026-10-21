@@ -8,6 +8,12 @@ const GUIDES = [
     topic: 'SEO/LLMO/agent-readiness practices',
     skillName: 'seo-llmo',
     skillDescription: 'Use this skill whenever the user is building, reviewing, or launching a public website or web app; SEO, LLMO, and agent-readiness are baseline for every public site. Covers meta tags, Open Graph, JSON-LD, robots.txt for AI search and training crawlers (OAI-SearchBot, GPTBot, Claude-SearchBot, ClaudeBot, PerplexityBot, Google-Extended) with Content-Signal, sitemap.xml, llms.txt, Markdown content negotiation, Link headers, A2A Agent Card, MCP Server Card and AI Catalog discovery, Agent Skills index, pricing.md, and the "explicit absence beats silence" rule. Trigger for marketing sites, landing pages, blogs, docs, and stores; before any launch or go-live; when the user mentions isitagentready.com, ORA, agent-readiness, AI Overviews, or wants ChatGPT, Claude, Perplexity, or browser agents to find and use the site; and when scaffolding a public site even if SEO is not mentioned. Skip for internal tools, admin panels, or auth-gated dashboards with no public surface.',
+    sectionSummaries: {
+      'Static Hosting Notes':
+        'deploying to AWS Amplify, CloudFront + S3, Netlify, or Vercel and you need SPA rewrites, headers, or content negotiation configured on that host.',
+      'Validation':
+        'after deploying, to check structured data, social previews, crawl access, agent-readiness, cross-surface consistency, performance, and indexing.',
+    },
   },
   {
     name: 'Deploying a Static SPA on AWS',
@@ -16,6 +22,20 @@ const GUIDES = [
     topic: 'AWS SPA deployment',
     skillName: 'aws-spa-deploy',
     skillDescription: 'Use this skill whenever the user is deploying a React/Vite single-page app to AWS, or mentions Amplify Hosting, amplify.yml, CDK, Lambda function URLs, or wiring up Lambda + API Gateway for a frontend. Covers Amplify hosting (SPA rewrites, build cache, Node version, security headers), custom domains and certificates, CDK backend (Lambda Node.js 24 + HTTP API or function URLs), SES email, CORS configuration, and Vite environment variables. Skip for non-AWS hosts (Vercel, Netlify, Cloudflare Pages), pure backend services without an SPA, or server-rendered apps (Next.js SSR on Vercel).',
+    sectionSummaries: {
+      'Architecture':
+        'starting out, to see how Amplify Hosting, the separate CDK backend, and VITE_* variables fit together (and when an amplify/ directory means a different setup).',
+      'Costs at a glance':
+        'the user asks what the stack will cost or which free allowances apply.',
+      'Amplify Hosting':
+        'setting up or fixing Amplify Hosting: amplify.yml, SPA rewrites, custom domain and SSL, environment variables, build cache, Node.js version, or security headers.',
+      'CDK Backend':
+        'adding or changing the backend: API Gateway vs Lambda function URLs, Lambda runtime, project structure, bootstrapping, the minimal stack, CORS, and deploy order.',
+      'SES Email':
+        'the backend sends email: domain verification, IAM scoping, sending from Lambda, abuse controls, and leaving the SES sandbox.',
+      'Common problems':
+        'something is broken: symptom to fix table, Amplify build logs, CORS errors, and Lambda timeouts.',
+    },
   },
   {
     name: 'Google Analytics 4',
@@ -24,6 +44,34 @@ const GUIDES = [
     topic: 'Google Analytics 4 implementation',
     skillName: 'google-analytics-4',
     skillDescription: 'Use this skill whenever the user installs, configures, or debugs Google Analytics 4, or mentions gtag.js, the Google tag, GTM, key events or conversion tracking, e-commerce events, DebugView or Tag Assistant, or a cookie/consent banner tied to analytics. Covers installation (including Google tag gateway first-party serving), first-time setup (data retention, internal and hostname filters, key events), event tracking, user properties, e-commerce, Consent Mode v2 for EEA/UK/Swiss visitors, SPA pageview tracking, and BigQuery export. Skip for other analytics products (Plausible, Mixpanel, PostHog, Segment), Universal Analytics (sunset 2024), or server-side-only tracking.',
+    sectionSummaries: {
+      'Installation':
+        'adding GA4 to a site: gtag.js, Google Tag Manager, or Google tag gateway (first-party serving).',
+      'Basic Configuration':
+        'setting gtag config options such as debug mode, cookie settings, or disabling the automatic page_view.',
+      'Critical First-Time Setup':
+        'right after installing, before production traffic: data retention, internal and hostname filters, key events, custom dimensions.',
+      'Common Pitfalls':
+        'reviewing or debugging any GA4 setup; a short list of mistakes that silently break tracking.',
+      'Event Tracking':
+        'tracking user actions with gtag event syntax, standard events, or custom events.',
+      'Enhanced Measurement':
+        'deciding which events GA4 already tracks automatically before adding custom ones.',
+      'User Properties & Custom Dimensions':
+        'setting user properties or a User ID for cross-device tracking.',
+      'E-commerce Tracking':
+        'the user confirmed purchase or sales tracking: view_item, add_to_cart, begin_checkout, purchase.',
+      'Consent Mode v2':
+        'the site may have EEA, UK, or Swiss visitors, or uses a cookie or consent banner.',
+      'Single-Page Apps':
+        'the site is a SPA and route changes must produce page_view events (Enhanced Measurement history events, manual page_view, or GTM).',
+      'Debugging':
+        'events are missing or wrong: DebugView, raw network requests, logging gtag calls.',
+      'Validation & Testing':
+        'before launch, to verify the implementation with the pre-launch checklist.',
+      'Advanced: BigQuery Export & Sampling':
+        'reports are sampled, raw event data is needed in BigQuery, or attribution models come up.',
+    },
   },
   {
     name: 'Web Accessibility',
@@ -32,6 +80,38 @@ const GUIDES = [
     topic: 'web accessibility (WCAG 2.2)',
     skillName: 'web-accessibility',
     skillDescription: 'Use this skill whenever the user is building or reviewing any web UI. Accessibility is a baseline requirement, not a niche concern. Covers WCAG 2.2 AA (including Focus Not Obscured, Target Size, Accessible Authentication), semantic HTML and native interactive elements (dialog, popover, details, invoker commands), ARIA patterns, keyboard navigation, focus management, color contrast, touch targets, forms, testing with axe / Lighthouse / screen readers, and legal context (ADA Title II and III, European Accessibility Act, EN 301 549). Trigger when generating any interactive component or page (forms, modals, menus, tooltips, tables, navigation, layouts), before any "launch" or "go live", during pre-launch checklists, when a user asks about accessibility overlays or compliance deadlines, and whenever producing new HTML/JSX markup, even if the user does not explicitly mention a11y or WCAG. Skip for backend-only changes, CLI tools, or non-UI code.',
+    sectionSummaries: {
+      'Legal & Compliance':
+        'the user asks about legal obligations or deadlines (ADA Title II and III, European Accessibility Act, EN 301 549, Section 508) or accessibility overlays.',
+      'WCAG Standards Overview':
+        'choosing a conformance target (A, AA, AAA) or explaining why 2.2 AA is the default.',
+      'WCAG 2.2: What\'s New':
+        'checking against criteria added in WCAG 2.2: focus not obscured, dragging, target size, accessible authentication, redundant entry, consistent help.',
+      'Semantic HTML':
+        'generating any markup: page landmarks, choosing the right element, and native interactive elements (dialog, popover, details, invoker commands).',
+      'Keyboard Navigation':
+        'building interactive components: skip links, focus order and tabindex, keyboard interactions for custom widgets.',
+      'ARIA':
+        'native HTML is not enough and ARIA attributes or roles are needed (labels, descriptions, expanded, hidden, live regions).',
+      'Images & Media':
+        'adding images, SVG, video, or audio: alt text, captions, transcripts.',
+      'Forms':
+        'building forms: labels, autocomplete tokens, required fields, error messages, fieldsets, multi-step forms.',
+      'Touch & Pointer':
+        'the UI targets touch or mobile, or has tooltips and content shown on hover or focus.',
+      'Color & Contrast':
+        'choosing colors, design tokens, or a theme: contrast ratios, semi-transparent text, brand colors, Tailwind slate reference.',
+      'Focus Management':
+        'styling focus indicators, building dialogs and modals, or updating content dynamically.',
+      'Motion & Animation':
+        'adding animations or transitions; respect prefers-reduced-motion.',
+      'Testing':
+        'auditing a page: automated scans, keyboard-only, screen readers, zoom, text spacing, color and vision checks.',
+      'Anti-Patterns to Flag':
+        'reviewing code or generating UI; patterns to call out actively.',
+      'Checklist by Product Type':
+        'before launch, for a baseline checklist plus additions for e-commerce, web apps, media sites, and mobile.',
+    },
   },
   {
     name: 'Web Performance',
@@ -40,6 +120,12 @@ const GUIDES = [
     topic: 'web performance and Core Web Vitals',
     skillName: 'web-performance',
     skillDescription: 'Use this skill whenever the user is improving Core Web Vitals or page load performance, or mentions slow pages, PageSpeed Insights / Lighthouse failures or insights, LCP/CLS/INP scores, bundle size, image/font optimization, or third-party script impact. Covers Core Web Vitals, LCP image priority (fetchpriority, preload, lazy loading), image formats (AVIF/WebP), font loading, JavaScript bundle size, legacy polyfills and browserslist, CSS build size, script loading (async/defer, tag managers), preconnect/dns-prefetch, critical CSS and CSP, CDN cache headers and compression, bfcache and Speculation Rules prerendering, and measurement tools (CrUX, web-vitals). Skip for backend latency tuning, database query optimization, or CI build speed.',
+    sectionSummaries: {
+      'Measurement and Validation':
+        'measuring before and after changes: lab data, field data, network and runtime inspection, in-browser tools, continuous monitoring.',
+      'Checklist':
+        'before deploying a new page or feature, and after deploying to production.',
+    },
   },
 ];
 

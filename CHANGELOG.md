@@ -4,6 +4,16 @@ All notable content and feature changes to ai-instruct. Ordered newest to oldest
 
 ---
 
+## v3.0.0 &nbsp;·&nbsp; 2026-10-21
+
+**`all skills`** - Skills now use progressive disclosure: `SKILL.md` keeps the guide header, Section 0, and an index with a one-line "when to read" summary per section, and every other section moves to `references/<slug>.md`. A triggered skill loads about 50 lines instead of up to 1,370, in line with the Agent Skills 500-line guidance. Cross-section links are rewritten to the right reference file. The guides themselves are unchanged and still single files
+
+**`CLI`** - `init --skills` installs the whole skill folder, including `references/`, and clears files left by an older install
+
+**`CI`** - Fails on untracked files under `skills/` (not only modified ones) and runs a new `check:skills` validator for line limits, broken links or anchors, and orphaned reference files
+
+---
+
 ## v2.1.0 &nbsp;·&nbsp; 2026-10-21
 
 **`aws-spa-deploy`** - Fixed a build cache that never worked (`npm ci` deletes `node_modules`), wrong CORS guidance for HTTP API, and stale SES/ACM/Free Tier costs; moved to Node.js 24 (CDK 2.224.0+), added the function URL 403 permission change, SESv2 contact-form handler, security headers, and corrected SES sandbox and production-access facts
